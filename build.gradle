@@ -10,10 +10,75 @@ group = mod_group_id
 
 repositories {
     mavenLocal()
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
+    maven {
+        name "cursemaven"
+        url "https://www.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    maven {
+        url "https://maven.latvian.dev/releases"
+        content {
+            includeGroup "dev.latvian.mods"
+            includeGroup "dev.latvian.apps"
+        }
+    }
+    maven {
+        url "https://jitpack.io"
+        content {
+            includeGroup "com.github.rtyley"
+        }
+    }
+    maven {
+        url "https://maven.wispforest.io/releases"
+        content {
+            includeGroup "io.wispforest"
+            includeGroup "io.wispforest.endec"
+        }
+    }
+    maven {
+        url "https://maven.su5ed.dev/releases"
+        content {
+            includeGroup "org.sinytra"
+            includeGroup "org.sinytra.forgified-fabric-api"
+        }
+    }
+    maven {
+        url "https://code.redspace.io/releases"
+        content {
+            includeGroup "io.redspace"
+        }
+    }
+    maven {
+        url "https://maven.blamejared.com"
+        content {
+            includeGroup "vazkii.patchouli"
+        }
+    }
+    maven {
+        url "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/"
+        content {
+            includeGroup("software.bernie.geckolib")
+        }
+    }
+    maven {
+        url "https://maven.theillusivec4.top"
+        content {
+            includeGroup("top.theillusivec4.curios")
+        }
+    }
 }
 
 base {
-    archivesName = mod_id
+    archivesName = "$mod_id-$minecraft_version"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -36,8 +101,12 @@ neoForge {
         client {
             client()
 
+            programArguments.addAll '--width', '1920', '--height', '1080'
+
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+
+            systemProperty 'mixin.debug.export', 'true'
         }
 
         server {
@@ -96,46 +165,46 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 
 dependencies {
-    // Example mod dependency with JEI
-    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
-    // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
-    // compileOnly "mezz.jei:jei-${mc_version}-forge-api:${jei_version}"
-    // runtimeOnly "mezz.jei:jei-${mc_version}-forge:${jei_version}"
-
-    // Example mod dependency using a mod jar from ./libs with a flat dir repository
-    // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
-    // The group id is ignored when searching -- in this case, it is "blank"
-    // implementation "blank:coolmod-${mc_version}:${coolmod_version}"
-
-    // Example mod dependency using a file as dependency
-    // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
-
-    // Example project dependency using a sister or child project:
-    // implementation project(":myproject")
-
-    // For more info:
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    implementation("io.wispforest:accessories-neoforge:${accessories_version}")
+    implementation("vazkii.patchouli:Patchouli:${patchouli_version}")
+    implementation("software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}")
+    compileOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}+${minecraft_version}")
+    implementation("io.redspace:irons_spellbooks:${irons_spells_version}") {
+        exclude group: "top.theillusivec4.curios", module: "curios-neoforge"
+    }
+    implementation("com.github.tartaricacid:TouhouLittleMaid:${touhou_little_maid_version}") {
+        exclude group: "maven.modrinth", module: "sodium"
+        exclude group: "maven.modrinth", module: "embeddium"
+    }
+    compileOnly(files("libs/yesstevemodel-neoforge-1.21-2.4.1-release.jar"))
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
 // A missing property will result in an error. Properties are expanded using ${} Groovy notation.
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
-    var replaceProperties = [minecraft_version      : minecraft_version,
-                             minecraft_version_range: minecraft_version_range,
-                             neo_version            : neo_version,
-                             neo_version_range      : neo_version_range,
-                             loader_version_range   : loader_version_range,
-                             mod_id                 : mod_id,
-                             mod_name               : mod_name,
-                             mod_license            : mod_license,
-                             mod_version            : mod_version,
-                             mod_authors            : mod_authors,
-                             mod_description        : mod_description]
+    var replaceProperties = [
+            minecraft_version               : minecraft_version,
+            minecraft_version_range         : minecraft_version_range,
+            neo_version                     : neo_version,
+            neo_version_range               : neo_version_range,
+            loader_version_range            : loader_version_range,
+            mod_id                          : mod_id,
+            mod_name                        : mod_name,
+            mod_license                     : mod_license,
+            mod_version                     : mod_version,
+            mod_authors                     : mod_authors,
+            mod_description                 : mod_description,
+            irons_spells_version_range      : irons_spells_version_range,
+            touhou_little_maid_version_range: touhou_little_maid_version
+    ]
     inputs.properties replaceProperties
     expand replaceProperties
     from "src/main/templates"
     into "build/generated/sources/modMetadata"
+}
+
+createMinecraftArtifacts {
+    dependsOn generateModMetadata
 }
 
 // Include the output of "generateModMetadata" as an input directory for the build

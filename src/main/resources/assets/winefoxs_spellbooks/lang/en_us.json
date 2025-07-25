@@ -1,5 +1,5 @@
 {
-  "itemGroup.winefoxs_spellbooks": "Example Mod Tab",
-  "block.winefoxs_spellbooks.example_block": "Example Block",
-  "item.winefoxs_spellbooks.example_item": "Example Item"
+  "task.winefoxs_spellbooks.casting_task": "Magic Attack",
+  "task.winefoxs_spellbooks.casting_task.desc": "Little maid will use Iron's Spells to attack enemy",
+  "task.winefoxs_spellbooks.casting_task.condition.has_spells": "Spell book in main hand or bauble inventory"
 }

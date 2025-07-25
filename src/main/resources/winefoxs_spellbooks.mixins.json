@@ -4,9 +4,16 @@
   "package": "net.magicterra.winefoxsspellbooks.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "MaidEntityMixin",
+    "YsmAcStateAccessor1",
+    "YsmACStateAccessor2"
   ],
   "client": [
+    "GeckoMaidEntityMixin",
+    "GeckoModelLoaderMixin",
+    "YsmMaidEntityMixin"
   ],
+  "plugin": "net.magicterra.winefoxsspellbooks.mixin.MixinPlugin",
   "injectors": {
     "defaultRequire": 1
   },

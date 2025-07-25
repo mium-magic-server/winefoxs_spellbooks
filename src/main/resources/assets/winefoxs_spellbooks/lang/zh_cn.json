@@ -1,0 +1,5 @@
+{
+  "task.winefoxs_spellbooks.casting_task": "法术攻击",
+  "task.winefoxs_spellbooks.casting_task.desc": "女仆会使用铁之咒语魔法攻击敌人",
+  "task.winefoxs_spellbooks.casting_task.condition.has_spells": "主手或盔甲栏有注魔武器或饰品栏有注魔魔法书"
+}
