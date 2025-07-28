@@ -176,6 +176,7 @@ dependencies {
         exclude group: "maven.modrinth", module: "sodium"
         exclude group: "maven.modrinth", module: "embeddium"
     }
+    implementation("maven.modrinth:jade:15.0.5+neoforge")
     compileOnly(files("libs/yesstevemodel-neoforge-1.21-2.4.1-release.jar"))
 }
 

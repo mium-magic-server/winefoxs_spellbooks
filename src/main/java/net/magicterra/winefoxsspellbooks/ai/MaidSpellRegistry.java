@@ -53,6 +53,7 @@ public final class MaidSpellRegistry {
         SPELL_RANGE_MAP.put(SpellRegistry.DIVINE_SMITE_SPELL.get(), 1.7F);
         SPELL_RANGE_MAP.put(SpellRegistry.CLEANSE_SPELL.get(), 3.0F);
         SPELL_RANGE_MAP.put(SpellRegistry.HEALING_CIRCLE_SPELL.get(), 5.0F);
+        SPELL_RANGE_MAP.put(SpellRegistry.none(), 15.0F);
     }
 
     public static float getSpellRange(AbstractSpell spell) {

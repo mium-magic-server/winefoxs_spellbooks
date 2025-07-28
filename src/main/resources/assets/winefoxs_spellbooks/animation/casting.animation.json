@@ -43,7 +43,7 @@
 			}
 		},
 		"long_cast_finish": {
-			"animation_length": 0.1875,
+			"animation_length": 0.125,
 			"bones": {
 				"RightArm": {
 					"rotation": {
@@ -2631,7 +2631,7 @@
 		},
 		"long_cast": {
 			"loop": true,
-			"animation_length": 5.1,
+			"animation_length": 4.5,
 			"bones": {
 				"UpperBody": {
 					"rotation": {

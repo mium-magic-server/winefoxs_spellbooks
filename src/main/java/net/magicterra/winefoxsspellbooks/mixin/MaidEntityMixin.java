@@ -1,10 +1,14 @@
 package net.magicterra.winefoxsspellbooks.mixin;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import io.redspace.ironsspellbooks.IronsSpellbooks;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.magic.SpellSelectionManager;
+import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastSource;
@@ -12,12 +16,17 @@ import io.redspace.ironsspellbooks.api.spells.CastType;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.api.util.Utils;
 import io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData;
+import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
 import io.redspace.ironsspellbooks.spells.ender.TeleportSpell;
 import io.redspace.ironsspellbooks.spells.fire.BurningDashSpell;
-import io.redspace.ironsspellbooks.util.Log;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.bauble.SpellBookAwareSlotItemHandler;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.magicterra.winefoxsspellbooks.magic.MaidMagicData;
+import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -25,26 +34,33 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.wrapper.EntityHandsInvWrapper;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * 魔法女仆，参考 AbstractSpellCastingMob
@@ -55,6 +71,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(EntityMaid.class)
 public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEntity, MaidMagicEntity {
+    @Shadow @Nullable public abstract LivingEntity getOwner();
+
+    @Shadow public abstract BaubleItemHandler getMaidBauble();
+
     //private static final EntityDataAccessor<SyncedSpellData> DATA_SPELL = SynchedEntityData.defineId(AbstractSpellCastingMob.class, SyncedSpellData.SYNCED_SPELL_DATA);
     @Unique
     private static final EntityDataAccessor<Boolean> DATA_CANCEL_CAST = SynchedEntityData.defineId(MaidEntityMixin.class, EntityDataSerializers.BOOLEAN);
@@ -63,7 +83,10 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
     private static final EntityDataAccessor<Boolean> DATA_DRINKING_POTION = SynchedEntityData.defineId(MaidEntityMixin.class, EntityDataSerializers.BOOLEAN);
 
     @Unique
-    private final MagicData playerMagicData = new MagicData(true);
+    private static final EntityDataAccessor<Float> DATA_MANA = SynchedEntityData.defineId(MaidEntityMixin.class, EntityDataSerializers.FLOAT);
+
+    @Unique
+    private final MagicData playerMagicData = new MaidMagicData((EntityMaid) (Object) this);
 
     @Unique
     private static final AttributeModifier SPEED_MODIFIER_DRINKING = new AttributeModifier(IronsSpellbooks.id("potion_slowdown"), -0.15D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
@@ -91,12 +114,20 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
     }
 
 
+    @Inject(method = "createAttributes", at = @At("RETURN"), cancellable = true)
+    private static void createAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
+        AttributeSupplier.Builder builder = cir.getReturnValue()
+            .add(AttributeRegistry.MAX_MANA)
+            .add(AttributeRegistry.MANA_REGEN)
+            .add(AttributeRegistry.COOLDOWN_REDUCTION);
+        cir.setReturnValue(builder);
+    }
+
     @Inject(method = "<init>(Lnet/minecraft/world/level/Level;)V", at = @At("TAIL"))
     public void init(Level worldIn, CallbackInfo ci) {
         EntityMaid self = (EntityMaid) (Object) this;
         playerMagicData.setSyncedData(new SyncedSpellData(self));
         self.noCulling = true;
-        self.lookControl = createLookControl();
     }
 
     public boolean getHasUsedSingleAttack() {
@@ -108,15 +139,6 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         this.hasUsedSingleAttack = hasUsedSingleAttack;
     }
 
-    protected LookControl createLookControl() {
-        return new LookControl(this) {
-            @Override
-            protected boolean resetXRotOnTick() {
-                return getTarget() == null;
-            }
-        };
-    }
-
     public MagicData getMagicData() {
         return playerMagicData;
     }
@@ -126,6 +148,7 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         //pBuilder.define(DATA_SPELL, new SyncedSpellData(-1));
         builder.define(DATA_CANCEL_CAST, false);
         builder.define(DATA_DRINKING_POTION, false);
+        builder.define(DATA_MANA, 1.0f);
     }
 
     public boolean isDrinkingPotion() {
@@ -141,6 +164,33 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
     public boolean canBeLeashed() {
         // 是否能被拴绳拴住
         return false;
+    }
+
+    @Override
+    public boolean isAlliedTo(Entity entity) {
+        if (entity instanceof TamableAnimal tamableAnimal) {
+            LivingEntity owner = tamableAnimal.getOwner();
+            if (Objects.equals(getOwner(), owner) || getOwner() != null && owner != null && getOwner().isAlliedTo(owner)) {
+                // 主人相同，或都没有主人，或者主人是同一个队伍，认为是相同的队伍
+                return true;
+            }
+        }
+        if (entity instanceof IMagicSummon magicSummon) {
+            // 召唤物
+            Entity owner = magicSummon.getSummoner();
+            if (owner instanceof TamableAnimal tamableAnimal) {
+                // 召唤者是女仆
+                LivingEntity ownerOfOwner = tamableAnimal.getOwner(); // 该女仆的主人
+                if (Objects.equals(getOwner(), ownerOfOwner) || getOwner() != null && ownerOfOwner != null && getOwner().isAlliedTo(ownerOfOwner)) {
+                    return true;
+                }
+            }
+            if (Objects.equals(getOwner(), owner) || getOwner() != null && owner != null && getOwner().isAlliedTo(owner)) {
+                // 召唤者相同，或都没有主人，或者召唤者和主人是同一个队伍，认为是相同的队伍
+                return true;
+            }
+        }
+        return super.isAlliedTo(entity);
     }
 
     public void startDrinkingPotion() {
@@ -202,7 +252,7 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         }
 
         if (pKey.id() == DATA_CANCEL_CAST.id()) {
-            if (Log.SPELL_DEBUG) {
+            if (WinefoxsSpellbooks.DEBUG) {
                 WinefoxsSpellbooks.LOGGER.debug("ASCM.onSyncedDataUpdated.1 this.isCasting:{}, playerMagicData.isCasting:{} isClient:{}", isCasting(), playerMagicData == null ? "null" : playerMagicData.isCasting(), this.level.isClientSide());
             }
             cancelCast();
@@ -225,6 +275,45 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         }
         playerMagicData.setSyncedData(syncedSpellData);
         hasUsedSingleAttack = pCompound.getBoolean("usedSpecial");
+
+        if (level.isClientSide) {
+            return;
+        }
+        for (int i = 0; i < getMaidBauble().getSlots(); i++) {
+            ItemStack stackInSlot = getMaidBauble().getStackInSlot(i);
+            if (!stackInSlot.isEmpty()) {
+                SpellBookAwareSlotItemHandler.onBookInstall(self(), stackInSlot);
+            }
+        }
+    }
+
+    @Inject(method = "onEquipItem", at = @At("HEAD"))
+    public void onEquipItem(EquipmentSlot slot, ItemStack oldItem, ItemStack newItem, CallbackInfo ci) {
+        if (!level.isClientSide) {
+            return;
+        }
+        if (oldItem.isEmpty() && !newItem.isEmpty()) {
+            ItemAttributeModifiers attributeModifiers = newItem.getAttributeModifiers();
+            var map = attributeModifiersToMap(attributeModifiers);
+            if (!map.isEmpty()) {
+                getAttributes().addTransientAttributeModifiers(map);
+            }
+        } else if (!oldItem.isEmpty() && newItem.isEmpty()) {
+            ItemAttributeModifiers attributeModifiers = oldItem.getAttributeModifiers();
+            var map = attributeModifiersToMap(attributeModifiers);
+            if (!map.isEmpty()) {
+                getAttributes().removeAttributeModifiers(map);
+            }
+        }
+    }
+
+    @Unique
+    private static Multimap<Holder<Attribute>, AttributeModifier> attributeModifiersToMap(ItemAttributeModifiers attributeModifiers) {
+        Multimap<Holder<Attribute>, AttributeModifier> map = HashMultimap.create();
+        for (ItemAttributeModifiers.Entry entry : attributeModifiers.modifiers()) {
+            map.put(entry.attribute(), entry.modifier());
+        }
+        return map;
     }
 
     public void cancelCast() {
@@ -262,7 +351,7 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         playerMagicData.setSyncedData(syncedSpellData);
         castingSpell = playerMagicData.getCastingSpell();
 
-        if (Log.SPELL_DEBUG) {
+        if (WinefoxsSpellbooks.DEBUG) {
             WinefoxsSpellbooks.LOGGER.debug("ASCM.setSyncedSpellData playerMagicData:{}, priorIsCastingState:{}, spell:{}", playerMagicData, isCasting, castingSpell);
         }
 
@@ -283,6 +372,21 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
                 castComplete();
             }
         }
+    }
+
+    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/TamableAnimal;tick()V"))
+    protected void beforeAnimalTick(CallbackInfo ci) {
+        EntityMaid maid = (EntityMaid) self();
+        if (level.isClientSide) {
+            return;
+        }
+        boolean doManaRegen = level.getServer().getTickCount() % MaidMagicManager.MANA_REGEN_TICKS == 0;
+        if (doManaRegen) {
+            MaidMagicManager.regenMaidMana(maid, playerMagicData);
+            entityData.set(DATA_MANA, playerMagicData.getMana());
+        }
+        playerMagicData.getPlayerCooldowns().tick(1);
+        playerMagicData.getPlayerRecasts().tick(2);
     }
 
     @Inject(method = "customServerAiStep", at = @At("TAIL"))
@@ -309,39 +413,67 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
             return;
         }
 
-        playerMagicData.handleCastDuration();
-
         if (playerMagicData.isCasting()) {
-            castingSpell.getSpell().onServerCastTick(level, castingSpell.getLevel(), this, playerMagicData);
+            playerMagicData.handleCastDuration();
+            var spell = castingSpell.getSpell();
+            if ((spell.getCastType() == CastType.LONG && !isUsingItem()) || spell.getCastType() == CastType.INSTANT) {
+                if (playerMagicData.getCastDurationRemaining() <= 0) {
+                    castSpell(spell, playerMagicData.getCastingSpellLevel(), true);
+                    castComplete();
+                }
+            } else if (spell.getCastType() == CastType.CONTINUOUS) {
+                if ((playerMagicData.getCastDurationRemaining() + 1) % MaidMagicManager.CONTINUOUS_CAST_TICK_INTERVAL == 0) {
+                    if (playerMagicData.getCastDurationRemaining() < MaidMagicManager.CONTINUOUS_CAST_TICK_INTERVAL || (playerMagicData.getCastSource().consumesMana() && playerMagicData.getMana() - spell.getManaCost(playerMagicData.getCastingSpellLevel()) * 2 < 0)) {
+                        castSpell(spell, playerMagicData.getCastingSpellLevel(), true);
+                        castComplete();
+                    } else {
+                        castSpell(spell, playerMagicData.getCastingSpellLevel(), false);
+                    }
+                }
+            }
+
+            if (playerMagicData.isCasting()) {
+                spell.onServerCastTick(level, castingSpell.getLevel(), this, playerMagicData);
+            }
         }
 
-        if (Log.SPELL_DEBUG) {
+        if (WinefoxsSpellbooks.DEBUG) {
             WinefoxsSpellbooks.LOGGER.debug("ASCM.customServerAiStep.1");
         }
 
         this.forceLookAtTarget(getTarget());
+    }
 
-        if (playerMagicData.getCastDurationRemaining() <= 0) {
-            if (Log.SPELL_DEBUG) {
-                WinefoxsSpellbooks.LOGGER.debug("ASCM.customServerAiStep.2");
-            }
+    @Unique
+    private void castSpell(AbstractSpell spell, int spellLevel, boolean triggerCooldown) {
+        if (WinefoxsSpellbooks.DEBUG) {
+            WinefoxsSpellbooks.LOGGER.debug("AbstractSpell.castSpell isClient:{}, spell{}({})", level.isClientSide, spell.getSpellId(), spellLevel);
+        }
 
-            if (castingSpell.getSpell().getCastType() == CastType.LONG || castingSpell.getSpell().getCastType() == CastType.INSTANT) {
-                if (Log.SPELL_DEBUG) {
-                    WinefoxsSpellbooks.LOGGER.debug("ASCM.customServerAiStep.3");
-                }
-                castingSpell.getSpell().onCast(level, castingSpell.getLevel(), this, CastSource.MOB, playerMagicData);
-            }
-            castComplete();
-        } else if (castingSpell.getSpell().getCastType() == CastType.CONTINUOUS) {
-            if ((playerMagicData.getCastDurationRemaining() + 1) % 10 == 0) {
-                castingSpell.getSpell().onCast(level, castingSpell.getLevel(), this, CastSource.MOB, playerMagicData);
-            }
+        var mobRecasts = playerMagicData.getPlayerRecasts();
+        var mobAlreadyHasRecast = mobRecasts.hasRecastForSpell(spell.getSpellId());
+
+
+        if (!mobAlreadyHasRecast) {
+            float manaCost = getManaCost(spell, spellLevel);
+            var newMana = Math.max(playerMagicData.getMana() - manaCost, 0);
+            playerMagicData.setMana(newMana);
+        }
+        spell.onCast(level, spellLevel, this, CastSource.MOB, playerMagicData);
+
+        //If onCast just added a recast then don't decrement it
+
+        EntityMaid maid = (EntityMaid) self();
+        var mobHasRecastsLeft = mobRecasts.hasRecastForSpell(spell);
+        if (mobAlreadyHasRecast && mobHasRecastsLeft) {
+            mobRecasts.decrementRecastCount(spell);
+        } else if (!mobHasRecastsLeft && triggerCooldown) {
+            MaidMagicManager.addCooldown(maid, spell, CastSource.MOB);
         }
     }
 
     public void initiateCastSpell(AbstractSpell spell, int spellLevel) {
-        if (Log.SPELL_DEBUG) {
+        if (WinefoxsSpellbooks.DEBUG) {
             WinefoxsSpellbooks.LOGGER.debug("ASCM.initiateCastSpell: spellType:{} spellLevel:{}, isClient:{}", spell.getSpellId(), spellLevel, level.isClientSide);
         }
 
@@ -360,12 +492,16 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
             forceLookAtTarget(getTarget());
         }
 
-        if (!level.isClientSide && !castingSpell.getSpell().checkPreCastConditions(level, spellLevel, this, playerMagicData)) {
-            if (Log.SPELL_DEBUG) {
+        if (isUsingItem()) {
+            stopUsingItem();
+        }
+
+        if (!level.isClientSide && !(canCast(spell, spellLevel) && castingSpell.getSpell().checkPreCastConditions(level, spellLevel, this, playerMagicData))) {
+            if (WinefoxsSpellbooks.DEBUG) {
                 WinefoxsSpellbooks.LOGGER.debug("ASCM.precastfailed: spellType:{} spellLevel:{}, isClient:{}", spell.getSpellId(), spellLevel, level.isClientSide);
             }
 
-            castingSpell = null;
+            castingSpell = SpellData.EMPTY;
             return;
         }
 
@@ -378,10 +514,42 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         }
 
         playerMagicData.initiateCast(castingSpell.getSpell(), castingSpell.getLevel(), castingSpell.getSpell().getEffectiveCastTime(castingSpell.getLevel(), this), CastSource.MOB, SpellSelectionManager.MAINHAND);
+        playerMagicData.setPlayerCastingItem(getMainHandItem());
 
         if (!level.isClientSide) {
             castingSpell.getSpell().onServerPreCast(level, castingSpell.getLevel(), this, playerMagicData);
         }
+    }
+
+    /**
+     * 检查冷却和魔力值
+     */
+    @Unique
+    public boolean canCast(AbstractSpell spell, int spellLevel) {
+        var playerMana = playerMagicData.getMana();
+
+        boolean hasEnoughMana = playerMana - getManaCost(spell, spellLevel) >= 0;
+        boolean isSpellOnCooldown = playerMagicData.getPlayerCooldowns().isOnCooldown(spell);
+        boolean hasRecastForSpell = playerMagicData.getPlayerRecasts().hasRecastForSpell(spell.getSpellId());
+        if (isSpellOnCooldown) {
+            // 冷却中
+            return false;
+        }
+        if (!hasRecastForSpell && !hasEnoughMana) {
+            // 魔力不足
+            return false;
+        }
+        return true;
+    }
+
+    @Unique
+    private int getManaCost(AbstractSpell spell, int level) {
+        return spell.getManaCost(level);
+    }
+
+    @Override
+    public int winefoxsSpellbooks$getManaCost(AbstractSpell spell, int level) {
+        return getManaCost(spell, level);
     }
 
     public void notifyDangerousProjectile(Projectile projectile) {
@@ -414,19 +582,19 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
 
             }
             if (valid) {
-                if (Log.SPELL_DEBUG) {
+                if (WinefoxsSpellbooks.DEBUG) {
                     //WinefoxsSpellbooks.LOGGER.debug("ASCM.setTeleportLocationBehindTarget: valid, pos:{}, isClient:{}", teleportPos, level.isClientSide());
                 }
                 playerMagicData.setAdditionalCastData(new TeleportSpell.TeleportData(teleportPos));
             } else {
-                if (Log.SPELL_DEBUG) {
+                if (WinefoxsSpellbooks.DEBUG) {
                     //WinefoxsSpellbooks.LOGGER.debug("ASCM.setTeleportLocationBehindTarget: invalid, pos:{}, isClient:{}", teleportPos, level.isClientSide());
                 }
                 playerMagicData.setAdditionalCastData(new TeleportSpell.TeleportData(this.position()));
 
             }
         } else {
-            if (Log.SPELL_DEBUG) {
+            if (WinefoxsSpellbooks.DEBUG) {
                 //WinefoxsSpellbooks.LOGGER.debug("ASCM.setTeleportLocationBehindTarget: no target, isClient:{}", level.isClientSide());
             }
             playerMagicData.setAdditionalCastData(new TeleportSpell.TeleportData(this.position()));
@@ -476,5 +644,10 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
     @Override
     public void winefoxsSpellbooks$setCancelCastAnimation(boolean cancelCastAnimation) {
         this.cancelCastAnimation = cancelCastAnimation;
+    }
+
+    @Override
+    public float winefoxsSpellbooks$getMana() {
+        return entityData.get(DATA_MANA);
     }
 }

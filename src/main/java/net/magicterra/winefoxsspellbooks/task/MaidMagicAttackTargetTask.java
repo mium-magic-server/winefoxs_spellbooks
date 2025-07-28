@@ -3,18 +3,22 @@ package net.magicterra.winefoxsspellbooks.task;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
-import io.redspace.ironsspellbooks.api.magic.MagicData;
+import io.redspace.ironsspellbooks.api.events.ModifySpellLevelEvent;
+import io.redspace.ironsspellbooks.api.item.ISpellbook;
+import io.redspace.ironsspellbooks.api.item.curios.AffinityData;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.ISpellContainer;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.api.spells.SpellSlot;
 import io.redspace.ironsspellbooks.api.util.Utils;
+import io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import net.magicterra.winefoxsspellbooks.ai.MaidSpellRegistry;
+import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
@@ -27,10 +31,12 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
@@ -70,6 +76,7 @@ public class MaidMagicAttackTargetTask extends Behavior<EntityMaid> {
     protected final ArrayList<SpellData> movementSpells = new ArrayList<>();
     protected final ArrayList<SpellData> supportSpells = new ArrayList<>();
     protected ArrayList<SpellData> lastSpellCategory = attackSpells;
+    protected SpellData currentSpell = SpellData.EMPTY;
 
     protected float minSpellQuality = .1f;
     protected float maxSpellQuality = .4f;
@@ -85,12 +92,13 @@ public class MaidMagicAttackTargetTask extends Behavior<EntityMaid> {
         this.spellCastingMob = abstractSpellCastingMob;
         if (abstractSpellCastingMob instanceof PathfinderMob m) {
             this.mob = m;
-        } else
+        } else {
             throw new IllegalStateException("Unable to add " + this.getClass().getSimpleName() + "to entity, must extend PathfinderMob.");
+        }
 
         this.speedModifier = 1;
-        this.spellAttackIntervalMin = 35;
-        this.spellAttackIntervalMax = 80;
+        this.spellAttackIntervalMin = 10; // 攻击间隔 0.5s
+        this.spellAttackIntervalMax = 60; // 最长 3s
         this.spellcastingRange = 10;
         this.spellcastingRangeSqr = spellcastingRange * spellcastingRange;
         this.allowFleeing = false;
@@ -154,23 +162,38 @@ public class MaidMagicAttackTargetTask extends Behavior<EntityMaid> {
         if (target == null) {
             return false;
         }
-        boolean condition = owner.canSee(target) && target.isAlive();
+        boolean condition = (owner.canSee(target) || seeTime > -50) && target.isAlive();
+        if (!condition) {
+            owner.setTarget(null);
+            this.target = null;
+            return false;
+        }
 
         List<SpellData> attackSpells = new ArrayList<>();
         List<SpellData> defenseSpells = new ArrayList<>();
         List<SpellData> movementSpells = new ArrayList<>();
         List<SpellData> supportSpells = new ArrayList<>();
         boolean found = false;
-        // 检查主手、盔甲栏、饰品栏法术
+        // 检查主手、盔甲栏、饰品栏法术 TODO 优化使用缓存
+        boolean spellBookLoaded = false;
         IItemHandler invWrapper = new CombinedInvWrapper(owner.getArmorInvWrapper(), new ItemStackHandler(NonNullList.of(ItemStack.EMPTY, owner.getMainHandItem())), owner.getMaidBauble());
         for (int i = 0; i < invWrapper.getSlots(); i++) {
             ItemStack stack = invWrapper.getStackInSlot(i);
+            Item item = stack.getItem();
+            if (item instanceof ISpellbook) {
+                // 如果饰品栏放入多个魔法书，只有一本能生效（和玩家保持一致）
+                if (spellBookLoaded) {
+                    continue;
+                } else {
+                    spellBookLoaded = true;
+                }
+            }
             if (!stack.isEmpty() && ISpellContainer.isSpellContainer(stack)) {
                 ISpellContainer spellContainer = ISpellContainer.get(stack);
                 List<SpellSlot> activeSpells = spellContainer.getActiveSpells();
                 for (SpellSlot spellSlot : activeSpells) {
                     AbstractSpell spell = spellSlot.getSpell();
-                    int level = spellSlot.getLevel();
+                    int level = getLevelFor(owner, spell, spellSlot.getLevel());
                     SpellData spellData = new SpellData(spell, level);
                     if (MaidSpellRegistry.isAttackSpell(spell)) {
                         attackSpells.add(spellData);
@@ -188,7 +211,7 @@ public class MaidMagicAttackTargetTask extends Behavior<EntityMaid> {
                 }
             }
         }
-        condition &= found;
+        condition = found;
         setSpells(attackSpells, defenseSpells, movementSpells, supportSpells);
         return condition;
     }
@@ -201,6 +224,7 @@ public class MaidMagicAttackTargetTask extends Behavior<EntityMaid> {
     @Override
     protected void start(ServerLevel worldIn, EntityMaid entityIn, long gameTimeIn) {
         this.mob.setAggressive(true);
+        initialCurrentSpell();
     }
 
     @Override
@@ -240,13 +264,20 @@ public class MaidMagicAttackTargetTask extends Behavior<EntityMaid> {
 
     @Override
     protected void stop(ServerLevel worldIn, EntityMaid entityIn, long gameTimeIn) {
-        this.target = null;
-        this.seeTime = 0;
-        this.spellAttackDelay = -1;
-        this.mob.setAggressive(false);
-        this.mob.getMoveControl().strafe(0, 0);
-        this.mob.getNavigation().stop();
+        target = null;
+        seeTime = 0;
+        spellAttackDelay = -1;
+        mob.setAggressive(false);
+        mob.getMoveControl().strafe(0, 0);
+        mob.getNavigation().stop();
         entityIn.setTarget(null);
+        if (spellCastingMob.isCasting()) {
+            spellCastingMob.cancelCast();
+        }
+//        PlayerRecasts playerRecasts = spellCastingMob.getMagicData().getPlayerRecasts();
+//        for (RecastInstance activeRecast : playerRecasts.getActiveRecasts()) {
+//            spellCastingMob.initiateCastSpell(SpellRegistry.getSpell(activeRecast.getSpellId()), activeRecast.getSpellLevel());
+//        }
     }
 
     protected void handleAttackLogic(double distanceSquared) {
@@ -263,7 +294,7 @@ public class MaidMagicAttackTargetTask extends Behavior<EntityMaid> {
             resetSpellAttackTimer(distanceSquared);
         }
         if (spellCastingMob.isCasting()) {
-            var spellData = MagicData.getPlayerMagicData(mob).getCastingSpell();
+            var spellData = spellCastingMob.getMagicData().getCastingSpell();
             if (target.isDeadOrDying() || spellData.getSpell().shouldAIStopCasting(spellData.getLevel(), mob, target)) {
                 spellCastingMob.cancelCast();
             }
@@ -351,27 +382,35 @@ public class MaidMagicAttackTargetTask extends Behavior<EntityMaid> {
 
     protected void doSpellAction() {
         if (!spellCastingMob.getHasUsedSingleAttack() && singleUseSpell != SpellRegistry.none() && singleUseDelay <= 0) {
+            // 施放固有技能
             spellCastingMob.setHasUsedSingleAttack(true);
             spellCastingMob.initiateCastSpell(singleUseSpell, singleUseLevel);
             fleeCooldown = 7 + singleUseSpell.getCastTime(singleUseLevel);
         } else {
             // 获取咒语类型
-            var spellData = getNextSpellType();
+            var spellData = currentSpell;
             var spell = spellData.getSpell();
             int spellLevel = spellData.getLevel();
             spellLevel = Math.max(spellLevel, 1);
 
-            spellcastingRange = MaidSpellRegistry.getSpellRange(spell);
-            spellcastingRangeSqr = spellcastingRange * spellcastingRange;
+            PlayerRecasts playerRecasts = spellCastingMob.getMagicData().getPlayerRecasts();
+            boolean hasRecastForSpell = playerRecasts.hasRecastForSpell(spell);
 
             //Make sure cast is valid. if not, try again shortly
-            if (!spell.shouldAIStopCasting(spellLevel, mob, target)) {
+            if (currentSpell != SpellData.EMPTY && !hasRecastForSpell && !spell.shouldAIStopCasting(spellLevel, mob, target)) {
                 spellCastingMob.initiateCastSpell(spell, spellLevel);
                 fleeCooldown = 7 + spell.getCastTime(spellLevel);
             } else {
                 spellAttackDelay = 5;
             }
+            initialCurrentSpell();
         }
+    }
+
+    protected void initialCurrentSpell() {
+        currentSpell = getNextSpellType();
+        spellcastingRange = MaidSpellRegistry.getSpellRange(currentSpell.getSpell());
+        spellcastingRangeSqr = spellcastingRange * spellcastingRange;
     }
 
     protected SpellData getNextSpellType() {
@@ -411,7 +450,17 @@ public class MaidMagicAttackTargetTask extends Behavior<EntityMaid> {
                     return SpellData.EMPTY;
                 }
             }
-            return spellList.get(mob.getRandom().nextInt(spellList.size()));
+            MaidMagicEntity maid = (MaidMagicEntity) mob;
+            PlayerRecasts playerRecasts = spellCastingMob.getMagicData().getPlayerRecasts();
+            List<SpellData> filtered = spellList.stream()
+                .filter(spellData -> !playerRecasts.hasRecastForSpell(spellData.getSpell())) // 排除重新施法会消失的
+                .filter(spellData -> spellCastingMob.getMagicData().getMana() - maid.winefoxsSpellbooks$getManaCost(spellData.getSpell(), spellData.getLevel()) >= 0) // 考虑剩余魔力
+                .filter(spellData -> !spellCastingMob.getMagicData().getPlayerCooldowns().isOnCooldown(spellData.getSpell())) // 排除冷却中的
+                .toList();
+            if (filtered.isEmpty()) {
+                return SpellData.EMPTY;
+            }
+            return filtered.get(mob.getRandom().nextInt(filtered.size()));
         } else {
             //IronsSpellbooks.LOGGER.debug("WizardAttackGoal.getNextSpell weights: A:{} D:{} M:{} S:{} (no spell)", attackWeight, defenseWeight, movementWeight, supportWeight);
             return SpellData.EMPTY;
@@ -499,5 +548,23 @@ public class MaidMagicAttackTargetTask extends Behavior<EntityMaid> {
 
     public float getStrafeMultiplier(){
         return 1.2f;
+    }
+
+    protected int getLevelFor(EntityMaid maid, AbstractSpell spell, int level) {
+        int addition = 0;
+        if (maid != null) {
+            IItemHandler invWrapper = new CombinedInvWrapper(maid.getArmorInvWrapper(), new ItemStackHandler(NonNullList.of(ItemStack.EMPTY, maid.getMainHandItem())), maid.getMaidBauble());
+            for (int i = 0; i < invWrapper.getSlots(); i++) {
+                ItemStack stackInSlot = invWrapper.getStackInSlot(i);
+                AffinityData affinityData = AffinityData.getAffinityData(stackInSlot);
+                if (affinityData == AffinityData.NONE) {
+                    continue;
+                }
+                addition += affinityData.getBonusFor(spell);
+            }
+        }
+        var levelEvent = new ModifySpellLevelEvent(spell, maid, level, level + addition);
+        NeoForge.EVENT_BUS.post(levelEvent);
+        return levelEvent.getLevel();
     }
 }
