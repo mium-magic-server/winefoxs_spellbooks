@@ -14,7 +14,6 @@ import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastType;
-import io.redspace.ironsspellbooks.util.Log;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -131,8 +130,8 @@ public abstract class GeckoMaidEntityMixin extends AnimatableEntity<EntityMaid> 
     private void setStartAnimationFromSpell(AnimationController controller, AbstractSpell spell) {
         MaidMagicEntity accessor = (MaidMagicEntity) getMaid();
         spell.getCastStartAnimation().getForMob().ifPresentOrElse(animationBuilder -> {
-            if (Log.SPELL_DEBUG) {
-                WinefoxsSpellbooks.LOGGER.debug("ASCM.setStartAnimationFromSpell {}", animationBuilder);
+            if (WinefoxsSpellbooks.DEBUG) {
+                WinefoxsSpellbooks.LOGGER.debug("GeckoMaid.setStartAnimationFromSpell {}", animationBuilder);
             }
             controller.markNeedsReload();
             AnimationBuilder builder = new AnimationBuilder();
@@ -150,8 +149,8 @@ public abstract class GeckoMaidEntityMixin extends AnimatableEntity<EntityMaid> 
             accessor.winefoxsSpellbooks$setCancelCastAnimation(false);
             animatingLegs = spell.getCastStartAnimation().animatesLegs;
         }, () -> {
-            if (Log.SPELL_DEBUG) {
-                WinefoxsSpellbooks.LOGGER.debug("ASCM.setStartAnimationFromSpell cancelCastAnimation");
+            if (WinefoxsSpellbooks.DEBUG) {
+                WinefoxsSpellbooks.LOGGER.debug("GeckoMaid.setStartAnimationFromSpell cancelCastAnimation");
             }
             accessor.winefoxsSpellbooks$setCancelCastAnimation(true);
         });
@@ -165,8 +164,8 @@ public abstract class GeckoMaidEntityMixin extends AnimatableEntity<EntityMaid> 
             return;
         }
         spell.getCastFinishAnimation().getForMob().ifPresentOrElse(animationBuilder -> {
-            if (Log.SPELL_DEBUG) {
-                WinefoxsSpellbooks.LOGGER.debug("ASCM.setFinishAnimationFromSpell {}", animationBuilder);
+            if (WinefoxsSpellbooks.DEBUG) {
+                WinefoxsSpellbooks.LOGGER.debug("GeckoMaid.setFinishAnimationFromSpell {}", animationBuilder);
             }
             controller.markNeedsReload();
             AnimationBuilder builder = new AnimationBuilder();
@@ -184,8 +183,8 @@ public abstract class GeckoMaidEntityMixin extends AnimatableEntity<EntityMaid> 
             lastCastSpellType = SpellRegistry.none();
             accessor.winefoxsSpellbooks$setCancelCastAnimation(false);
         }, () -> {
-            if (Log.SPELL_DEBUG) {
-                WinefoxsSpellbooks.LOGGER.debug("ASCM.setFinishAnimationFromSpell cancelCastAnimation");
+            if (WinefoxsSpellbooks.DEBUG) {
+                WinefoxsSpellbooks.LOGGER.debug("GeckoMaid.setFinishAnimationFromSpell cancelCastAnimation");
             }
             accessor.winefoxsSpellbooks$setCancelCastAnimation(true);
         });

@@ -1,4 +1,4 @@
-package net.magicterra.winefoxsspellbooks.task;
+package net.magicterra.winefoxsspellbooks.task.brain;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
-import net.magicterra.winefoxsspellbooks.ai.MaidSpellRegistry;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
@@ -453,7 +453,9 @@ public class MaidMagicAttackTargetTask extends Behavior<EntityMaid> {
             MaidMagicEntity maid = (MaidMagicEntity) mob;
             PlayerRecasts playerRecasts = spellCastingMob.getMagicData().getPlayerRecasts();
             List<SpellData> filtered = spellList.stream()
-                .filter(spellData -> !playerRecasts.hasRecastForSpell(spellData.getSpell())) // 排除重新施法会消失的
+                .filter(spellData -> !playerRecasts.hasRecastForSpell(spellData.getSpell())
+                    || spellData.getSpell().equals(SpellRegistry.FLAMING_BARRAGE_SPELL.get())
+                    || spellData.getSpell().equals(SpellRegistry.WALL_OF_FIRE_SPELL.get())) // 排除重新施法会消失的
                 .filter(spellData -> spellCastingMob.getMagicData().getMana() - maid.winefoxsSpellbooks$getManaCost(spellData.getSpell(), spellData.getLevel()) >= 0) // 考虑剩余魔力
                 .filter(spellData -> !spellCastingMob.getMagicData().getPlayerCooldowns().isOnCooldown(spellData.getSpell())) // 排除冷却中的
                 .toList();

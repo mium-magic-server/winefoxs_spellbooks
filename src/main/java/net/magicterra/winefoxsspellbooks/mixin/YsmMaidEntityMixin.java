@@ -18,8 +18,6 @@ import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastType;
-import io.redspace.ironsspellbooks.util.Log;
-import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -143,9 +141,6 @@ public abstract class YsmMaidEntityMixin extends Ooo0oOOo0Ooo0OO00o0O0oOo<Entity
     private void setStartAnimationFromSpell(o00Ooooo0o0o0oOOoO00o0Oo controller, AbstractSpell spell) {
         MaidMagicEntity accessor = (MaidMagicEntity) getMaid();
         spell.getCastStartAnimation().getForMob().ifPresentOrElse(animationBuilder -> {
-            if (Log.SPELL_DEBUG) {
-                WinefoxsSpellbooks.LOGGER.debug("ASCM.setStartAnimationFromSpell {}", animationBuilder);
-            }
             controller.o0OO000o0oo0o0oOoOoo0O0o();
             o0oOOOOooO00O00OooOO0OO0 builder = new o0oOOOOooO00O00OooOO0OO0();
             for (RawAnimation.Stage animationStage : animationBuilder.getAnimationStages()) {
@@ -160,12 +155,7 @@ public abstract class YsmMaidEntityMixin extends Ooo0oOOo0Ooo0OO00o0O0oOo<Entity
             controller.oOO0OOoOOOO0OoooOO0oO000(builder);
             lastCastSpellType = spell;
             accessor.winefoxsSpellbooks$setCancelCastAnimation(false);
-        }, () -> {
-            if (Log.SPELL_DEBUG) {
-                WinefoxsSpellbooks.LOGGER.debug("ASCM.setStartAnimationFromSpell cancelCastAnimation");
-            }
-            accessor.winefoxsSpellbooks$setCancelCastAnimation(true);
-        });
+        }, () -> accessor.winefoxsSpellbooks$setCancelCastAnimation(true));
     }
 
     @Unique
@@ -176,9 +166,6 @@ public abstract class YsmMaidEntityMixin extends Ooo0oOOo0Ooo0OO00o0O0oOo<Entity
             return;
         }
         spell.getCastFinishAnimation().getForMob().ifPresentOrElse(animationBuilder -> {
-            if (Log.SPELL_DEBUG) {
-                WinefoxsSpellbooks.LOGGER.debug("ASCM.setFinishAnimationFromSpell {}", animationBuilder);
-            }
             controller.o0OO000o0oo0o0oOoOoo0O0o();
             o0oOOOOooO00O00OooOO0OO0 builder = new o0oOOOOooO00O00OooOO0OO0();
             for (RawAnimation.Stage animationStage : animationBuilder.getAnimationStages()) {
@@ -194,12 +181,7 @@ public abstract class YsmMaidEntityMixin extends Ooo0oOOo0Ooo0OO00o0O0oOo<Entity
             controller.oOO0OOoOOOO0OoooOO0oO000(builder);
             lastCastSpellType = SpellRegistry.none();
             accessor.winefoxsSpellbooks$setCancelCastAnimation(false);
-        }, () -> {
-            if (Log.SPELL_DEBUG) {
-                WinefoxsSpellbooks.LOGGER.debug("ASCM.setFinishAnimationFromSpell cancelCastAnimation");
-            }
-            accessor.winefoxsSpellbooks$setCancelCastAnimation(true);
-        });
+        }, () -> accessor.winefoxsSpellbooks$setCancelCastAnimation(true));
     }
 
     @Unique

@@ -2,8 +2,6 @@ package net.magicterra.winefoxsspellbooks.mixin;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import io.redspace.ironsspellbooks.IronsSpellbooks;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
@@ -26,7 +24,7 @@ import net.magicterra.winefoxsspellbooks.bauble.SpellBookAwareSlotItemHandler;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicData;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
-import net.minecraft.core.Holder;
+import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -36,11 +34,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -50,7 +46,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.wrapper.EntityHandsInvWrapper;
@@ -253,7 +248,7 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
 
         if (pKey.id() == DATA_CANCEL_CAST.id()) {
             if (WinefoxsSpellbooks.DEBUG) {
-                WinefoxsSpellbooks.LOGGER.debug("ASCM.onSyncedDataUpdated.1 this.isCasting:{}, playerMagicData.isCasting:{} isClient:{}", isCasting(), playerMagicData == null ? "null" : playerMagicData.isCasting(), this.level.isClientSide());
+                WinefoxsSpellbooks.LOGGER.debug("MaidMagicEntity.onSyncedDataUpdated.1 this.isCasting:{}, playerMagicData.isCasting:{} isClient:{}", isCasting(), playerMagicData == null ? "null" : playerMagicData.isCasting(), this.level.isClientSide());
             }
             cancelCast();
         }
@@ -261,21 +256,22 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
     public void afterAddAdditionalSaveData(CompoundTag pCompound, CallbackInfo ci) {
-        playerMagicData.getSyncedData().saveNBTData(pCompound, level.registryAccess());
+        playerMagicData.saveNBTData(pCompound, level.registryAccess());
         pCompound.putBoolean("usedSpecial", hasUsedSingleAttack);
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
     public void afterReadAdditionalSaveData(CompoundTag pCompound, CallbackInfo ci) {
-        super.readAdditionalSaveData(pCompound);
-        var syncedSpellData = new SyncedSpellData(this);
-        syncedSpellData.loadNBTData(pCompound, level.registryAccess());
-        if (syncedSpellData.isCasting()) {
+        playerMagicData.setSyncedData(new SyncedSpellData(self()));
+        playerMagicData.loadNBTData(pCompound, level.registryAccess());
+        if (playerMagicData.getSyncedData().isCasting()) {
             this.recreateSpell = true;
         }
-        playerMagicData.setSyncedData(syncedSpellData);
         hasUsedSingleAttack = pCompound.getBoolean("usedSpecial");
+    }
 
+    @Inject(method = "onAddedToLevel", at = @At("TAIL"))
+    public void afterAddedToLevel(CallbackInfo ci) {
         if (level.isClientSide) {
             return;
         }
@@ -285,35 +281,13 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
                 SpellBookAwareSlotItemHandler.onBookInstall(self(), stackInSlot);
             }
         }
+
+        MaidSummonManager.onMaidPlaced(self());
     }
 
-    @Inject(method = "onEquipItem", at = @At("HEAD"))
-    public void onEquipItem(EquipmentSlot slot, ItemStack oldItem, ItemStack newItem, CallbackInfo ci) {
-        if (!level.isClientSide) {
-            return;
-        }
-        if (oldItem.isEmpty() && !newItem.isEmpty()) {
-            ItemAttributeModifiers attributeModifiers = newItem.getAttributeModifiers();
-            var map = attributeModifiersToMap(attributeModifiers);
-            if (!map.isEmpty()) {
-                getAttributes().addTransientAttributeModifiers(map);
-            }
-        } else if (!oldItem.isEmpty() && newItem.isEmpty()) {
-            ItemAttributeModifiers attributeModifiers = oldItem.getAttributeModifiers();
-            var map = attributeModifiersToMap(attributeModifiers);
-            if (!map.isEmpty()) {
-                getAttributes().removeAttributeModifiers(map);
-            }
-        }
-    }
-
-    @Unique
-    private static Multimap<Holder<Attribute>, AttributeModifier> attributeModifiersToMap(ItemAttributeModifiers attributeModifiers) {
-        Multimap<Holder<Attribute>, AttributeModifier> map = HashMultimap.create();
-        for (ItemAttributeModifiers.Entry entry : attributeModifiers.modifiers()) {
-            map.put(entry.attribute(), entry.modifier());
-        }
-        return map;
+    @Inject(method = "onRemovedFromLevel", at = @At("TAIL"))
+    public void afterRemovedFromLevel(CallbackInfo ci) {
+        MaidSummonManager.onMaidRemoved(self());
     }
 
     public void cancelCast() {
@@ -352,7 +326,7 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         castingSpell = playerMagicData.getCastingSpell();
 
         if (WinefoxsSpellbooks.DEBUG) {
-            WinefoxsSpellbooks.LOGGER.debug("ASCM.setSyncedSpellData playerMagicData:{}, priorIsCastingState:{}, spell:{}", playerMagicData, isCasting, castingSpell);
+            WinefoxsSpellbooks.LOGGER.debug("MaidMagicEntity.setSyncedSpellData playerMagicData:{}, priorIsCastingState:{}, spell:{}", playerMagicData, isCasting, castingSpell);
         }
 
         if (castingSpell == null) {
@@ -423,7 +397,7 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
                 }
             } else if (spell.getCastType() == CastType.CONTINUOUS) {
                 if ((playerMagicData.getCastDurationRemaining() + 1) % MaidMagicManager.CONTINUOUS_CAST_TICK_INTERVAL == 0) {
-                    if (playerMagicData.getCastDurationRemaining() < MaidMagicManager.CONTINUOUS_CAST_TICK_INTERVAL || (playerMagicData.getCastSource().consumesMana() && playerMagicData.getMana() - spell.getManaCost(playerMagicData.getCastingSpellLevel()) * 2 < 0)) {
+                    if (playerMagicData.getCastDurationRemaining() < MaidMagicManager.CONTINUOUS_CAST_TICK_INTERVAL || (playerMagicData.getCastSource().consumesMana() && playerMagicData.getMana() - getManaCost(spell, playerMagicData.getCastingSpellLevel()) * 2 < 0)) {
                         castSpell(spell, playerMagicData.getCastingSpellLevel(), true);
                         castComplete();
                     } else {
@@ -437,17 +411,13 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
             }
         }
 
-        if (WinefoxsSpellbooks.DEBUG) {
-            WinefoxsSpellbooks.LOGGER.debug("ASCM.customServerAiStep.1");
-        }
-
         this.forceLookAtTarget(getTarget());
     }
 
     @Unique
     private void castSpell(AbstractSpell spell, int spellLevel, boolean triggerCooldown) {
         if (WinefoxsSpellbooks.DEBUG) {
-            WinefoxsSpellbooks.LOGGER.debug("AbstractSpell.castSpell isClient:{}, spell{}({})", level.isClientSide, spell.getSpellId(), spellLevel);
+            WinefoxsSpellbooks.LOGGER.debug("MaidMagicEntity.castSpell isClient:{}, spell{}({})", level.isClientSide, spell.getSpellId(), spellLevel);
         }
 
         var mobRecasts = playerMagicData.getPlayerRecasts();
@@ -474,7 +444,7 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
 
     public void initiateCastSpell(AbstractSpell spell, int spellLevel) {
         if (WinefoxsSpellbooks.DEBUG) {
-            WinefoxsSpellbooks.LOGGER.debug("ASCM.initiateCastSpell: spellType:{} spellLevel:{}, isClient:{}", spell.getSpellId(), spellLevel, level.isClientSide);
+            WinefoxsSpellbooks.LOGGER.debug("MaidMagicEntity.initiateCastSpell: spellType:{} spellLevel:{}, isClient:{}", spell.getSpellId(), spellLevel, level.isClientSide);
         }
 
         if (spell == SpellRegistry.none()) {
@@ -498,7 +468,7 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
 
         if (!level.isClientSide && !(canCast(spell, spellLevel) && castingSpell.getSpell().checkPreCastConditions(level, spellLevel, this, playerMagicData))) {
             if (WinefoxsSpellbooks.DEBUG) {
-                WinefoxsSpellbooks.LOGGER.debug("ASCM.precastfailed: spellType:{} spellLevel:{}, isClient:{}", spell.getSpellId(), spellLevel, level.isClientSide);
+                WinefoxsSpellbooks.LOGGER.debug("MaidMagicEntity.precastfailed: spellType:{} spellLevel:{}, isClient:{}", spell.getSpellId(), spellLevel, level.isClientSide);
             }
 
             castingSpell = SpellData.EMPTY;
@@ -544,6 +514,7 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
 
     @Unique
     private int getManaCost(AbstractSpell spell, int level) {
+        // TODO 魔力消耗缩减属性
         return spell.getManaCost(level);
     }
 
@@ -572,31 +543,17 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
                 teleportPos = Utils.moveToRelativeGroundLevel(level, target.position().subtract(new Vec3(0, 0, distance / (float) (i / 7 + 1)).yRot(-(target.getYRot() + i * 45) * Mth.DEG_TO_RAD)).add(randomness), 5);
                 teleportPos = new Vec3(teleportPos.x, teleportPos.y + .1f, teleportPos.z);
                 var reposBB = this.getBoundingBox().move(teleportPos.subtract(this.position()));
-                //WinefoxsSpellbooks.LOGGER.debug("setTeleportLocationBehindTarget attempt to teleport to {}:", reposBB.getCenter());
                 if (!level.collidesWithSuffocatingBlock(this, reposBB.inflate(-.05f))) {
-                    //WinefoxsSpellbooks.LOGGER.debug("\n\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n\nsetTeleportLocationBehindTarget: {} {} {} empty. teleporting\n\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n\n", reposBB.minX, reposBB.minY, reposBB.minZ);
                     valid = true;
                     break;
                 }
-                //WinefoxsSpellbooks.LOGGER.debug("fail");
-
             }
             if (valid) {
-                if (WinefoxsSpellbooks.DEBUG) {
-                    //WinefoxsSpellbooks.LOGGER.debug("ASCM.setTeleportLocationBehindTarget: valid, pos:{}, isClient:{}", teleportPos, level.isClientSide());
-                }
                 playerMagicData.setAdditionalCastData(new TeleportSpell.TeleportData(teleportPos));
             } else {
-                if (WinefoxsSpellbooks.DEBUG) {
-                    //WinefoxsSpellbooks.LOGGER.debug("ASCM.setTeleportLocationBehindTarget: invalid, pos:{}, isClient:{}", teleportPos, level.isClientSide());
-                }
                 playerMagicData.setAdditionalCastData(new TeleportSpell.TeleportData(this.position()));
-
             }
         } else {
-            if (WinefoxsSpellbooks.DEBUG) {
-                //WinefoxsSpellbooks.LOGGER.debug("ASCM.setTeleportLocationBehindTarget: no target, isClient:{}", level.isClientSide());
-            }
             playerMagicData.setAdditionalCastData(new TeleportSpell.TeleportData(this.position()));
         }
         return valid;

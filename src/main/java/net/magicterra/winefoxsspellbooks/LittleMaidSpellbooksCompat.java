@@ -12,6 +12,7 @@ import io.redspace.ironsspellbooks.api.spells.IPresetSpellContainer;
 import io.redspace.ironsspellbooks.registries.ItemRegistry;
 import net.magicterra.winefoxsspellbooks.bauble.SpellBookBauble;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
 import net.magicterra.winefoxsspellbooks.task.MaidCastingTask;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ArmorItem;
@@ -32,6 +33,7 @@ public class LittleMaidSpellbooksCompat implements ILittleMaid {
         if (FMLLoader.getLoadingModList().getModFileById("jade") != null) {
             NeoForge.EVENT_BUS.addListener(this::addJadeInfoEvent);
         }
+        NeoForge.EVENT_BUS.addListener(MaidSummonManager::onServerStopping);
     }
 
     @Override

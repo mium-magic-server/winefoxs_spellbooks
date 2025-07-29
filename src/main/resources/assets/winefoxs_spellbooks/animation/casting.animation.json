@@ -43,7 +43,7 @@
 			}
 		},
 		"long_cast_finish": {
-			"animation_length": 0.125,
+			"animation_length": 0.1875,
 			"bones": {
 				"RightArm": {
 					"rotation": {
@@ -60,7 +60,7 @@
 			}
 		},
 		"instant_projectile": {
-			"animation_length": 0.1875,
+			"animation_length": 0.25,
 			"bones": {
 				"UpBody": {
 					"rotation": [0, 0, 0],
@@ -159,7 +159,8 @@
 			}
 		},
 		"charged_throw_original": {
-			"animation_length": 1.2083,
+			"loop": "hold_on_last_frame",
+			"animation_length": 0.25,
 			"bones": {
 				"UpperBody": {
 					"rotation": [0, 10, 0]
@@ -175,8 +176,8 @@
 			}
 		},
 		"continuous_thrust": {
-			"loop": true,
-			"animation_length": 0.44,
+			"loop": "hold_on_last_frame",
+			"animation_length": 10,
 			"bones": {
 				"RightArm": {
 					"rotation": {
@@ -2630,8 +2631,7 @@
 			}
 		},
 		"long_cast": {
-			"loop": true,
-			"animation_length": 4.5,
+			"animation_length": 5,
 			"bones": {
 				"UpperBody": {
 					"rotation": {

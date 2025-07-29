@@ -1,4 +1,4 @@
-package net.magicterra.winefoxsspellbooks.ai;
+package net.magicterra.winefoxsspellbooks.registry;
 
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;

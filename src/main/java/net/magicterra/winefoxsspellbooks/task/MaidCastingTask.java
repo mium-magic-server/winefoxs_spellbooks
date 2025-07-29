@@ -15,15 +15,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.task.brain.MaidMagicAttackTargetTask;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.StartAttacking;
 import net.minecraft.world.entity.ai.behavior.StopAttackingIfTargetInvalid;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -111,22 +110,24 @@ public class MaidCastingTask implements IRangedAttackTask {
 
     @Override
     public float searchRadius(EntityMaid maid) {
+        // TODO 需要一个单独配置
         return MaidConfig.DANMAKU_RANGE.get();
     }
 
     @Override
     public void performRangedAttack(EntityMaid shooter, LivingEntity target, float distanceFactor) {
-        shooter.getBrain().getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES).ifPresent(livingEntities -> {
-            ItemStack mainHandItem = shooter.getMainHandItem();
-            if (hasSpells(shooter)) {
-                mainHandItem.hurtAndBreak(1, shooter, EquipmentSlot.MAINHAND);
-            }
-        });
+        // TODO 写在 Behavior 里面了，后面再改
     }
 
     @Override
     public List<Pair<String, Predicate<EntityMaid>>> getConditionDescription(EntityMaid maid) {
         return Collections.singletonList(Pair.of("has_spells", this::hasSpells));
+    }
+
+    @Override
+    public boolean enableLookAndRandomWalk(EntityMaid maid) {
+        IMagicEntity magicEntity = (IMagicEntity) maid;
+        return !magicEntity.isCasting();
     }
 
     private boolean hasSpells(EntityMaid maid) {

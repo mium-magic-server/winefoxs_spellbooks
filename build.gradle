@@ -165,19 +165,22 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 
 dependencies {
-    implementation("io.wispforest:accessories-neoforge:${accessories_version}")
+    implementation("io.wispforest:accessories-neoforge:${accessories_version}+${minecraft_version}")
     implementation("vazkii.patchouli:Patchouli:${patchouli_version}")
     implementation("software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}")
-    compileOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}+${minecraft_version}")
-    implementation("io.redspace:irons_spellbooks:${irons_spells_version}") {
+    implementation("maven.modrinth:accessories-cc-layer:${accessories_cclayer_version}")
+    implementation("io.redspace:irons_spellbooks:${minecraft_version}-${irons_spells_version}") {
         exclude group: "top.theillusivec4.curios", module: "curios-neoforge"
     }
-    implementation("com.github.tartaricacid:TouhouLittleMaid:${touhou_little_maid_version}") {
+    implementation("curse.maven:touhou-little-maid-355044:${tlm_curse_version}") {
         exclude group: "maven.modrinth", module: "sodium"
         exclude group: "maven.modrinth", module: "embeddium"
     }
-    implementation("maven.modrinth:jade:15.0.5+neoforge")
-    compileOnly(files("libs/yesstevemodel-neoforge-1.21-2.4.1-release.jar"))
+    implementation("maven.modrinth:jade:${jade_version}")
+    compileOnly("maven.modrinth:yes-steve-model:${ysm_version}")
+    runtimeOnly("maven.modrinth:appleskin:${appleskin_version}")
+    runtimeOnly("maven.modrinth:playeranimator:${playeranimator_version}")
+    runtimeOnly("maven.modrinth:jei:${jei_version}")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

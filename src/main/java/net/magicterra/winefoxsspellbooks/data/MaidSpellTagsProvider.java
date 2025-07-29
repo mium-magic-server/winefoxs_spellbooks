@@ -6,7 +6,7 @@ import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import net.magicterra.winefoxsspellbooks.ai.MaidSpellRegistry;
+import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.IntrinsicHolderTagsProvider;

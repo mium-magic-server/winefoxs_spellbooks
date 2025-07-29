@@ -29,6 +29,7 @@ import io.redspace.ironsspellbooks.spells.lightning.ThunderStepSpell;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -41,7 +42,7 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 /**
- * MaidRecasts
+ * 管理重新释放的魔法，如召唤术
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-07-27 18:26
@@ -94,6 +95,17 @@ public class MaidRecasts extends PlayerRecasts {
                 .stream()
                 .filter(r -> {
                     setRecastInstanceRemainingTicks(r, r.getTicksRemaining() - actualTicks);
+                    ICastDataSerializable castData = r.getCastData();
+                    ServerLevel level = (ServerLevel) maid.level;
+                    if (castData instanceof SummonedEntitiesCastData summonedEntitiesCastData) {
+                        long count = summonedEntitiesCastData.getSummons().stream()
+                            .map(level::getEntity)
+                            .filter(Objects::nonNull)
+                            .count();
+                        if (count == 0) {
+                            return true;
+                        }
+                    }
                     return r.getTicksRemaining() <= 0;
                 })
                 .toList()
