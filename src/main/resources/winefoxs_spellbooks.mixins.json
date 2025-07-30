@@ -8,6 +8,7 @@
     "MaidEntityMixin",
     "MaidMainContainerMixin",
     "SummonManagerAccessor",
+    "TargetGoalMixin",
     "YsmAcStateAccessor1",
     "YsmACStateAccessor2"
   ],

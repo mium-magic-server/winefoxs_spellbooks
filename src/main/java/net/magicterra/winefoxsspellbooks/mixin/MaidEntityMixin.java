@@ -163,6 +163,10 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
 
     @Override
     public boolean isAlliedTo(Entity entity) {
+        if (Objects.equals(getOwner(), entity)) {
+            // 女仆和主人是相同的队伍
+            return true;
+        }
         if (entity instanceof TamableAnimal tamableAnimal) {
             LivingEntity owner = tamableAnimal.getOwner();
             if (Objects.equals(getOwner(), owner) || getOwner() != null && owner != null && getOwner().isAlliedTo(owner)) {

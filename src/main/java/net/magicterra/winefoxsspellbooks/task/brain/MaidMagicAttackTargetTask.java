@@ -86,8 +86,12 @@ public class MaidMagicAttackTargetTask extends Behavior<EntityMaid> {
     protected final IMagicEntity spellCastingMob;
 
     public MaidMagicAttackTargetTask(IMagicEntity abstractSpellCastingMob, boolean allowMovement) {
-        super(ImmutableMap.of(MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED,
-            MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT), 1200);
+        super(ImmutableMap.of(
+            MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED,
+            MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED,
+            MemoryModuleType.PATH, MemoryStatus.REGISTERED,
+            MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT
+        ), 1200);
 
         this.spellCastingMob = abstractSpellCastingMob;
         if (abstractSpellCastingMob instanceof PathfinderMob m) {
