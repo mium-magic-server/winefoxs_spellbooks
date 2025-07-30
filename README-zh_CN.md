@@ -69,7 +69,7 @@
 
 ## 📦 下载与安装
 
-请前往 [Modrinth 页面](https://modrinth.com/mods/winefoxs_spellbooks) 下载最新版本的模组文件，并按照标准流程进行安装。
+请前往 [Modrinth 页面](https://modrinth.com/mod/winefoxs_spellbooks) 下载最新版本的模组文件，并按照标准流程进行安装。
 
 ---
 

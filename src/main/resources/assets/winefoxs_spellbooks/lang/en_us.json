@@ -2,5 +2,9 @@
   "task.winefoxs_spellbooks.casting_task": "Magic Attack",
   "task.winefoxs_spellbooks.casting_task.desc": "Little maid will use Iron's Spells to attack enemy",
   "task.winefoxs_spellbooks.casting_task.condition.has_spells": "Spell book in main hand or bauble inventory",
-  "top.winefoxs_spellbooks.entity_maid.mana": "Mana: %d/%d"
+  "task.winefoxs_spellbooks.magic_support_task": "Magic Support",
+  "task.winefoxs_spellbooks.magic_support_task.desc": "Little maid will use Iron's Spells to support master",
+  "task.winefoxs_spellbooks.magic_support_task.condition.has_spells": "Spell book in main hand or bauble inventory",
+  "top.winefoxs_spellbooks.entity_maid.mana": "Mana: %d/%d",
+  "config.winefoxs_spellbooks.ysm_support": "Yes Steve Model Support"
 }

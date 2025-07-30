@@ -1,6 +1,7 @@
 package net.magicterra.winefoxsspellbooks.mixin;
 
 import com.llamalad7.mixinextras.platform.neoforge.MixinExtrasConfigPlugin;
+import net.magicterra.winefoxsspellbooks.Config;
 import net.neoforged.fml.loading.FMLLoader;
 
 /**
@@ -14,7 +15,7 @@ public class MixinPlugin extends MixinExtrasConfigPlugin {
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         String name = mixinClassName.substring(mixinClassName.lastIndexOf('.') + 1);
         if (name.startsWith("Ysm")) {
-            return FMLLoader.getLoadingModList().getModFileById("yes_steve_model") != null;
+            return Config.ysmSupport() && FMLLoader.getLoadingModList().getModFileById("yes_steve_model") != null;
         }
         return super.shouldApplyMixin(targetClassName, mixinClassName);
     }

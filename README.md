@@ -56,7 +56,7 @@ This mod only adds features to the above two mods and does **not** support addit
 
 ---
 ## 📦 Download & Installation
-Download the latest version of the mod from the [Modrinth page](https://modrinth.com/mods/winefoxs_spellbooks), and follow standard installation procedures.
+Download the latest version of the mod from the [Modrinth page](https://modrinth.com/mod/winefoxs_spellbooks), and follow standard installation procedures.
 
 ---
 ## 📝 License
