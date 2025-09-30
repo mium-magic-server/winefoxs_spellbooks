@@ -1,6 +1,6 @@
 package net.magicterra.winefoxsspellbooks.data;
 
-import com.mojang.logging.LogUtils;
+import com.google.common.collect.Sets;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import java.util.Set;
@@ -16,7 +16,6 @@ import net.minecraft.resources.ResourceKey;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 
 /**
  * 根据法术的描述，生成标签
@@ -25,7 +24,20 @@ import org.slf4j.Logger;
  * @since 2025-07-26 00:33
  */
 public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractSpell> {
-    private final static Logger logger = LogUtils.getLogger();
+    // 女仆不能使用的法术
+    private final static Set<String> UNSUPPORTED_SPELLS = Sets.newHashSet(
+        "irons_spellbooks:angel_wing",
+        "irons_spellbooks:counterspell",
+        "irons_spellbooks:summon_ender_chest",
+        "irons_spellbooks:recall",
+        "irons_spellbooks:portal",
+        "irons_spellbooks:summon_horse",
+        "irons_spellbooks:pocket_dimension",
+        "irons_spellbooks:planar_sight",
+        "irons_spellbooks:spectral_hammer",
+        "irons_spellbooks:touch_dig",
+        "irons_spellbooks:telekinesis"
+    );
 
     public MaidSpellTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, String modId, @Nullable ExistingFileHelper existingFileHelper) {
         super(output, SpellRegistry.SPELL_REGISTRY_KEY, lookupProvider,
@@ -38,6 +50,11 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         var defenseTag = tag(MaidSpellRegistry.DEFENSE_SPELLS_TAG);
         var movementTag = tag(MaidSpellRegistry.MOVEMENT_SPELLS_TAG);
         var supportTag = tag(MaidSpellRegistry.SUPPORT_SPELLS_TAG);
+        var positiveEffectTag = tag(MaidSpellRegistry.POSITIVE_EFFECT_SPELLS_TAG);
+        var supportEffectTag = tag(MaidSpellRegistry.SUPPORT_EFFECT_SPELLS_TAG);
+        var negativeEffectTag = tag(MaidSpellRegistry.NEGATIVE_EFFECT_SPELLS_TAG);
+
+        // 物理攻击法术 （词条包含伤害）
         for (AbstractSpell abstractSpell : SpellRegistry.REGISTRY) {
             Set<String> descriptions = abstractSpell.getUniqueInfo(1, null)
                 .stream()
@@ -48,39 +65,60 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
                 .map(s -> StringUtils.removeStart(s, "ui.irons_spellbooks."))
                 .collect(Collectors.toSet());
             String spellId = abstractSpell.getSpellId();
-            if (descriptions.contains("damage") || descriptions.contains("base_damage") || descriptions.contains("aoe_damage") || descriptions.contains("impact_damage")) {
-                // 描述：伤害
+            if (UNSUPPORTED_SPELLS.contains(spellId)) {
+                continue;
+            }
+
+            if (descriptions.contains("damage")
+                || descriptions.contains("base_damage")
+                || descriptions.contains("aoe_damage")
+                || descriptions.contains("impact_damage")
+                || descriptions.contains("summon_count")
+                || "irons_spellbooks:wololo".equals(spellId)
+                || "irons_spellbooks:snowball".equals(spellId)) {
                 attackTag.add(abstractSpell);
-            } else if (descriptions.contains("summon_count")) {
-                // 召唤术，也算作攻击
-                attackTag.add(abstractSpell);
-            } else if (descriptions.contains("effect_length") ||  descriptions.contains("absorption")) {
-                // 描述：持续时间，伤害吸收
-                defenseTag.add(abstractSpell);
-            } else if (descriptions.contains("distance")) {
-                // 描述：距离
-                movementTag.add(abstractSpell);
-            } else if (descriptions.contains("healing") || descriptions.contains("greater_healing") || descriptions.contains("aoe_healing")) {
-                // 描述：治疗
-                supportTag.add(abstractSpell);
-            } else if ("irons_spellbooks:evasion".equals(spellId)) {
-                // 闪避术
-                movementTag.add(abstractSpell);
-            } else if ("irons_spellbooks:shield".equals(spellId)) {
-                // 护盾
-                defenseTag.add(abstractSpell);
-            } else if ("irons_spellbooks:wololo".equals(spellId)) {
-                // Wololo!
-                attackTag.add(abstractSpell);
-            } else if ("irons_spellbooks:cleanse".equals(spellId)) {
-                // 净化
-                defenseTag.add(abstractSpell);
-            } else if ("irons_spellbooks:snowball".equals(spellId)) {
-                // 雪球
-                attackTag.add(abstractSpell);
-            } else {
-                logger.warn("Unknown spell: {}, [{}]", spellId, String.join(",", descriptions));
             }
         }
+
+        // 自我增益法术
+        defenseTag.add(SpellRegistry.HEARTSTOP_SPELL.get());
+        defenseTag.add(SpellRegistry.ECHOING_STRIKES_SPELL.get());
+        defenseTag.add(SpellRegistry.INVISIBILITY_SPELL.get());
+        defenseTag.add(SpellRegistry.SHIELD_SPELL.get());
+        defenseTag.add(SpellRegistry.CHARGE_SPELL.get());
+        defenseTag.add(SpellRegistry.SPIDER_ASPECT_SPELL.get());
+        defenseTag.add(SpellRegistry.OAKSKIN_SPELL.get());
+        defenseTag.add(SpellRegistry.GLUTTONY_SPELL.get());
+        defenseTag.add(SpellRegistry.ABYSSAL_SHROUD_SPELL.get());
+
+        // 移动法术
+        movementTag.add(SpellRegistry.BLOOD_STEP_SPELL.get());
+        movementTag.add(SpellRegistry.EVASION_SPELL.get());
+        movementTag.add(SpellRegistry.TELEPORT_SPELL.get());
+        movementTag.add(SpellRegistry.FROST_STEP_SPELL.get());
+
+        // 自我恢复法术
+        supportTag.add(SpellRegistry.GREATER_HEAL_SPELL.get());
+        supportTag.add(SpellRegistry.HEAL_SPELL.get());
+        supportTag.add(SpellRegistry.ICE_TOMB_SPELL.get());
+
+        // 正面效果法术
+        positiveEffectTag.add(SpellRegistry.FORTIFY_SPELL.get());
+        positiveEffectTag.add(SpellRegistry.HASTE_SPELL.get());
+        positiveEffectTag.add(SpellRegistry.CLEANSE_SPELL.get());
+        positiveEffectTag.add(SpellRegistry.FROSTBITE_SPELL.get());
+
+        // 恢复效果法术
+        supportEffectTag.add(SpellRegistry.BLESSING_OF_LIFE_SPELL.get());
+        supportEffectTag.add(SpellRegistry.CLOUD_OF_REGENERATION_SPELL.get());
+        supportEffectTag.add(SpellRegistry.HEALING_CIRCLE_SPELL.get());
+
+        // 负面效果法术
+        negativeEffectTag.add(SpellRegistry.SLOW_SPELL.get());
+        negativeEffectTag.add(SpellRegistry.HEAT_SURGE_SPELL.get());
+        negativeEffectTag.add(SpellRegistry.FROSTWAVE_SPELL.get());
+        negativeEffectTag.add(SpellRegistry.ACID_ORB_SPELL.get());
+        negativeEffectTag.add(SpellRegistry.BLIGHT_SPELL.get());
+        negativeEffectTag.add(SpellRegistry.ROOT_SPELL.get());
     }
 }

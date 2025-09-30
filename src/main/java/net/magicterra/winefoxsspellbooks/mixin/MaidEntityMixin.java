@@ -24,6 +24,7 @@ import net.magicterra.winefoxsspellbooks.bauble.SpellBookAwareSlotItemHandler;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicData;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
+import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -103,6 +104,9 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
 
     @Unique
     private boolean cancelCastAnimation = false;
+
+    @Unique
+    private MaidSpellDataHolder spellDataHolder = new MaidSpellDataHolder();
 
     protected MaidEntityMixin(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -196,25 +200,25 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         if (!level.isClientSide) {
             EntityMaid maid = (EntityMaid) (Object) this;
             // 对手部进行处理：如果没有空的手部，那就取副手
-            InteractionHand eanHand = InteractionHand.OFF_HAND;
+            InteractionHand eatHand = InteractionHand.OFF_HAND;
             for (InteractionHand hand : InteractionHand.values()) {
                 if (maid.getItemInHand(hand).isEmpty()) {
-                    eanHand = hand;
+                    eatHand = hand;
                     break;
                 }
             }
-            ItemStack itemInHand = maid.getItemInHand(eanHand);
+            ItemStack itemInHand = maid.getItemInHand(eatHand);
             ItemStack handStack = itemInHand.copy();
             ItemStack potionStack = PotionContents.createItemStack(Items.POTION, Potions.HEALING);
-            maid.setItemInHand(eanHand, potionStack);
-            itemInHand = maid.getItemInHand(eanHand);
+            maid.setItemInHand(eatHand, potionStack);
+            // itemInHand = maid.getItemInHand(eatHand);
             if (!handStack.isEmpty()) {
                 maid.memoryHandItemStack(handStack);
             }
-            maid.startUsingItem(eanHand);
+            maid.startUsingItem(eatHand);
 
             setDrinkingPotion(true);
-            drinkTime = itemInHand.getUseDuration(maid);
+            drinkTime = useItemRemaining;
             AttributeInstance attributeinstance = this.getAttribute(Attributes.MOVEMENT_SPEED);
             attributeinstance.removeModifier(SPEED_MODIFIER_DRINKING);
             attributeinstance.addTransientModifier(SPEED_MODIFIER_DRINKING);
@@ -237,8 +241,11 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         EntityHandsInvWrapper handsInvWrapper = maid.getHandsInvWrapper();
         for (int i = 0; i < handsInvWrapper.getSlots(); i++) {
             ItemStack itemStack = handsInvWrapper.getStackInSlot(i);
-            if (itemStack.is(Items.GLASS_BOTTLE) && isDrinkingPotion()) {
-                handsInvWrapper.setStackInSlot(i, ItemStack.EMPTY);
+            if (isDrinkingPotion()) {
+                if (itemStack.is(Items.GLASS_BOTTLE)) {
+                    handsInvWrapper.setStackInSlot(i, ItemStack.EMPTY);
+                }
+                finishDrinkingPotion();
                 break;
             }
         }
@@ -262,6 +269,9 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
     public void afterAddAdditionalSaveData(CompoundTag pCompound, CallbackInfo ci) {
         playerMagicData.saveNBTData(pCompound, level.registryAccess());
         pCompound.putBoolean("usedSpecial", hasUsedSingleAttack);
+        pCompound.putBoolean("isDrinkingPotion", isDrinkingPotion());
+        pCompound.putBoolean("usedItemOffhand", getUsedItemHand() == InteractionHand.OFF_HAND);
+        pCompound.putInt("useItemRemaining", useItemRemaining);
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
@@ -272,6 +282,14 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
             this.recreateSpell = true;
         }
         hasUsedSingleAttack = pCompound.getBoolean("usedSpecial");
+        setDrinkingPotion(pCompound.getBoolean("isDrinkingPotion"));
+        if (isDrinkingPotion()) {
+            useItemRemaining = pCompound.getInt("useItemRemaining");
+            boolean isUsedItemOffhand = pCompound.getBoolean("usedItemOffhand");
+            setLivingEntityFlag(2, isUsedItemOffhand);
+            setLivingEntityFlag(1, true);
+            useItem = getItemInHand(this.getUsedItemHand());
+        }
     }
 
     @Inject(method = "onAddedToLevel", at = @At("TAIL"))
@@ -377,15 +395,11 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
             //setSyncedSpellData(syncedSpellData);
         }
 
-        if (isDrinkingPotion()) {
-            if (drinkTime-- <= 0) {
-                finishDrinkingPotion();
-            } else if (drinkTime % 4 == 0) {
-                if (!this.isSilent()) {
-                    this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_DRINK, this.getSoundSource(), 1.0F, Utils.random.nextFloat() * 0.1F + 0.9F);
-                }
-            }
-        }
+//        if (isDrinkingPotion()) {
+//            if (drinkTime-- <= 0) {
+//                finishDrinkingPotion();
+//            }
+//        }
 
         if (castingSpell == null) {
             return;
@@ -500,17 +514,24 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
      */
     @Unique
     public boolean canCast(AbstractSpell spell, int spellLevel) {
-        var playerMana = playerMagicData.getMana();
+        var maidMana = playerMagicData.getMana();
+        var manaCost = getManaCost(spell, spellLevel);
 
-        boolean hasEnoughMana = playerMana - getManaCost(spell, spellLevel) >= 0;
+        boolean hasEnoughMana = maidMana - manaCost >= 0;
         boolean isSpellOnCooldown = playerMagicData.getPlayerCooldowns().isOnCooldown(spell);
         boolean hasRecastForSpell = playerMagicData.getPlayerRecasts().hasRecastForSpell(spell.getSpellId());
         if (isSpellOnCooldown) {
             // 冷却中
+            if (WinefoxsSpellbooks.DEBUG) {
+                WinefoxsSpellbooks.LOGGER.debug("MaidMagicEntity.canCast: spellType:{} spellLevel:{}, isCooldown:true", spell.getSpellId(), spellLevel);
+            }
             return false;
         }
         if (!hasRecastForSpell && !hasEnoughMana) {
             // 魔力不足
+            if (WinefoxsSpellbooks.DEBUG) {
+                WinefoxsSpellbooks.LOGGER.debug("MaidMagicEntity.canCast: spellType:{} spellLevel:{}, maidMana:{}, manaCost:{}", spell.getSpellId(), spellLevel, maidMana, manaCost);
+            }
             return false;
         }
         return true;
@@ -610,5 +631,10 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
     @Override
     public float winefoxsSpellbooks$getMana() {
         return entityData.get(DATA_MANA);
+    }
+
+    @Override
+    public MaidSpellDataHolder winefoxsSpellbooks$getSpellDataHolder() {
+        return spellDataHolder;
     }
 }

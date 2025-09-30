@@ -14,6 +14,7 @@ import net.magicterra.winefoxsspellbooks.bauble.SpellBookBauble;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
 import net.magicterra.winefoxsspellbooks.task.MaidCastingTask;
+import net.magicterra.winefoxsspellbooks.task.MaidMagicSupportTask;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.SwordItem;
@@ -49,13 +50,14 @@ public class LittleMaidSpellbooksCompat implements ILittleMaid {
     @Override
     public void addMaidTask(TaskManager manager) {
         manager.add(new MaidCastingTask());
+        manager.add(new MaidMagicSupportTask());
     }
 
     public void addJadeInfoEvent(AddJadeInfoEvent event) {
         ITooltip iTooltip = event.getTooltip();
         EntityMaid maid = event.getMaid();
         IMaidTask task = maid.getTask();
-        if (!(task instanceof MaidCastingTask)) {
+        if (!(task instanceof MaidCastingTask || task instanceof MaidMagicSupportTask)) {
             return;
         }
         MaidMagicEntity magicEntity = (MaidMagicEntity) maid;

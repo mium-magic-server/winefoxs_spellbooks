@@ -4,22 +4,10 @@
     "irons_spellbooks:echoing_strikes",
     "irons_spellbooks:invisibility",
     "irons_spellbooks:shield",
-    "irons_spellbooks:slow",
-    "irons_spellbooks:heat_surge",
-    "irons_spellbooks:angel_wing",
-    "irons_spellbooks:fortify",
-    "irons_spellbooks:haste",
-    "irons_spellbooks:cleanse",
-    "irons_spellbooks:frostwave",
-    "irons_spellbooks:frostbite",
     "irons_spellbooks:charge",
-    "irons_spellbooks:acid_orb",
-    "irons_spellbooks:blight",
-    "irons_spellbooks:root",
     "irons_spellbooks:spider_aspect",
     "irons_spellbooks:oakskin",
     "irons_spellbooks:gluttony",
-    "irons_spellbooks:abyssal_shroud",
-    "irons_spellbooks:planar_sight"
+    "irons_spellbooks:abyssal_shroud"
   ]
 }

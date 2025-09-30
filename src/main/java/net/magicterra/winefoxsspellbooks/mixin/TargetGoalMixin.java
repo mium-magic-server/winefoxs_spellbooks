@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * 修改是否能攻击逻辑，放置女仆召唤物攻击玩家
+ * 修改是否能攻击逻辑，防止女仆召唤物攻击玩家
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-07-31 01:04

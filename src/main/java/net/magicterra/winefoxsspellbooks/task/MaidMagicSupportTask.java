@@ -1,6 +1,6 @@
 package net.magicterra.winefoxsspellbooks.task;
 
-import com.github.tartaricacid.touhoulittlemaid.api.task.IRangedAttackTask;
+import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
 import com.github.tartaricacid.touhoulittlemaid.config.subconfig.MaidConfig;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
@@ -23,14 +23,11 @@ import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
-import net.magicterra.winefoxsspellbooks.task.brain.MaidMagicAttackTargetTask;
+import net.magicterra.winefoxsspellbooks.task.brain.MaidMagicSupportOwnerTask;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
-import net.minecraft.world.entity.ai.behavior.StartAttacking;
-import net.minecraft.world.entity.ai.behavior.StopAttackingIfTargetInvalid;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -39,13 +36,13 @@ import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * 魔法攻击任务
+ * 法术支援任务
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
- * @since 2025-07-20 20:38
+ * @since 2025-07-30 02:29
  */
-public class MaidCastingTask implements IRangedAttackTask {
-    private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "casting_task");
+public class MaidMagicSupportTask implements IMaidTask {
+    private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "magic_support_task");
 
     @Override
     public ResourceLocation getUid() {
@@ -54,95 +51,46 @@ public class MaidCastingTask implements IRangedAttackTask {
 
     @Override
     public ItemStack getIcon() {
-        return ItemRegistry.GOLD_SPELL_BOOK.get().getDefaultInstance();
+        return ItemRegistry.VILLAGER_SPELL_BOOK.get().getDefaultInstance();
     }
 
     @Override
     public @Nullable SoundEvent getAmbientSound(EntityMaid maid) {
-        return SoundUtil.attackSound(maid, InitSounds.MAID_RANGE_ATTACK.get(), 0.5f);
-    }
-
-    @Override
-    public boolean isWeapon(EntityMaid maid, ItemStack stack) {
-        // 允许空手施法
-        return true;
+        return SoundUtil.attackSound(maid, InitSounds.MAID_ATTACK.get(), 0.5f);
     }
 
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
-        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
-        BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
-//        BehaviorControl<EntityMaid> moveToTargetTask = MaidRangedWalkToTarget.create(0.6f);
-//        BehaviorControl<EntityMaid> maidAttackStrafingTask = new MaidAttackStrafingTask();
-        BehaviorControl<EntityMaid> shootTargetTask = new MaidMagicAttackTargetTask((IMagicEntity) maid, true);
-
-        return Lists.newArrayList(
-            Pair.of(5, supplementedTask),
-            Pair.of(5, findTargetTask),
-//            Pair.of(5, moveToTargetTask),
-//            Pair.of(5, maidAttackStrafingTask),
-            Pair.of(5, shootTargetTask)
-        );
+        return Lists.newArrayList(Pair.of(5, new MaidMagicSupportOwnerTask(maid, this::hasSpells, 0.6f)));
     }
-
-    @Override
-    public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
-        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
-        BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
-        BehaviorControl<EntityMaid> shootTargetTask = new MaidMagicAttackTargetTask((IMagicEntity) maid, false);
-
-        return Lists.newArrayList(
-            Pair.of(5, supplementedTask),
-            Pair.of(5, findTargetTask),
-            Pair.of(5, shootTargetTask)
-        );
-    }
-
-    @Override
-    public boolean canSee(EntityMaid maid, LivingEntity target) {
-        return IRangedAttackTask.targetConditionsTest(maid, target, MaidConfig.DANMAKU_RANGE);
-    }
-
-//    @Override
-//    public AABB searchDimension(EntityMaid maid) {
-//        if (hasSpells(maid)) {
-//            float searchRange = this.searchRadius(maid);
-//            if (maid.hasRestriction()) {
-//                return new AABB(maid.getRestrictCenter()).inflate(searchRange);
-//            } else {
-//                return maid.getBoundingBox().inflate(searchRange);
-//            }
-//        }
-//        return IRangedAttackTask.super.searchDimension(maid);
-//    }
 
     @Override
     public float searchRadius(EntityMaid maid) {
-        // TODO 需要一个单独配置
         return MaidConfig.DANMAKU_RANGE.get();
     }
 
     @Override
-    public void performRangedAttack(EntityMaid shooter, LivingEntity target, float distanceFactor) {
-        // TODO 写在 Behavior 里面了，后面再改
-    }
-
-    @Override
     public List<Pair<String, Predicate<EntityMaid>>> getConditionDescription(EntityMaid maid) {
-        // 打开 Gui 的时候才会触发
         return Collections.singletonList(Pair.of("has_spells", this::hasSpells));
     }
 
     @Override
     public boolean enableLookAndRandomWalk(EntityMaid maid) {
-        return maid.getTarget() == null;
+        IMagicEntity magicEntity = (IMagicEntity) maid;
+        return !magicEntity.isCasting();
+    }
+
+    @Override
+    public boolean enablePanic(EntityMaid maid) {
+        return false;
     }
 
     private boolean hasSpells(EntityMaid maid) {
-        List<SpellData> attackSpells = new ArrayList<>();
         List<SpellData> defenseSpells = new ArrayList<>();
-        List<SpellData> movementSpells = new ArrayList<>();
         List<SpellData> supportSpells = new ArrayList<>();
+        List<SpellData> positiveEffectSpells = new ArrayList<>();
+        List<SpellData> negativeEffectSpells = new ArrayList<>();
+        List<SpellData> supportEffectSpells = new ArrayList<>();
         // 检查主手、盔甲栏、饰品栏法术
         boolean spellBookLoaded = false;
         IItemHandler invWrapper = new CombinedInvWrapper(maid.getArmorInvWrapper(), new ItemStackHandler(NonNullList.of(ItemStack.EMPTY, maid.getMainHandItem())), maid.getMaidBauble());
@@ -164,31 +112,29 @@ public class MaidCastingTask implements IRangedAttackTask {
                     AbstractSpell spell = spellSlot.getSpell();
                     int level = MaidMagicManager.getLevelFor(maid, spell, spellSlot.getLevel());
                     SpellData spellData = new SpellData(spell, level);
-                    if (MaidSpellRegistry.isAttackSpell(spell) || MaidSpellRegistry.isNegativeEffectSpell(spell)) {
-                        attackSpells.add(spellData);
-                    } else if (MaidSpellRegistry.isDefenseSpell(spell)) {
+                    if (MaidSpellRegistry.isDefenseSpell(spell)) {
                         defenseSpells.add(spellData);
-                    } else if (MaidSpellRegistry.isMovementSpell(spell)) {
-                        movementSpells.add(spellData);
                     } else if (MaidSpellRegistry.isSupportSpell(spell)) {
                         supportSpells.add(spellData);
+                    } else if (MaidSpellRegistry.isPositiveEffectSpell(spell)) {
+                        positiveEffectSpells.add(spellData);
+                    } else if (MaidSpellRegistry.isNegativeEffectSpell(spell)) {
+                        negativeEffectSpells.add(spellData);
+                    } else if (MaidSpellRegistry.isSupportEffectSpell(spell)) {
+                        supportEffectSpells.add(spellData);
                     }
                 }
             }
         }
         MaidMagicEntity magicEntity = (MaidMagicEntity) maid;
         MaidSpellDataHolder spellDataHolder = magicEntity.winefoxsSpellbooks$getSpellDataHolder();
-        spellDataHolder.updateAttackSpells(attackSpells);
+        spellDataHolder.updateAttackSpells(Collections.emptyList());
         spellDataHolder.updateDefenseSpells(defenseSpells);
-        spellDataHolder.updateMovementSpells(movementSpells);
+        spellDataHolder.updateMovementSpells(Collections.emptyList());
         spellDataHolder.updateSupportSpells(supportSpells);
-        spellDataHolder.updatePositiveEffectSpells(Collections.emptyList());
-        spellDataHolder.updateNegativeEffectSpells(Collections.emptyList());
-        spellDataHolder.updateSupportEffectSpells(Collections.emptyList());
+        spellDataHolder.updatePositiveEffectSpells(positiveEffectSpells);
+        spellDataHolder.updateNegativeEffectSpells(negativeEffectSpells);
+        spellDataHolder.updateSupportEffectSpells(supportEffectSpells);
         return spellDataHolder.hasAnySpells();
-    }
-
-    private boolean farAway(LivingEntity target, EntityMaid maid) {
-        return maid.distanceTo(target) > this.searchRadius(maid);
     }
 }

@@ -1,17 +1,33 @@
 package net.magicterra.winefoxsspellbooks.magic;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.google.common.base.Predicates;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
+import io.redspace.ironsspellbooks.api.events.ModifySpellLevelEvent;
+import io.redspace.ironsspellbooks.api.item.curios.AffinityData;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
+import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastSource;
+import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.api.util.Utils;
+import io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts;
 import io.redspace.ironsspellbooks.config.ServerConfigs;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Predicate;
+import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 
 public class MaidMagicManager {
     public static final int MANA_REGEN_TICKS = 10;
@@ -63,5 +79,45 @@ public class MaidMagicManager {
 
     public static void spawnParticles(Level level, ParticleOptions particle, double x, double y, double z, int count, double deltaX, double deltaY, double deltaZ, double speed, boolean force) {
         level.getServer().getPlayerList().getPlayers().forEach(player -> ((ServerLevel) level).sendParticles(player, particle, force, x, y, z, count, deltaX, deltaY, deltaZ, speed));
+    }
+
+    public static int getLevelFor(EntityMaid maid, AbstractSpell spell, int level) {
+        int addition = 0;
+        if (maid != null) {
+            IItemHandler invWrapper = new CombinedInvWrapper(maid.getArmorInvWrapper(), new ItemStackHandler(NonNullList.of(ItemStack.EMPTY, maid.getMainHandItem())), maid.getMaidBauble());
+            for (int i = 0; i < invWrapper.getSlots(); i++) {
+                ItemStack stackInSlot = invWrapper.getStackInSlot(i);
+                AffinityData affinityData = AffinityData.getAffinityData(stackInSlot);
+                if (affinityData == AffinityData.NONE) {
+                    continue;
+                }
+                addition += affinityData.getBonusFor(spell);
+            }
+        }
+        var levelEvent = new ModifySpellLevelEvent(spell, maid, level, level + addition);
+        NeoForge.EVENT_BUS.post(levelEvent);
+        return levelEvent.getLevel();
+    }
+
+    public static SpellData getAvailableSpell(EntityMaid maid, Collection<SpellData> spells) {
+        return getAvailableSpell(maid, spells, Predicates.alwaysTrue());
+    }
+
+    public static SpellData getAvailableSpell(EntityMaid maid, Collection<SpellData> spells, Predicate<AbstractSpell> filter) {
+        MaidMagicEntity magicMaid = (MaidMagicEntity) maid;
+        IMagicEntity spellCastingMob = (IMagicEntity) maid;
+        PlayerRecasts playerRecasts = spellCastingMob.getMagicData().getPlayerRecasts();
+        List<SpellData> filtered = spells.stream()
+            .filter(spellData -> filter.test(spellData.getSpell()))
+            .filter(spellData -> !playerRecasts.hasRecastForSpell(spellData.getSpell())
+                || spellData.getSpell().equals(SpellRegistry.FLAMING_BARRAGE_SPELL.get())
+                || spellData.getSpell().equals(SpellRegistry.WALL_OF_FIRE_SPELL.get())) // 排除重新施法会消失的
+            .filter(spellData -> spellCastingMob.getMagicData().getMana() - magicMaid.winefoxsSpellbooks$getManaCost(spellData.getSpell(), spellData.getLevel()) >= 0) // 考虑剩余魔力
+            .filter(spellData -> !spellCastingMob.getMagicData().getPlayerCooldowns().isOnCooldown(spellData.getSpell())) // 排除冷却中的
+            .toList();
+        if (filtered.isEmpty()) {
+            return SpellData.EMPTY;
+        }
+        return filtered.get(maid.getRandom().nextInt(filtered.size()));
     }
 }

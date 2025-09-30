@@ -2,6 +2,7 @@ package net.magicterra.winefoxsspellbooks.entity;
 
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
+import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 
 /**
  * 魔法女仆提供的内部参数
@@ -25,4 +26,6 @@ public interface MaidMagicEntity {
     float winefoxsSpellbooks$getMana();
 
     int winefoxsSpellbooks$getManaCost(AbstractSpell spell, int level);
+
+    MaidSpellDataHolder winefoxsSpellbooks$getSpellDataHolder();
 }
