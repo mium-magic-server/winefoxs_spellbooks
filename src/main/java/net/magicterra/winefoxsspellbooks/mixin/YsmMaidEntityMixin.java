@@ -1,16 +1,17 @@
 package net.magicterra.winefoxsspellbooks.mixin;
 
-import com.elfmcys.yesstevemodel.O0ooOoOoooooO000OOO0oOoo;
-import com.elfmcys.yesstevemodel.OOoOOo0oo0OO00oOo0OOO0O0;
-import com.elfmcys.yesstevemodel.Ooo0oOOo0Ooo0OO00o0O0oOo;
-import com.elfmcys.yesstevemodel.OooOOoo00oOoOOoOOOoO0ooO;
-import com.elfmcys.yesstevemodel.o000o0ooOOOOoooOoo0o0oOo;
-import com.elfmcys.yesstevemodel.o00OOOOoo0OOo000oo0oo0oo;
-import com.elfmcys.yesstevemodel.o00Ooooo0o0o0oOOoO00o0Oo;
-import com.elfmcys.yesstevemodel.o0o000o0OoOO0OoO00O0oOoo;
-import com.elfmcys.yesstevemodel.o0oOOOOooO00O00OooOO0OO0;
-import com.elfmcys.yesstevemodel.ooOO0OO00000O0oo0oo0oOoO;
-import com.elfmcys.yesstevemodel.oooo00oOO0o0oO0OoOoO0o0o;
+
+import com.elfmcys.yesstevemodel.O0000oo0ooO0ooo000o00ooo;
+import com.elfmcys.yesstevemodel.O000oO0oOOoO0oOooO00oOOo;
+import com.elfmcys.yesstevemodel.OOoOO0OOoo00O0oo0oO0Oooo;
+import com.elfmcys.yesstevemodel.o0O0oO0o0oOo0O0O0O0OoO00;
+import com.elfmcys.yesstevemodel.o0OOOooo000O0OO0OOOOoOOO;
+import com.elfmcys.yesstevemodel.o0OoOOO00o0OooOoo0O00OoO;
+import com.elfmcys.yesstevemodel.o0oOoOoOoOO0Ooo000OO0ooo;
+import com.elfmcys.yesstevemodel.oOO0O000000o0O0o0oO00oO0;
+import com.elfmcys.yesstevemodel.oOo0OooO0oOo0oOOOoo00o0O;
+import com.elfmcys.yesstevemodel.oo0o0ooOOo0OO0O0OO000OOO;
+import com.elfmcys.yesstevemodel.oooOo0o0O0oooo00O0OOooOO;
 import com.github.tartaricacid.touhoulittlemaid.api.entity.IMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.geckolib3.geo.IGeoEntity;
@@ -18,6 +19,7 @@ import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastType;
+import io.redspace.ironsspellbooks.api.util.AnimationHolder;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -34,152 +36,143 @@ import software.bernie.geckolib.animation.RawAnimation;
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-07-23 00:52
  */
-@Mixin(ooOO0OO00000O0oo0oo0oOoO.class)
-public abstract class YsmMaidEntityMixin extends Ooo0oOOo0Ooo0OO00o0O0oOo<EntityMaid> implements IGeoEntity {
+@Mixin(o0O0oO0o0oOo0O0O0O0OoO00.class)
+public abstract class YsmMaidEntityMixin extends oooOo0o0O0oooo00O0OOooOO<EntityMaid> implements IGeoEntity {
     @Unique
     private AbstractSpell lastCastSpellType = SpellRegistry.none();
 
     @Unique
-    private final oooo00oOO0o0oO0OoOoO0o0o<?> animationControllerOtherCast = new oooo00oOO0o0oO0OoOoO0o0o<>(this, "other_casting", 0f, this::otherCastingPredicate);
+    private final oOo0OooO0oOo0oOOOoo00o0O<oooOo0o0O0oooo00O0OOooOO<EntityMaid>> animationControllerOtherCast = new oOo0OooO0oOo0oOOOoo00o0O<>(this, "other_casting", 0f, this::otherCastingPredicate);
 
     @Unique
-    private final oooo00oOO0o0oO0OoOoO0o0o<?> animationControllerInstantCast = new oooo00oOO0o0oO0OoOoO0o0o<>(this, "instant_casting", 0f, this::instantCastingPredicate);
+    private final oOo0OooO0oOo0oOOOoo00o0O<oooOo0o0O0oooo00O0OOooOO<EntityMaid>> animationControllerInstantCast = new oOo0OooO0oOo0oOOOoo00o0O<>(this, "instant_casting", 0f, this::instantCastingPredicate);
 
     @Unique
-    private final oooo00oOO0o0oO0OoOoO0o0o<?> animationControllerLongCast = new oooo00oOO0o0oO0OoOoO0o0o<>(this, "long_casting", 0f, this::longCastingPredicate);
+    private final oOo0OooO0oOo0oOOOoo00o0O<oooOo0o0O0oooo00O0OOooOO<EntityMaid>> animationControllerLongCast = new oOo0OooO0oOo0oOOOoo00o0O<>(this, "long_casting", 0f, this::longCastingPredicate);
 
 
     public YsmMaidEntityMixin(EntityMaid entity, boolean var2) {
         super(entity, var2);
     }
 
-    @Inject(method = "Ooo000oOo0000oo00o00o000()V", at = @At("TAIL"))
+    @Inject(method = "o0ooOOOooo0o0oOooOO00O00()V", at = @At("TAIL"))
     public void afterRegisterControllers(CallbackInfo ci) {
         // registerController
-        oOO0OOoOOOO0OoooOO0oO000(animationControllerOtherCast);
-        oOO0OOoOOOO0OoooOO0oO000(animationControllerInstantCast);
-        oOO0OOoOOOO0OoooOO0oO000(animationControllerLongCast);
+        OOOoO0oo0000oO0ooOOoO000(animationControllerOtherCast);
+        OOOoO0oo0000oO0ooOOoO000(animationControllerInstantCast);
+        OOOoO0oo0000oO0ooOOoO000(animationControllerLongCast);
     }
 
     @Unique
-    private o00OOOOoo0OOo000oo0oo0oo instantCastingPredicate(O0ooOoOoooooO000OOO0oOoo<Ooo0oOOo0Ooo0OO00o0O0oOo<EntityMaid>> event, o0o000o0OoOO0OoO00O0oOoo<?> var2) {
+    private oo0o0ooOOo0OO0O0OO000OOO instantCastingPredicate(o0OOOooo000O0OO0OOOOoOOO<oooOo0o0O0oooo00O0OOooOO<EntityMaid>> event, oOO0O000000o0O0o0oO00oO0<?> var2) {
         MaidMagicEntity accessor = (MaidMagicEntity) getMaid();
 
         if (accessor.winefoxsSpellbooks$getCancelCastAnimation()) {
             // STOP
-            return o00OOOOoo0OOo000oo0oo0oo.Ooo000oOo0000oo00o00o000;
+            return oo0o0ooOOo0OO0O0OO000OOO.o0ooOOOooo0o0oOooOO00O00;
         }
 
         // getController()
-        o00Ooooo0o0o0oOOoO00o0Oo controller = getRealAnimationController(event.oOooOo0Oooo0OOO00000o000());
-        // OOoOOo0oo0OO00oOo0OOO0O0.ooo00O0o000OOoOO00o00ooo: STOPPED
-        if (accessor.winefoxsSpellbooks$getInstantCastSpellType() != SpellRegistry.none() && controller.Ooo000oOo0000oo00o00o000() == OOoOOo0oo0OO00oOo0OOO0O0.ooo00O0o000OOoOO00o00ooo) {
+        var controller = getRealAnimationController(event.OoOoo0OO000o00OOO000000O());
+        // O0000oo0ooO0ooo000o00ooo.o0OOO0oOooOO0O0O0O0OOo0o: STOPPED
+        if (accessor.winefoxsSpellbooks$getInstantCastSpellType() != SpellRegistry.none() && controller.O0OOooOOOo0O0o0oOO00OOoo() == O0000oo0ooO0ooo000o00ooo.OOOoO0oo0000oO0ooOOoO000) {
             setStartAnimationFromSpell(controller, accessor.winefoxsSpellbooks$getInstantCastSpellType());
             accessor.winefoxsSpellbooks$setInstantCastSpellType(SpellRegistry.none());
         }
         // CONTINUE
-        return o00OOOOoo0OOo000oo0oo0oo.oOO0OOoOOOO0OoooOO0oO000;
+        return oo0o0ooOOo0OO0O0OO000OOO.OOOoO0oo0000oO0ooOOoO000;
     }
 
     @Unique
-    private o00OOOOoo0OOo000oo0oo0oo longCastingPredicate(O0ooOoOoooooO000OOO0oOoo<Ooo0oOOo0Ooo0OO00o0O0oOo<EntityMaid>> event, o0o000o0OoOO0OoO00O0oOoo<?> var2) {
+    private oo0o0ooOOo0OO0O0OO000OOO longCastingPredicate(o0OOOooo000O0OO0OOOOoOOO<oooOo0o0O0oooo00O0OOooOO<EntityMaid>> event, oOO0O000000o0O0o0oO00oO0<?> var2) {
         IMagicEntity maid = (IMagicEntity) getMaid();
         MaidMagicEntity accessor = (MaidMagicEntity) maid;
 
         // getController()
-        o00Ooooo0o0o0oOOoO00o0Oo controller = getRealAnimationController(event.oOooOo0Oooo0OOO00000o000());
-        if (accessor.winefoxsSpellbooks$getCancelCastAnimation() || (controller.Ooo000oOo0000oo00o00o000() == OOoOOo0oo0OO00oOo0OOO0O0.ooo00O0o000OOoOO00o00ooo &&
+        var controller = getRealAnimationController(event.OoOoo0OO000o00OOO000000O());
+        if (accessor.winefoxsSpellbooks$getCancelCastAnimation() || (controller.O0OOooOOOo0O0o0oOO00OOoo() == O0000oo0ooO0ooo000o00ooo.OOOoO0oo0000oO0ooOOoO000 &&
             !(maid.isCasting() && accessor.winefoxsSpellbooks$getCastingSpell() != null &&
                 accessor.winefoxsSpellbooks$getCastingSpell().getSpell().getCastType() == CastType.LONG))) {
             // STOP
-            return o00OOOOoo0OOo000oo0oo0oo.Ooo000oOo0000oo00o00o000;
+            return oo0o0ooOOo0OO0O0OO000OOO.o0ooOOOooo0o0oOooOO00O00;
         }
 
         if (maid.isCasting()) {
-            if (controller.Ooo000oOo0000oo00o00o000() == OOoOOo0oo0OO00oOo0OOO0O0.ooo00O0o000OOoOO00o00ooo) {
+            if (controller.O0OOooOOOo0O0o0oOO00OOoo() == O0000oo0ooO0ooo000o00ooo.OOOoO0oo0000oO0ooOOoO000) {
                 setStartAnimationFromSpell(controller, accessor.winefoxsSpellbooks$getCastingSpell().getSpell());
             }
         } else if (lastCastSpellType.getCastType() == CastType.LONG) {
-            setFinishAnimationFromSpell(controller, lastCastSpellType);
+            setStartFinishAnimationFromSpell(controller, lastCastSpellType, true);
         }
 
         // CONTINUE
-        return o00OOOOoo0OOo000oo0oo0oo.oOO0OOoOOOO0OoooOO0oO000;
+        return oo0o0ooOOo0OO0O0OO000OOO.OOOoO0oo0000oO0ooOOoO000;
     }
 
     @Unique
-    private o00OOOOoo0OOo000oo0oo0oo otherCastingPredicate(O0ooOoOoooooO000OOO0oOoo<Ooo0oOOo0Ooo0OO00o0O0oOo<EntityMaid>> event, o0o000o0OoOO0OoO00O0oOoo<?> var2) {
+    private oo0o0ooOOo0OO0O0OO000OOO otherCastingPredicate(o0OOOooo000O0OO0OOOOoOOO<oooOo0o0O0oooo00O0OOooOO<EntityMaid>> event, oOO0O000000o0O0o0oO00oO0<?> var2) {
         MaidMagicEntity accessor = (MaidMagicEntity) getMaid();
         if (accessor.winefoxsSpellbooks$getCancelCastAnimation()) {
             // STOP
-            return o00OOOOoo0OOo000oo0oo0oo.Ooo000oOo0000oo00o00o000;
+            return oo0o0ooOOo0OO0O0OO000OOO.o0ooOOOooo0o0oOooOO00O00;
         }
 
         IMagicEntity maid = (IMagicEntity) accessor;
 
         // getController()
-        o00Ooooo0o0o0oOOoO00o0Oo controller = getRealAnimationController(event.oOooOo0Oooo0OOO00000o000());
+        var controller = getRealAnimationController(event.OoOoo0OO000o00OOO000000O());
         if (maid.isCasting() && accessor.winefoxsSpellbooks$getCastingSpell() != null &&
-            controller.Ooo000oOo0000oo00o00o000() == OOoOOo0oo0OO00oOo0OOO0O0.ooo00O0o000OOoOO00o00ooo) {
+            controller.O0OOooOOOo0O0o0oOO00OOoo() == O0000oo0ooO0ooo000o00ooo.OOOoO0oo0000oO0ooOOoO000) {
             if (accessor.winefoxsSpellbooks$getCastingSpell().getSpell().getCastType() == CastType.CONTINUOUS) {
                 setStartAnimationFromSpell(controller, accessor.winefoxsSpellbooks$getCastingSpell().getSpell());
             }
             // CONTINUE
-            return o00OOOOoo0OOo000oo0oo0oo.oOO0OOoOOOO0OoooOO0oO000;
+            return oo0o0ooOOo0OO0O0OO000OOO.OOOoO0oo0000oO0ooOOoO000;
         }
 
         if (maid.isCasting()) {
             // CONTINUE
-            return o00OOOOoo0OOo000oo0oo0oo.oOO0OOoOOOO0OoooOO0oO000;
+            return oo0o0ooOOo0OO0O0OO000OOO.OOOoO0oo0000oO0ooOOoO000;
         } else {
             // STOP
-            return o00OOOOoo0OOo000oo0oo0oo.Ooo000oOo0000oo00o00o000;
+            return oo0o0ooOOo0OO0O0OO000OOO.o0ooOOOooo0o0oOooOO00O00;
         }
     }
 
     @Unique
-    private void setStartAnimationFromSpell(o00Ooooo0o0o0oOOoO00o0Oo controller, AbstractSpell spell) {
-        MaidMagicEntity accessor = (MaidMagicEntity) getMaid();
-        spell.getCastStartAnimation().getForMob().ifPresentOrElse(animationBuilder -> {
-            controller.o0OO000o0oo0o0oOoOoo0O0o();
-            o0oOOOOooO00O00OooOO0OO0 builder = new o0oOOOOooO00O00OooOO0OO0();
-            for (RawAnimation.Stage animationStage : animationBuilder.getAnimationStages()) {
-                if (animationStage.loopType() == Animation.LoopType.LOOP) {
-                    builder.ooo00O0o000OOoOO00o00ooo(animationStage.animationName());
-                } else if (animationStage.loopType() == Animation.LoopType.PLAY_ONCE) {
-                    builder.Ooo000oOo0000oo00o00o000(animationStage.animationName());
-                } else if (animationStage.loopType() == Animation.LoopType.HOLD_ON_LAST_FRAME) {
-                    builder.OOo00OoO0000OOO00ooOOOO0(animationStage.animationName());
-                }
-            }
-            controller.oOO0OOoOOOO0OoooOO0oO000(builder);
-            lastCastSpellType = spell;
-            accessor.winefoxsSpellbooks$setCancelCastAnimation(false);
-        }, () -> accessor.winefoxsSpellbooks$setCancelCastAnimation(true));
+    private void setStartAnimationFromSpell(o0OoOOO00o0OooOoo0O00OoO controller, AbstractSpell spell) {
+        setStartFinishAnimationFromSpell(controller, spell, false);
     }
 
     @Unique
-    private void setFinishAnimationFromSpell(o00Ooooo0o0o0oOOoO00o0Oo controller, AbstractSpell spell) {
+    private void setStartFinishAnimationFromSpell(o0OoOOO00o0OooOoo0O00OoO controller, AbstractSpell spell, boolean finish) {
         MaidMagicEntity accessor = (MaidMagicEntity) getMaid();
-        if (spell.getCastFinishAnimation().isPass) {
-            accessor.winefoxsSpellbooks$setCancelCastAnimation(false);
-            return;
+        AnimationHolder animationHolder;
+        if (finish) {
+            animationHolder = spell.getCastFinishAnimation();
+            if (animationHolder.isPass) {
+                accessor.winefoxsSpellbooks$setCancelCastAnimation(false);
+                return;
+            }
+        } else {
+            animationHolder = spell.getCastStartAnimation();
         }
-        spell.getCastFinishAnimation().getForMob().ifPresentOrElse(animationBuilder -> {
-            controller.o0OO000o0oo0o0oOoOoo0O0o();
-            o0oOOOOooO00O00OooOO0OO0 builder = new o0oOOOOooO00O00OooOO0OO0();
+        animationHolder.getForMob().ifPresentOrElse(animationBuilder -> {
+            controller.OoOoo0OO000o00OOO000000O();
             for (RawAnimation.Stage animationStage : animationBuilder.getAnimationStages()) {
                 if (animationStage.loopType() == Animation.LoopType.LOOP) {
-                    builder.ooo00O0o000OOoOO00o00ooo(animationStage.animationName());
+                    controller.OOOoO0oo0000oO0ooOOoO000(animationStage.animationName(), O000oO0oOOoO0oOooO00oOOo.OOOoO0oo0000oO0ooOOoO000);
                 } else if (animationStage.loopType() == Animation.LoopType.PLAY_ONCE) {
-                    builder.Ooo000oOo0000oo00o00o000(animationStage.animationName());
+                    controller.OOOoO0oo0000oO0ooOOoO000(animationStage.animationName(), O000oO0oOOoO0oOooO00oOOo.o0ooOOOooo0o0oOooOO00O00);
                 } else if (animationStage.loopType() == Animation.LoopType.HOLD_ON_LAST_FRAME) {
-                    builder.OOo00OoO0000OOO00ooOOOO0(animationStage.animationName());
+                    controller.OOOoO0oo0000oO0ooOOoO000(animationStage.animationName(), O000oO0oOOoO0oOooO00oOOo.O0OOooOOOo0O0o0oOO00OOoo);
                 }
             }
-
-            controller.oOO0OOoOOOO0OoooOO0oO000(builder);
-            lastCastSpellType = SpellRegistry.none();
+            if (finish) {
+                lastCastSpellType = SpellRegistry.none();
+            } else {
+                lastCastSpellType = spell;
+            }
             accessor.winefoxsSpellbooks$setCancelCastAnimation(false);
         }, () -> accessor.winefoxsSpellbooks$setCancelCastAnimation(true));
     }
@@ -188,19 +181,19 @@ public abstract class YsmMaidEntityMixin extends Ooo0oOOo0Ooo0OO00o0O0oOo<Entity
     public boolean isAnimating() {
         IMagicEntity maid = (IMagicEntity) getMaid();
         return maid.isCasting()
-            || (getAnimationState(animationControllerLongCast) == OOoOOo0oo0OO00oOo0OOO0O0.oOO0OOoOOOO0OoooOO0oO000)
-            || (getAnimationState(animationControllerOtherCast) == OOoOOo0oo0OO00oOo0OOO0O0.oOO0OOoOOOO0OoooOO0oO000)
-            || (getAnimationState(animationControllerInstantCast) == OOoOOo0oo0OO00oOo0OOO0O0.oOO0OOoOOOO0OoooOO0oO000);
+            || (getAnimationState(animationControllerLongCast) == O0000oo0ooO0ooo000o00ooo.O0OOooOOOo0O0o0oOO00OOoo)
+            || (getAnimationState(animationControllerOtherCast) == O0000oo0ooO0ooo000o00ooo.O0OOooOOOo0O0o0oOO00OOoo)
+            || (getAnimationState(animationControllerInstantCast) == O0000oo0ooO0ooo000o00ooo.O0OOooOOOo0O0o0oOO00OOoo);
     }
 
     @Unique
-    private static o00Ooooo0o0o0oOOoO00o0Oo getRealAnimationController(OooOOoo00oOoOOoOOOoO0ooO<?> controller) {
-        o000o0ooOOOOoooOoo0o0oOo<?> wrappedAnimateController;
-        if (controller instanceof oooo00oOO0o0oO0OoOoO0o0o) {
+    private static o0OoOOO00o0OooOoo0O00OoO getRealAnimationController(OOoOO0OOoo00O0oo0oO0Oooo<?> controller) {
+        o0oOoOoOoOO0Ooo000OO0ooo<?> wrappedAnimateController;
+        if (controller instanceof oOo0OooO0oOo0oOOOoo00o0O) {
             YsmAcStateAccessor1 accessor = (YsmAcStateAccessor1) controller;
             wrappedAnimateController = accessor.getWrappedAnimateController();
-        } else if (controller instanceof o000o0ooOOOOoooOoo0o0oOo) {
-            wrappedAnimateController = (o000o0ooOOOOoooOoo0o0oOo<?>) controller;
+        } else if (controller instanceof o0oOoOoOoOO0Ooo000OO0ooo) {
+            wrappedAnimateController = (o0oOoOoOoOO0Ooo000OO0ooo<?>) controller;
         } else {
             throw new IllegalStateException("Unknown controller");
         }
@@ -209,8 +202,8 @@ public abstract class YsmMaidEntityMixin extends Ooo0oOOo0Ooo0OO00o0O0oOo<Entity
     }
 
     @Unique
-    private static OOoOOo0oo0OO00oOo0OOO0O0 getAnimationState(OooOOoo00oOoOOoOOOoO0ooO<?> controller) {
-        return getRealAnimationController(controller).Ooo000oOo0000oo00o00o000();
+    private static O0000oo0ooO0ooo000o00ooo getAnimationState(oOo0OooO0oOo0oOOOoo00o0O<?> controller) {
+        return getRealAnimationController(controller).O0OOooOOOo0O0o0oOO00OOoo();
     }
 
     @Shadow

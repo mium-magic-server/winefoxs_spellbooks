@@ -1,7 +1,7 @@
 package net.magicterra.winefoxsspellbooks.mixin;
 
-import com.elfmcys.yesstevemodel.o000o0ooOOOOoooOoo0o0oOo;
-import com.elfmcys.yesstevemodel.oooo00oOO0o0oO0OoOoO0o0o;
+import com.elfmcys.yesstevemodel.o0oOoOoOoOO0Ooo000OO0ooo;
+import com.elfmcys.yesstevemodel.oOo0OooO0oOo0oOOOoo00o0O;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
@@ -11,8 +11,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-07-25 01:57
  */
-@Mixin(oooo00oOO0o0oO0OoOoO0o0o.class)
+@Mixin(oOo0OooO0oOo0oOOOoo00o0O.class)
 public interface YsmAcStateAccessor1 {
-    @Accessor("ooo00O0o000OOoOO00o00ooo")
-    o000o0ooOOOOoooOoo0o0oOo<?> getWrappedAnimateController();
+    @Accessor("O0OOooOOOo0O0o0oOO00OOoo")
+    o0oOoOoOoOO0Ooo000OO0ooo<?> getWrappedAnimateController();
 }
