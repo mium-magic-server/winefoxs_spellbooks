@@ -3,6 +3,7 @@ plugins {
     id 'maven-publish'
     id 'idea'
     id 'net.neoforged.moddev' version '2.0.103'
+    id "com.modrinth.minotaur" version "2.+"
 }
 
 version = mod_version
@@ -236,5 +237,20 @@ idea {
     module {
         downloadSources = true
         downloadJavadoc = true
+    }
+}
+
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = mod_id
+    // versionNumber = "1.0.0"
+    versionType = "beta"
+    uploadFile = jar
+    gameVersions = ["1.21.1"]
+    loaders = ["neoforge"]
+    dependencies {
+        required.project "touhou-little-maid"
+        required.project "irons-spells-n-spellbooks"
+        optional.version "yes-steve-model", "2.5.0-neoforge+mc1.21.1"
     }
 }
