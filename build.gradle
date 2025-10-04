@@ -252,6 +252,6 @@ modrinth {
     dependencies {
         required.project "touhou-little-maid"
         required.project "irons-spells-n-spellbooks"
-        optional.version "yes-steve-model", "2.5.0-neoforge+mc1.21.1"
+        optional.version "yes-steve-model", ysm_version
     }
 }
