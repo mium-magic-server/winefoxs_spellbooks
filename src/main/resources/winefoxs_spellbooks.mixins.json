@@ -8,14 +8,11 @@
     "MaidEntityMixin",
     "MaidMainContainerMixin",
     "SummonManagerAccessor",
-    "TargetGoalMixin",
-    "YsmAcStateAccessor1",
-    "YsmACStateAccessor2"
+    "TargetGoalMixin"
   ],
   "client": [
     "GeckoMaidEntityMixin",
-    "GeckoModelLoaderMixin",
-    "YsmMaidEntityMixin"
+    "GeckoModelLoaderMixin"
   ],
   "plugin": "net.magicterra.winefoxsspellbooks.mixin.MixinPlugin",
   "injectors": {
