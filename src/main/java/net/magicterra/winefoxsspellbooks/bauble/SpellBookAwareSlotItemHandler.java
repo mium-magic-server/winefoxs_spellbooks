@@ -1,21 +1,13 @@
 package net.magicterra.winefoxsspellbooks.bauble;
 
+import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.google.common.collect.Multimap;
-import io.redspace.ironsspellbooks.compat.Curios;
-import io.redspace.ironsspellbooks.item.SpellBook;
-import io.redspace.ironsspellbooks.item.curios.CurioBaseItem;
-import java.util.function.Predicate;
-import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.Item;
+import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
+import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
+import net.magicterra.winefoxsspellbooks.api.bauble.ISlotAwareBauble;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
-import top.theillusivec4.curios.api.SlotContext;
 
 /**
  * 可以感知魔法书变化的 SlotItemHandler
@@ -33,15 +25,12 @@ public class SpellBookAwareSlotItemHandler extends SlotItemHandler {
 
     @Override
     public boolean mayPlace(ItemStack stack) {
-        Predicate<Holder<Item>> predicate = itemHolder -> itemHolder.value() instanceof SpellBook;
-        if (!stack.is(predicate)) {
-            return super.mayPlace(stack);
-        }
-        int slots = getItemHandler().getSlots();
-        for (int i = 0; i < slots; i++) {
-            var exist = getItemHandler().getStackInSlot(i);
-            if (exist.is(predicate)) {
-                return false;
+        if (getItemHandler() instanceof BaubleItemHandler baubleItemHandler) {
+            IMaidBauble baubleInSlot = BaubleManager.getBauble(stack);
+            if (baubleInSlot instanceof ISlotAwareBauble slotAwareBauble) {
+                if (!slotAwareBauble.canPlace(baubleItemHandler, index, stack)) {
+                    return false;
+                }
             }
         }
         return super.mayPlace(stack);
@@ -51,35 +40,27 @@ public class SpellBookAwareSlotItemHandler extends SlotItemHandler {
     public void set(ItemStack stack) {
         super.set(stack);
 
-        if (maid.level.isClientSide || stack.isEmpty()) {
+        if (stack.isEmpty()) {
             return;
         }
-        onBookInstall(maid, stack);
+        if (getItemHandler() instanceof BaubleItemHandler baubleItemHandler) {
+            IMaidBauble baubleInSlot = BaubleManager.getBauble(stack);
+            if (baubleInSlot instanceof ISlotAwareBauble slotAwareBauble) {
+                slotAwareBauble.onEquipped(maid, baubleItemHandler, index, stack);
+            }
+        }
     }
 
     @Override
     public ItemStack remove(int amount) {
-        if (maid.level.isClientSide) {
-            return super.remove(amount);
-        }
         ItemStack stack = getItem();
-        if (stack.getItem() instanceof CurioBaseItem curioBaseItem) {
-            SlotContext slotContext = new SlotContext(Curios.SPELLBOOK_SLOT, maid, 0, false, true);
-            Multimap<Holder<Attribute>, AttributeModifier> map = curioBaseItem.getAttributeModifiers(slotContext, ResourceLocation.withDefaultNamespace("empty"), stack);
-            if (!map.isEmpty()) {
-                maid.getAttributes().removeAttributeModifiers(map);
+        ItemStack removed = super.remove(amount);
+        if (getItemHandler() instanceof BaubleItemHandler baubleItemHandler) {
+            IMaidBauble baubleInSlot = BaubleManager.getBauble(stack);
+            if (baubleInSlot instanceof ISlotAwareBauble slotAwareBauble) {
+                slotAwareBauble.onUnequipped(maid, baubleItemHandler, index, stack);
             }
         }
-        return super.remove(amount);
-    }
-
-    public static void onBookInstall(LivingEntity maid, ItemStack stack) {
-        if (stack.getItem() instanceof CurioBaseItem curioBaseItem) {
-            SlotContext slotContext = new SlotContext(Curios.SPELLBOOK_SLOT, maid, 0, false, true);
-            Multimap<Holder<Attribute>, AttributeModifier> map = curioBaseItem.getAttributeModifiers(slotContext, ResourceLocation.withDefaultNamespace("empty"), stack);
-            if (!map.isEmpty()) {
-                maid.getAttributes().addTransientAttributeModifiers(map);
-            }
-        }
+        return removed;
     }
 }

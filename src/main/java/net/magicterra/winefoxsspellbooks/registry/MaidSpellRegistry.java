@@ -70,6 +70,13 @@ public final class MaidSpellRegistry {
         SpellRegistry.SPELL_REGISTRY_KEY,
         ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "negative_effect_spells")
     );
+    /**
+     * 需要二重咏唱的法术，例如 炽焰追踪弹幕
+     */
+    public static final TagKey<AbstractSpell> MAID_SHOULD_RECAST_SPELLS_TAG = TagKey.create(
+        SpellRegistry.SPELL_REGISTRY_KEY,
+        ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "maid_should_recast_spells")
+    );
 
     public static final Set<AbstractSpell> ATTACK_SPELLS = new HashSet<>();
     public static final Set<AbstractSpell> DEFENSE_SPELLS = new HashSet<>();
@@ -78,6 +85,7 @@ public final class MaidSpellRegistry {
     public static final Set<AbstractSpell> POSITIVE_EFFECT_SPELLS = new HashSet<>();
     public static final Set<AbstractSpell> SUPPORT_EFFECT_SPELLS = new HashSet<>();
     public static final Set<AbstractSpell> NEGATIVE_EFFECT_SPELLS = new HashSet<>();
+    public static final Set<AbstractSpell> MAID_SHOULD_RECAST_SPELLS = new HashSet<>();
     private static final Map<AbstractSpell, Float> SPELL_RANGE_MAP = new HashMap<>();
 
     private static final Map<AbstractSpell, Holder<MobEffect>> SPELL_EFFECT_MAP = new HashMap<>();
@@ -94,6 +102,7 @@ public final class MaidSpellRegistry {
         SpellRegistry.REGISTRY.getOrCreateTag(POSITIVE_EFFECT_SPELLS_TAG).stream().forEach(s -> POSITIVE_EFFECT_SPELLS.add(s.value()));
         SpellRegistry.REGISTRY.getOrCreateTag(SUPPORT_EFFECT_SPELLS_TAG).stream().forEach(s -> SUPPORT_EFFECT_SPELLS.add(s.value()));
         SpellRegistry.REGISTRY.getOrCreateTag(NEGATIVE_EFFECT_SPELLS_TAG).stream().forEach(s -> NEGATIVE_EFFECT_SPELLS.add(s.value()));
+        SpellRegistry.REGISTRY.getOrCreateTag(MAID_SHOULD_RECAST_SPELLS_TAG).stream().forEach(s -> MAID_SHOULD_RECAST_SPELLS.add(s.value()));
 
         // 配置攻击范围，女仆在使用这些法术时会尝试靠近到小于指定的距离再发动法术
         SPELL_RANGE_MAP.put(SpellRegistry.DIVINE_SMITE_SPELL.get(), 1.7F);
@@ -149,6 +158,10 @@ public final class MaidSpellRegistry {
 
     public static boolean isNegativeEffectSpell(AbstractSpell spell) {
         return NEGATIVE_EFFECT_SPELLS.contains(spell);
+    }
+
+    public static boolean maidShouldRecast(AbstractSpell spell) {
+        return MAID_SHOULD_RECAST_SPELLS.contains(spell);
     }
 
     public static Holder<MobEffect> getSpellCausedEffect(AbstractSpell spell) {

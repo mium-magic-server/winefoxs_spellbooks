@@ -1,5 +1,6 @@
 package net.magicterra.winefoxsspellbooks.mixin;
 
+import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import io.redspace.ironsspellbooks.IronsSpellbooks;
@@ -20,7 +21,7 @@ import io.redspace.ironsspellbooks.spells.fire.BurningDashSpell;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
-import net.magicterra.winefoxsspellbooks.bauble.SpellBookAwareSlotItemHandler;
+import net.magicterra.winefoxsspellbooks.api.bauble.ISlotAwareBauble;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicData;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
@@ -71,6 +72,10 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
 
     @Shadow public abstract BaubleItemHandler getMaidBauble();
 
+    @Shadow public boolean guiOpening;
+
+    @Shadow protected abstract void completeUsingItem();
+
     //private static final EntityDataAccessor<SyncedSpellData> DATA_SPELL = SynchedEntityData.defineId(AbstractSpellCastingMob.class, SyncedSpellData.SYNCED_SPELL_DATA);
     @Unique
     private static final EntityDataAccessor<Boolean> DATA_CANCEL_CAST = SynchedEntityData.defineId(MaidEntityMixin.class, EntityDataSerializers.BOOLEAN);
@@ -89,9 +94,6 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
 
     @Unique
     private @Nullable SpellData castingSpell;
-
-    @Unique
-    private int drinkTime;
 
     @Unique
     public boolean hasUsedSingleAttack;
@@ -160,12 +162,6 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
     }
 
     @Override
-    public boolean canBeLeashed() {
-        // 是否能被拴绳拴住
-        return false;
-    }
-
-    @Override
     public boolean isAlliedTo(Entity entity) {
         if (Objects.equals(getOwner(), entity)) {
             // 女仆和主人是相同的队伍
@@ -218,7 +214,6 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
             maid.startUsingItem(eatHand);
 
             setDrinkingPotion(true);
-            drinkTime = useItemRemaining;
             AttributeInstance attributeinstance = this.getAttribute(Attributes.MOVEMENT_SPEED);
             attributeinstance.removeModifier(SPEED_MODIFIER_DRINKING);
             attributeinstance.addTransientModifier(SPEED_MODIFIER_DRINKING);
@@ -244,9 +239,9 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
             if (isDrinkingPotion()) {
                 if (itemStack.is(Items.GLASS_BOTTLE)) {
                     handsInvWrapper.setStackInSlot(i, ItemStack.EMPTY);
+                    finishDrinkingPotion();
+                    break;
                 }
-                finishDrinkingPotion();
-                break;
             }
         }
     }
@@ -289,6 +284,10 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
             setLivingEntityFlag(2, isUsedItemOffhand);
             setLivingEntityFlag(1, true);
             useItem = getItemInHand(this.getUsedItemHand());
+            if (useItemRemaining <= 0 || useItem.isEmpty()) {
+                completeUsingItem();
+                setDrinkingPotion(false);
+            }
         }
     }
 
@@ -297,10 +296,14 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         if (level.isClientSide) {
             return;
         }
-        for (int i = 0; i < getMaidBauble().getSlots(); i++) {
-            ItemStack stackInSlot = getMaidBauble().getStackInSlot(i);
+        BaubleItemHandler maidBauble = getMaidBauble();
+        for (int i = 0; i < maidBauble.getSlots(); i++) {
+            ItemStack stackInSlot = maidBauble.getStackInSlot(i);
             if (!stackInSlot.isEmpty()) {
-                SpellBookAwareSlotItemHandler.onBookInstall(self(), stackInSlot);
+                IMaidBauble baubleInSlot = maidBauble.getBaubleInSlot(i);
+                if (baubleInSlot instanceof ISlotAwareBauble slotAwareBauble) {
+                    slotAwareBauble.onEquipped((EntityMaid) self(), maidBauble, i, stackInSlot);
+                }
             }
         }
 
@@ -393,6 +396,13 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
             var spell = SpellRegistry.getSpell(syncedSpellData.getCastingSpellId());
             this.initiateCastSpell(spell, syncedSpellData.getCastingSpellLevel());
             //setSyncedSpellData(syncedSpellData);
+        }
+
+        if (guiOpening) {
+            cancelCast();
+            getNavigation().stop();
+            getMoveControl().strafe(0, 0);
+            return;
         }
 
 //        if (isDrinkingPotion()) {
@@ -539,7 +549,6 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
 
     @Unique
     private int getManaCost(AbstractSpell spell, int level) {
-        // TODO 魔力消耗缩减属性
         return spell.getManaCost(level);
     }
 

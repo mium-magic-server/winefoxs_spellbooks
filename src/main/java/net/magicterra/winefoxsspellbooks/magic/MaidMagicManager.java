@@ -1,25 +1,26 @@
 package net.magicterra.winefoxsspellbooks.magic;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.IChatBubbleData;
+import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.implement.TextChatBubbleData;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.google.common.base.Predicates;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.events.ModifySpellLevelEvent;
 import io.redspace.ironsspellbooks.api.item.curios.AffinityData;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
-import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastSource;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.api.util.Utils;
 import io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts;
 import io.redspace.ironsspellbooks.config.ServerConfigs;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Predicate;
+import java.util.Objects;
+import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -34,7 +35,7 @@ public class MaidMagicManager {
     public static final int CONTINUOUS_CAST_TICK_INTERVAL = 10;
 
     public static boolean regenMaidMana(EntityMaid maid, MagicData magicData) {
-        int maidMaxMana = (int) maid.getAttributeValue(AttributeRegistry.MAX_MANA);
+        int maidMaxMana = (int) getMaxMana(maid);
         var mana = magicData.getMana();
         if (mana < maidMaxMana) {
             float manaRegenMultiplier;
@@ -49,6 +50,11 @@ public class MaidMagicManager {
         } else {
             return false;
         }
+    }
+
+    public static double getMaxMana(EntityMaid maid) {
+        double maxMana = maid.getAttributeValue(AttributeRegistry.MAX_MANA);
+        return Config.getMaxManaMultiplier() * maxMana;
     }
 
     public static void addCooldown(EntityMaid maid, AbstractSpell spell, CastSource castSource) {
@@ -99,25 +105,48 @@ public class MaidMagicManager {
         return levelEvent.getLevel();
     }
 
-    public static SpellData getAvailableSpell(EntityMaid maid, Collection<SpellData> spells) {
-        return getAvailableSpell(maid, spells, Predicates.alwaysTrue());
-    }
-
-    public static SpellData getAvailableSpell(EntityMaid maid, Collection<SpellData> spells, Predicate<AbstractSpell> filter) {
+    public static boolean isSpellUsable(EntityMaid maid, SpellData spellData) {
         MaidMagicEntity magicMaid = (MaidMagicEntity) maid;
         IMagicEntity spellCastingMob = (IMagicEntity) maid;
         PlayerRecasts playerRecasts = spellCastingMob.getMagicData().getPlayerRecasts();
-        List<SpellData> filtered = spells.stream()
-            .filter(spellData -> filter.test(spellData.getSpell()))
-            .filter(spellData -> !playerRecasts.hasRecastForSpell(spellData.getSpell())
-                || spellData.getSpell().equals(SpellRegistry.FLAMING_BARRAGE_SPELL.get())
-                || spellData.getSpell().equals(SpellRegistry.WALL_OF_FIRE_SPELL.get())) // 排除重新施法会消失的
-            .filter(spellData -> spellCastingMob.getMagicData().getMana() - magicMaid.winefoxsSpellbooks$getManaCost(spellData.getSpell(), spellData.getLevel()) >= 0) // 考虑剩余魔力
-            .filter(spellData -> !spellCastingMob.getMagicData().getPlayerCooldowns().isOnCooldown(spellData.getSpell())) // 排除冷却中的
-            .toList();
-        if (filtered.isEmpty()) {
-            return SpellData.EMPTY;
+        float mana = spellCastingMob.getMagicData().getMana();
+        int manaCost = magicMaid.winefoxsSpellbooks$getManaCost(spellData.getSpell(), spellData.getLevel());
+        if (playerRecasts.hasRecastForSpell(spellData.getSpell())) {
+            // 二段咏唱，例如:
+            // 炽焰追踪弹幕、火墙术 需要二段咏唱才能施放
+            // 而召唤术二段咏唱会收回召唤物
+            if (!MaidSpellRegistry.maidShouldRecast(spellData.getSpell())) {
+                // 不能二段咏唱
+                return false;
+            }
         }
-        return filtered.get(maid.getRandom().nextInt(filtered.size()));
+        if (mana < manaCost) {
+            // 魔力不足
+            return false;
+        }
+        if (spellCastingMob.getMagicData().getPlayerCooldowns().isOnCooldown(spellData.getSpell())) {
+            // 冷却中
+            return false;
+        }
+        return true;
+    }
+
+    public static void showCurrentSpellInChatBubble(EntityMaid maid, SpellData spellData, boolean explainFailure) {
+        if (!Config.getShowChatBubbles()) {
+            return;
+        }
+        if (Objects.equals(spellData, SpellData.EMPTY)) {
+            if (explainFailure) {
+                maid.getChatBubbleManager().getChatBubbleDataCollection().chatBubbles().clear();
+                maid.getChatBubbleManager().addChatBubble(TextChatBubbleData.create(60, Component.translatable("chat_bubble.winefoxs_spellbooks.casting_task.no_available_spell"),
+                    IChatBubbleData.TYPE_2, IChatBubbleData.DEFAULT_PRIORITY - 100));
+            }
+        } else {
+            AbstractSpell spell = spellData.getSpell();
+            maid.getChatBubbleManager().getChatBubbleDataCollection().chatBubbles().clear();
+            maid.getChatBubbleManager().addChatBubble(TextChatBubbleData.create(40,
+                Component.translatable(spell.getComponentId()).append("!"),
+                IChatBubbleData.TYPE_2, IChatBubbleData.DEFAULT_PRIORITY - 100));
+        }
     }
 }

@@ -53,6 +53,7 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         var positiveEffectTag = tag(MaidSpellRegistry.POSITIVE_EFFECT_SPELLS_TAG);
         var supportEffectTag = tag(MaidSpellRegistry.SUPPORT_EFFECT_SPELLS_TAG);
         var negativeEffectTag = tag(MaidSpellRegistry.NEGATIVE_EFFECT_SPELLS_TAG);
+        var maidShouldRecastTag = tag(MaidSpellRegistry.MAID_SHOULD_RECAST_SPELLS_TAG);
 
         // 物理攻击法术 （词条包含伤害）
         for (AbstractSpell abstractSpell : SpellRegistry.REGISTRY) {
@@ -120,5 +121,10 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         negativeEffectTag.add(SpellRegistry.ACID_ORB_SPELL.get());
         negativeEffectTag.add(SpellRegistry.BLIGHT_SPELL.get());
         negativeEffectTag.add(SpellRegistry.ROOT_SPELL.get());
+
+        // 需要二段咏唱的法术
+        // TODO 检查其他法术
+        maidShouldRecastTag.add(SpellRegistry.FLAMING_BARRAGE_SPELL.get());
+        maidShouldRecastTag.add(SpellRegistry.WALL_OF_FIRE_SPELL.get());
     }
 }

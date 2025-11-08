@@ -57,6 +57,22 @@ public class MaidSpellDataHolder {
             supportEffectSpells.size() > 0;
     }
 
+    public boolean hasAnyCastingTaskSpells() {
+        return attackSpells.size() +
+            defenseSpells.size() +
+            movementSpells.size() +
+            supportSpells.size() +
+            negativeEffectSpells.size() > 0;
+    }
+
+    public boolean hasAnyMagicSupportTaskSpells() {
+        return defenseSpells.size() +
+            supportSpells.size() +
+            positiveEffectSpells.size() +
+            negativeEffectSpells.size() +
+            supportEffectSpells.size() > 0;
+    }
+
     public void updateAttackSpells(Collection<SpellData> spells) {
         attackSpells.clear();
         attackSpells.addAll(spells);

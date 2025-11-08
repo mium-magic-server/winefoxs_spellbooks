@@ -6,5 +6,14 @@
   "task.winefoxs_spellbooks.magic_support_task.desc": "Little maid will use Iron's Spells to support master",
   "task.winefoxs_spellbooks.magic_support_task.condition.has_spells": "Spell book in main hand or bauble inventory",
   "top.winefoxs_spellbooks.entity_maid.mana": "Mana: %d/%d",
-  "config.winefoxs_spellbooks.ysm_support": "Yes Steve Model Support"
+  "config.winefoxs_spellbooks": "Winefox's SpellBooks",
+  "config.winefoxs_spellbooks.max_spell_range": "Maximum spell attack search range",
+  "config.winefoxs_spellbooks.start_spell_range": "Start spell casting range",
+  "config.winefoxs_spellbooks.max_mana_multiplier": "Maximum mana multiplier",
+  "config.winefoxs_spellbooks.max_mana_multiplier.tooltip": "maximum mana multiplier based on player (Default: 1)",
+  "config.winefoxs_spellbooks.battle_walk_speed": "Walk speed in battle",
+  "config.winefoxs_spellbooks.max_combo_delay_tick": "Max combo delay tick",
+  "config.winefoxs_spellbooks.drink_potion_in_battle": "Drink potion in battle (Default: true)",
+  "config.winefoxs_spellbooks.show_chat_bubbles": "Show chat bubbles in battle (Default: true)",
+  "chat_bubble.winefoxs_spellbooks.casting_task.no_available_spell": "Spell reloading"
 }
