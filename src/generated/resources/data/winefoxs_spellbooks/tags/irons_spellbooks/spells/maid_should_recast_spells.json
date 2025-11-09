@@ -1,6 +1,20 @@
 {
   "values": [
-    "irons_spellbooks:flaming_barrage",
-    "irons_spellbooks:wall_of_fire"
+    {
+      "id": "irons_spellbooks:flaming_barrage",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:wall_of_fire",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:hollow_crystal",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:abyss_fireball",
+      "required": false
+    }
   ]
 }

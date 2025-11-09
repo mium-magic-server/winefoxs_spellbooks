@@ -28,14 +28,11 @@ public class SpellBookBauble implements ISlotPlaceableBauble {
     @Override
     public boolean canPlace(IItemHandler itemHandler, int index, ItemStack stack) {
         Predicate<Holder<Item>> predicate = itemHolder -> itemHolder.value() instanceof SpellBook;
-        if (!stack.is(predicate)) {
-            return false;
-        }
         int slots = itemHandler.getSlots();
         for (int i = 0; i < slots; i++) {
             // 只允许女仆装备一个法术书
             var exist = itemHandler.getStackInSlot(i);
-            if (exist.is(predicate)) {
+            if (exist.is(predicate) && stack.is(predicate)) {
                 return false;
             }
         }

@@ -16,5 +16,15 @@
   "config.winefoxs_spellbooks.drink_potion_in_battle": "Drink potion in battle (Default: true)",
   "config.winefoxs_spellbooks.show_chat_bubbles": "Show chat bubbles in battle (Default: true)",
   "config.winefoxs_spellbooks.melee_attack_in_magic_task": "Allow maid use melee attack in magic attack task (Default: true)",
+  "config.winefoxs_spellbooks.spell_compat": "Spell Compatibles",
+  "config.winefoxs_spellbooks.spell_compat.tooltip": "Addons configuration, Need restarts",
+  "config.winefoxs_spellbooks.spell_compat.extra_attack_spells": "Extral attack spells",
+  "config.winefoxs_spellbooks.spell_compat.extra_defense_spells": "Extral defense spells",
+  "config.winefoxs_spellbooks.spell_compat.extra_movement_spells": "Extral movement spells",
+  "config.winefoxs_spellbooks.spell_compat.extra_support_spells": "Extral support spells",
+  "config.winefoxs_spellbooks.spell_compat.extra_positive_effect_spells": "Extral positive effect spells",
+  "config.winefoxs_spellbooks.spell_compat.extra_negative_effect_spells": "Extral negative effect spells",
+  "config.winefoxs_spellbooks.spell_compat.extra_support_effect_spells": "Extral support other spells",
+  "config.winefoxs_spellbooks.spell_compat.maid_should_recast_spells": "Maid should recast spell ids",
   "chat_bubble.winefoxs_spellbooks.casting_task.no_available_spell": "Spell reloading"
 }

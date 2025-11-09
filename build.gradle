@@ -179,24 +179,70 @@ neoForge {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 dependencies {
-    implementation("io.wispforest:accessories-neoforge:${accessories_version}+${minecraft_version}")
-    implementation("vazkii.patchouli:Patchouli:${patchouli_version}")
-    implementation("software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}")
-    implementation("maven.modrinth:accessories-compat-layer:${accessories_compat_layer_version}")
+    // curios and accessories compat layer
+    compileOnly("io.wispforest:accessories-neoforge:${accessories_version}+${minecraft_version}")
+    compileOnly("maven.modrinth:accessories-compat-layer:${accessories_compat_layer_version}")
     implementation("maven.modrinth:curios:${curios_version}")
-    // 铁魔法
-    implementation("io.redspace:irons_spellbooks:${minecraft_version}-${irons_spells_version}") {
-        exclude group: "top.theillusivec4.curios", module: "curios-neoforge"
-    }
-    // 新生魔艺
-    implementation("com.hollingsworth.ars_nouveau:ars_nouveau-${minecraft_version}:${ars_nouveau_version}")
+    // animation library
+    implementation("software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}")
+
+    // Jade
+    implementation("maven.modrinth:jade:${jade_version}")
+    // Touhou little maid
     implementation("curse.maven:touhou-little-maid-355044:${tlm_curse_version}") {
         exclude group: "maven.modrinth", module: "sodium"
         exclude group: "maven.modrinth", module: "embeddium"
     }
-    implementation("maven.modrinth:jade:${jade_version}")
+    // 铁魔法
+    implementation("io.redspace:irons_spellbooks:${minecraft_version}-${irons_spells_version}") {
+        exclude group: "top.theillusivec4.curios", module: "curios-neoforge"
+    }
+
+    // 铁魔法附属
+    // Cataclysm: Spellbooks
+    implementation("curse.maven:cataclysm-spellbooks-1099461:${cataclysm_spellbooks_version}")
+    // Magic From The East
+    implementation("maven.modrinth:magic-from-the-east:${magic_from_the_east_version}")
+    // SnackPirate's Aeromancy Additions
+    implementation("maven.modrinth:aeromancy-additions:${aeromancy_additions_version}")
+    // Hazen 'N Stuff
+    // implementation("curse.maven:hazen-n-stuff-1231627:${hazen_n_stuff_version}")
+    // Discerning The Eldritch
+    implementation("curse.maven:discerning-the-eldritch-1143065:${discerning_the_eldritch_version}")
+    implementation("curse.maven:aces-spell-utils-1299492:${aces_spell_utils_version}")
+    // Fire's Ender Expansion
+    implementation("curse.maven:fires-ender-expansion-1245989:${fires_ender_expansion_version}")
+    // Atlas' Additions
+    implementation("maven.modrinth:atlas-additions:${atlas_additions_version}-${minecraft_version}")
+    // Ender's Spells and Stuff: Requiem
+    implementation("curse.maven:enders-spells-and-stuff-requiem-1336977:${enders_spells_and_stuff_requiem_version}")
+    // Dreamless Spells and Spellbooks
+    implementation("curse.maven:dreamless-spells-1250250:${dreamless_spells_version}")
+    // Majo's Spell Enchantment
+    implementation("curse.maven:majo-spell-enchantment-1318486:${majo_spell_enchantment_version}")
+    // Snow Waifu Spell
+    implementation("curse.maven:snow-waifu-spell-1320652:${snow_waifu_spell_version}")
+    implementation("curse.maven:the-twilight-forest-227639:${twilight_forest_curse_version}")
+    // GTBC's Geomancy Plus - Iron's Spells Addon
+    implementation("curse.maven:gtbcs-geomancy-plus-1352485:${gtbcs_geomancy_plus_version}")
+    implementation("curse.maven:gtbcs-spelllib-1194714:${gtbcs_spelllib_version}")
+
+
+    // 新生魔艺
+    implementation("com.hollingsworth.ars_nouveau:ars_nouveau-${minecraft_version}:${ars_nouveau_version}")
+
+    // 工具和前置
+    // 灾变
+    implementation("maven.modrinth:l_enders-cataclysm:${l_enders_cataclysm_version}-${minecraft_version}")
+    implementation("maven.modrinth:azurelib:${azurelib_version}")
+    runtimeOnly("vazkii.patchouli:Patchouli:${patchouli_version}")
     runtimeOnly("maven.modrinth:appleskin:${appleskin_version}")
     runtimeOnly("maven.modrinth:playeranimator:${playeranimator_version}")
+    runtimeOnly("maven.modrinth:lionfish-api:${lionfish_version}-neoforge")
+    runtimeOnly("curse.maven:expandability-465066:${expandability_version}")
+    runtimeOnly("curse.maven:mowzies-mobs-250498:${mowzies_mobs_version}")
+    runtimeOnly("curse.maven:placebo-283644:6926281")
+    runtimeOnly("curse.maven:apothic-attributes-898963:6751650")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

@@ -7,12 +7,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 
 /**
  * 女仆咒语注册表
@@ -90,11 +92,17 @@ public final class MaidSpellRegistry {
 
     private static final Map<AbstractSpell, Holder<MobEffect>> SPELL_EFFECT_MAP = new HashMap<>();
 
-    static {
-        registerSpell();
-    }
-
-    private static void registerSpell() {
+    public static void registerSpell(ServerAboutToStartEvent event) {
+        ATTACK_SPELLS.clear();
+        DEFENSE_SPELLS.clear();
+        MOVEMENT_SPELLS.clear();
+        SUPPORT_SPELLS.clear();
+        POSITIVE_EFFECT_SPELLS.clear();
+        SUPPORT_EFFECT_SPELLS.clear();
+        NEGATIVE_EFFECT_SPELLS.clear();
+        MAID_SHOULD_RECAST_SPELLS.clear();
+        SPELL_RANGE_MAP.clear();
+        SPELL_EFFECT_MAP.clear();
         SpellRegistry.REGISTRY.getOrCreateTag(ATTACK_SPELLS_TAG).stream().forEach(s -> ATTACK_SPELLS.add(s.value()));
         SpellRegistry.REGISTRY.getOrCreateTag(DEFENSE_SPELLS_TAG).stream().forEach(s -> DEFENSE_SPELLS.add(s.value()));
         SpellRegistry.REGISTRY.getOrCreateTag(MOVEMENT_SPELLS_TAG).stream().forEach(s -> MOVEMENT_SPELLS.add(s.value()));
@@ -104,7 +112,33 @@ public final class MaidSpellRegistry {
         SpellRegistry.REGISTRY.getOrCreateTag(NEGATIVE_EFFECT_SPELLS_TAG).stream().forEach(s -> NEGATIVE_EFFECT_SPELLS.add(s.value()));
         SpellRegistry.REGISTRY.getOrCreateTag(MAID_SHOULD_RECAST_SPELLS_TAG).stream().forEach(s -> MAID_SHOULD_RECAST_SPELLS.add(s.value()));
 
+        for (String extraSpellId : Config.getExtraAttackSpells()) {
+            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(ATTACK_SPELLS::add);
+        }
+        for (String extraSpellId : Config.getExtraDefenseSpells()) {
+            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(DEFENSE_SPELLS::add);
+        }
+        for (String extraSpellId : Config.getExtraMovementSpells()) {
+            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(MOVEMENT_SPELLS::add);
+        }
+        for (String extraSpellId : Config.getExtraSupportSpells()) {
+            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(SUPPORT_SPELLS::add);
+        }
+        for (String extraSpellId : Config.getExtraPositiveEffectSpells()) {
+            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(POSITIVE_EFFECT_SPELLS::add);
+        }
+        for (String extraSpellId : Config.getExtraNegativeEffectSpells()) {
+            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(NEGATIVE_EFFECT_SPELLS::add);
+        }
+        for (String extraSpellId : Config.getExtraSupportEffectSpells()) {
+            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(SUPPORT_EFFECT_SPELLS::add);
+        }
+        for (String extraSpellId : Config.getMaidShouldRecastSpells()) {
+            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(MAID_SHOULD_RECAST_SPELLS::add);
+        }
+
         // 配置攻击范围，女仆在使用这些法术时会尝试靠近到小于指定的距离再发动法术
+        // TODO 迁移到配置文件
         SPELL_RANGE_MAP.put(SpellRegistry.DIVINE_SMITE_SPELL.get(), 1.7F);
         SPELL_RANGE_MAP.put(SpellRegistry.CLEANSE_SPELL.get(), 3.0F);
         SPELL_RANGE_MAP.put(SpellRegistry.HEALING_CIRCLE_SPELL.get(), 5.0F);
@@ -126,6 +160,7 @@ public final class MaidSpellRegistry {
         SPELL_EFFECT_MAP.put(SpellRegistry.FORTIFY_SPELL.get(), MobEffectRegistry.FORTIFY);
         SPELL_EFFECT_MAP.put(SpellRegistry.HASTE_SPELL.get(), MobEffectRegistry.HASTENED);
         SPELL_EFFECT_MAP.put(SpellRegistry.FROSTBITE_SPELL.get(), MobEffectRegistry.FROSTBITTEN_STRIKES);
+        // TODO 注册附属模组的效果
     }
 
     public static float getSpellRange(AbstractSpell spell) {

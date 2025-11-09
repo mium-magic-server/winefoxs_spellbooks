@@ -1,11 +1,9 @@
 package net.magicterra.winefoxsspellbooks;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import java.io.IOException;
-import java.nio.file.Files;
-import net.neoforged.fml.loading.FMLLoader;
-import net.neoforged.fml.loading.FMLPaths;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
@@ -33,6 +31,23 @@ public class Config {
 
     private static ModConfigSpec.BooleanValue MELEE_ATTACK_IN_MAGIC_TASK;
 
+    private static ModConfigSpec.ConfigValue<List<String>> EXTRA_ATTACK_SPELLS;
+
+    private static ModConfigSpec.ConfigValue<List<String>> EXTRA_DEFENSE_SPELLS;
+
+    private static ModConfigSpec.ConfigValue<List<String>> EXTRA_MOVEMENT_SPELLS;
+
+    private static ModConfigSpec.ConfigValue<List<String>> EXTRA_SUPPORT_SPELLS;
+
+    private static ModConfigSpec.ConfigValue<List<String>> EXTRA_POSITIVE_EFFECT_SPELLS;
+
+    private static ModConfigSpec.ConfigValue<List<String>> EXTRA_NEGATIVE_EFFECT_SPELLS;
+
+    private static ModConfigSpec.ConfigValue<List<String>> EXTRA_SUPPORT_EFFECT_SPELLS;
+
+    private static ModConfigSpec.ConfigValue<List<String>> MAID_SHOULD_RECAST_SPELLS;
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static void init(ModConfigSpec.Builder builder) {
         builder.translation(TRANSLATE_KEY).push(WinefoxsSpellbooks.MODID);
 
@@ -67,6 +82,54 @@ public class Config {
         MELEE_ATTACK_IN_MAGIC_TASK = builder.comment("Allow maid use melee attack in magic attack task (Default: true)")
             .translation(translateKey("melee_attack_in_magic_task"))
             .define("meleeAttackInMagicTask", true);
+
+        builder.translation(translateKey("spell_compat")).push("spell_compat");
+
+        Supplier<String> placeholderSupplier = () -> SPELL_ID_PLACEHOLDER;
+        Predicate<Object> spellElementChecker = (s) -> LittleMaidSpellbooksCompat.isSpellId(String.valueOf(s));
+        ModConfigSpec.Range<Integer> spellIdListRange = ModConfigSpec.Range.of(0, 65535);
+
+        EXTRA_ATTACK_SPELLS = (ModConfigSpec.ConfigValue<List<String>>) (ModConfigSpec.ConfigValue)
+            builder.comment("Extra attack spell ids")
+                .translation(translateKey("spell_compat.extra_attack_spells"))
+                .defineList(Collections.singletonList("extraAttackSpells"), Collections::emptyList, placeholderSupplier, spellElementChecker, spellIdListRange);
+
+        EXTRA_DEFENSE_SPELLS = (ModConfigSpec.ConfigValue<List<String>>) (ModConfigSpec.ConfigValue)
+            builder.comment("Extra defense spell ids")
+                .translation(translateKey("spell_compat.extra_defense_spells"))
+                .defineList(Collections.singletonList("extraDefenseSpells"), Collections::emptyList, placeholderSupplier, spellElementChecker, spellIdListRange);
+
+        EXTRA_MOVEMENT_SPELLS = (ModConfigSpec.ConfigValue<List<String>>) (ModConfigSpec.ConfigValue)
+            builder.comment("Extra movement spell ids")
+                .translation(translateKey("spell_compat.extra_movement_spells"))
+                .defineList(Collections.singletonList("extraMovementSpells"), Collections::emptyList, placeholderSupplier, spellElementChecker, spellIdListRange);
+
+        EXTRA_SUPPORT_SPELLS = (ModConfigSpec.ConfigValue<List<String>>) (ModConfigSpec.ConfigValue)
+            builder.comment("Extra support spell ids")
+                .translation(translateKey("spell_compat.extra_support_spells"))
+                .defineList(Collections.singletonList("extraSupportSpells"), Collections::emptyList, placeholderSupplier, spellElementChecker, spellIdListRange);
+
+        EXTRA_POSITIVE_EFFECT_SPELLS = (ModConfigSpec.ConfigValue<List<String>>) (ModConfigSpec.ConfigValue)
+            builder.comment("Extra positive effect spell ids")
+                .translation(translateKey("spell_compat.extra_positive_effect_spells"))
+                .defineList(Collections.singletonList("extraPositiveEffectSpells"), Collections::emptyList, placeholderSupplier, spellElementChecker, spellIdListRange);
+
+        EXTRA_NEGATIVE_EFFECT_SPELLS = (ModConfigSpec.ConfigValue<List<String>>) (ModConfigSpec.ConfigValue)
+            builder.comment("Extra negative effect spell ids")
+                .translation(translateKey("spell_compat.extra_negative_effect_spells"))
+                .defineList(Collections.singletonList("extraNegativeEffectSpells"), Collections::emptyList, placeholderSupplier, spellElementChecker, spellIdListRange);
+
+        EXTRA_SUPPORT_EFFECT_SPELLS = (ModConfigSpec.ConfigValue<List<String>>) (ModConfigSpec.ConfigValue)
+            builder.comment("Extra support other spell ids")
+                .translation(translateKey("spell_compat.extra_support_effect_spells"))
+                .defineList(Collections.singletonList("extraSupportEffectSpells"), Collections::emptyList, placeholderSupplier, spellElementChecker, spellIdListRange);
+
+        MAID_SHOULD_RECAST_SPELLS = (ModConfigSpec.ConfigValue<List<String>>) (ModConfigSpec.ConfigValue)
+            builder.comment("Maid should recast spell ids")
+                .translation(translateKey("spell_compat.maid_should_recast_spells"))
+                .defineList(Collections.singletonList("maidShouldRecastSpells"), Collections::emptyList, placeholderSupplier, spellElementChecker, spellIdListRange);
+
+        builder.pop();
 
         builder.pop();
     }
@@ -103,39 +166,41 @@ public class Config {
         return MELEE_ATTACK_IN_MAGIC_TASK.getAsBoolean();
     }
 
+    public static List<String> getExtraAttackSpells() {
+        return EXTRA_ATTACK_SPELLS.get();
+    }
+
+    public static List<String> getExtraDefenseSpells() {
+        return EXTRA_DEFENSE_SPELLS.get();
+    }
+
+    public static List<String> getExtraMovementSpells() {
+        return EXTRA_MOVEMENT_SPELLS.get();
+    }
+
+    public static List<String> getExtraSupportSpells() {
+        return EXTRA_SUPPORT_SPELLS.get();
+    }
+
+    public static List<String> getExtraPositiveEffectSpells() {
+        return EXTRA_POSITIVE_EFFECT_SPELLS.get();
+    }
+
+    public static List<String> getExtraNegativeEffectSpells() {
+        return EXTRA_NEGATIVE_EFFECT_SPELLS.get();
+    }
+
+    public static List<String> getExtraSupportEffectSpells() {
+        return EXTRA_SUPPORT_EFFECT_SPELLS.get();
+    }
+
+    public static List<String> getMaidShouldRecastSpells() {
+        return MAID_SHOULD_RECAST_SPELLS.get();
+    }
+
     private static String translateKey(String key) {
         return TRANSLATE_KEY + "." + key;
     }
 
-    private static final MixinConfigSpec MIXIN_CONFIG_SPEC;
-
-    static {
-        // 混入配置只能在 neoforge 初始化前读取，不能动态修改
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        var configPath = FMLLoader.getGamePath().resolve(FMLPaths.CONFIGDIR.relative()).resolve(WinefoxsSpellbooks.MODID + "_mixin.json");
-        MixinConfigSpec mixinConfigSpec0 = new MixinConfigSpec();
-        if (Files.exists(configPath)) {
-            try {
-                mixinConfigSpec0 = gson.fromJson(Files.readString(configPath), MixinConfigSpec.class);
-            } catch (IOException e) {
-                WinefoxsSpellbooks.LOGGER.error("Failed to load config file", e);
-            }
-        } else {
-            String json = gson.toJson(mixinConfigSpec0);
-            try {
-                Files.writeString(configPath, json);
-            } catch (IOException e) {
-                WinefoxsSpellbooks.LOGGER.error("Could not write config", e);
-            }
-        }
-        MIXIN_CONFIG_SPEC = mixinConfigSpec0;
-    }
-
-    public static boolean ysmSupport() {
-        return MIXIN_CONFIG_SPEC.ysmSupport;
-    }
-
-    static class MixinConfigSpec {
-        public boolean ysmSupport = false;
-    }
+    private final static String SPELL_ID_PLACEHOLDER = "irons_spellbooks:fireball";
 }

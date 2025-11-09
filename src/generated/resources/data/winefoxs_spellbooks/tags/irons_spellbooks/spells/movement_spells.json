@@ -1,8 +1,28 @@
 {
   "values": [
-    "irons_spellbooks:blood_step",
-    "irons_spellbooks:evasion",
-    "irons_spellbooks:teleport",
-    "irons_spellbooks:frost_step"
+    {
+      "id": "irons_spellbooks:blood_step",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:evasion",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:teleport",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:frost_step",
+      "required": false
+    },
+    {
+      "id": "aero_additions:dash",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:otherworldly_presence",
+      "required": false
+    }
   ]
 }

@@ -15,7 +15,6 @@
     "GeckoMaidEntityMixin",
     "GeckoModelLoaderMixin"
   ],
-  "plugin": "net.magicterra.winefoxsspellbooks.mixin.MixinPlugin",
   "injectors": {
     "defaultRequire": 1
   },

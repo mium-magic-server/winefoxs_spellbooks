@@ -1,8 +1,32 @@
 {
   "values": [
-    "irons_spellbooks:fortify",
-    "irons_spellbooks:haste",
-    "irons_spellbooks:cleanse",
-    "irons_spellbooks:frostbite"
+    {
+      "id": "irons_spellbooks:fortify",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:haste",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:cleanse",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:frostbite",
+      "required": false
+    },
+    {
+      "id": "aero_additions:feather_fall",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:aspect_of_the_shulker",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:finality_of_decay",
+      "required": false
+    }
   ]
 }

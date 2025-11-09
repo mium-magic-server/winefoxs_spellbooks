@@ -8,8 +8,12 @@ import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ExtraMaidBrainMa
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
+import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
+import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.IPresetSpellContainer;
-import io.redspace.ironsspellbooks.registries.ItemRegistry;
+import io.redspace.ironsspellbooks.item.weapons.StaffItem;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import net.magicterra.winefoxsspellbooks.bauble.SpellBookBauble;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.brain.MaidMagicBrain;
@@ -18,11 +22,15 @@ import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
 import net.magicterra.winefoxsspellbooks.task.MaidCastingTask;
 import net.magicterra.winefoxsspellbooks.task.MaidMagicSupportTask;
 import net.magicterra.winefoxsspellbooks.task.debug.MaidDrinkPotionTask;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SwordItem;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import snownee.jade.api.ITooltip;
 
 /**
@@ -33,6 +41,9 @@ import snownee.jade.api.ITooltip;
  */
 @LittleMaidExtension
 public class LittleMaidSpellbooksCompat implements ILittleMaid {
+    private static final Set<String> ALL_SPELL_IDS = ConcurrentHashMap.newKeySet();
+    private static final Set<Item> REGISTERED_SPELL_BOOKS = ConcurrentHashMap.newKeySet();
+
     public LittleMaidSpellbooksCompat() {
         if (FMLLoader.getLoadingModList().getModFileById("jade") != null) {
             NeoForge.EVENT_BUS.addListener(this::addJadeInfoEvent);
@@ -43,11 +54,9 @@ public class LittleMaidSpellbooksCompat implements ILittleMaid {
     @Override
     public void bindMaidBauble(BaubleManager manager) {
         SpellBookBauble bauble = new SpellBookBauble();
-        ItemRegistry.getIronsItems().stream()
-            .filter(item -> item.get() instanceof IPresetSpellContainer)
-            .filter(item -> !(item.get() instanceof ArmorItem))
-            .filter(item -> !(item.get() instanceof SwordItem))
-            .forEach((item) -> manager.bind(item.get(), bauble));
+        for (Item book : REGISTERED_SPELL_BOOKS) {
+            manager.bind(book, bauble);
+        }
     }
 
     @Override
@@ -75,5 +84,35 @@ public class LittleMaidSpellbooksCompat implements ILittleMaid {
         int maxMana = (int) MaidMagicManager.getMaxMana(maid);
         int mana = (int) magicEntity.winefoxsSpellbooks$getMana();
         iTooltip.add(Component.translatable("top.winefoxs_spellbooks.entity_maid.mana", mana, maxMana));
+    }
+
+    public static void onRegisterItem(RegisterEvent event) {
+        Registry<Item> itemRegistry = event.getRegistry(Registries.ITEM);
+        if (itemRegistry != null) {
+            for (Item item : itemRegistry) {
+                if (!(item instanceof IPresetSpellContainer)) {
+                    continue;
+                }
+                if (item instanceof ArmorItem || item instanceof SwordItem || item instanceof StaffItem) {
+                    continue;
+                }
+                REGISTERED_SPELL_BOOKS.add(item);
+            }
+        }
+
+        Registry<AbstractSpell> spellRegistry = event.getRegistry(SpellRegistry.SPELL_REGISTRY_KEY);
+        if (spellRegistry != null) {
+            for (AbstractSpell spell : spellRegistry) {
+                ALL_SPELL_IDS.add(spell.getSpellId());
+            }
+        }
+    }
+
+    public static boolean isSpellBook(Item item) {
+        return REGISTERED_SPELL_BOOKS.contains(item);
+    }
+
+    public static boolean isSpellId(String spellId) {
+        return ALL_SPELL_IDS.contains(spellId);
     }
 }

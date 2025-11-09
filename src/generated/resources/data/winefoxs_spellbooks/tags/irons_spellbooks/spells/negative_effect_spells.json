@@ -1,10 +1,72 @@
 {
   "values": [
-    "irons_spellbooks:slow",
-    "irons_spellbooks:heat_surge",
-    "irons_spellbooks:frostwave",
-    "irons_spellbooks:acid_orb",
-    "irons_spellbooks:blight",
-    "irons_spellbooks:root"
+    {
+      "id": "irons_spellbooks:slow",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:heat_surge",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:frostwave",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:acid_orb",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:blight",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:root",
+      "required": false
+    },
+    {
+      "id": "aero_additions:updraft",
+      "required": false
+    },
+    {
+      "id": "aero_additions:asphyxiate",
+      "required": false
+    },
+    {
+      "id": "dreamless_spells:drained",
+      "required": false
+    },
+    {
+      "id": "dreamless_spells:dullard",
+      "required": false
+    },
+    {
+      "id": "dreamless_spells:doorway_effect",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:displacement_cage",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:pilfer",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:silence",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:boogie_woogie",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:guardians_gaze",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:throw_up",
+      "required": false
+    }
   ]
 }

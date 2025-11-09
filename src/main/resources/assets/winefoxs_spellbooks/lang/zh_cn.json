@@ -16,5 +16,15 @@
   "config.winefoxs_spellbooks.drink_potion_in_battle": "法术战斗中无限治疗药水 (默认: true)",
   "config.winefoxs_spellbooks.show_chat_bubbles": "法术战斗中显示法术名称 (Default: true)",
   "config.winefoxs_spellbooks.melee_attack_in_magic_task": "允许女仆在法术攻击时使用近战武器 (Default: true)",
+  "config.winefoxs_spellbooks.spell_compat": "法术兼容",
+  "config.winefoxs_spellbooks.spell_compat.tooltip": "铁魔法本体的法术清单已内置，更改需要重启",
+  "config.winefoxs_spellbooks.spell_compat.extra_attack_spells": "额外的攻击法术ID",
+  "config.winefoxs_spellbooks.spell_compat.extra_defense_spells": "额外的防御法术ID",
+  "config.winefoxs_spellbooks.spell_compat.extra_movement_spells": "额外的瞬移法术ID",
+  "config.winefoxs_spellbooks.spell_compat.extra_support_spells": "额外的治疗法术ID",
+  "config.winefoxs_spellbooks.spell_compat.extra_positive_effect_spells": "额外的正面效果法术ID",
+  "config.winefoxs_spellbooks.spell_compat.extra_negative_effect_spells": "额外的负面效果法术ID",
+  "config.winefoxs_spellbooks.spell_compat.extra_support_effect_spells": "额外的恢复效果法术ID",
+  "config.winefoxs_spellbooks.spell_compat.maid_should_recast_spells": "需要女仆多次咏唱的法术ID",
   "chat_bubble.winefoxs_spellbooks.casting_task.no_available_spell": "冷却中"
 }

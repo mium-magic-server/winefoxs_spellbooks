@@ -7,17 +7,14 @@ import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.ISpellContainer;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.api.spells.SpellSlot;
-import io.redspace.ironsspellbooks.item.SpellBook;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.event.MaidSpellBookEvent;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
-import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
@@ -39,8 +36,7 @@ public class MaidEventHandler {
     @SubscribeEvent
     public static void onMaidEquipSpellBook(MaidSpellBookEvent.Equipment event) {
         ItemStack stack = event.getStack();
-        Predicate<Holder<Item>> predicate = itemHolder -> itemHolder.value() instanceof SpellBook;
-        if (stack.is(predicate)) {
+        if (ISpellContainer.isSpellContainer(stack)) {
             onMaidSpellDataChanged(event.getMaid());
         }
     }
@@ -48,8 +44,7 @@ public class MaidEventHandler {
     @SubscribeEvent
     public static void onMaidUnEquipSpellBook(MaidSpellBookEvent.UnEquipment event) {
         ItemStack stack = event.getStack();
-        Predicate<Holder<Item>> predicate = itemHolder -> itemHolder.value() instanceof SpellBook;
-        if (stack.is(predicate)) {
+        if (ISpellContainer.isSpellContainer(stack)) {
             onMaidSpellDataChanged(event.getMaid());
         }
     }

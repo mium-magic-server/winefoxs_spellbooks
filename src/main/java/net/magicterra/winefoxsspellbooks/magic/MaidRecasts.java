@@ -17,19 +17,15 @@ import io.redspace.ironsspellbooks.entity.spells.fireball.SmallMagicFireball;
 import io.redspace.ironsspellbooks.entity.spells.wall_of_fire.WallOfFireEntity;
 import io.redspace.ironsspellbooks.particle.ZapParticleOption;
 import io.redspace.ironsspellbooks.registries.ItemRegistry;
-import io.redspace.ironsspellbooks.spells.blood.RaiseDeadSpell;
-import io.redspace.ironsspellbooks.spells.ender.SummonSwordsSpell;
 import io.redspace.ironsspellbooks.spells.ender.TeleportSpell;
-import io.redspace.ironsspellbooks.spells.evocation.SummonHorseSpell;
-import io.redspace.ironsspellbooks.spells.evocation.SummonVexSpell;
 import io.redspace.ironsspellbooks.spells.fire.FlamingBarrageSpell;
 import io.redspace.ironsspellbooks.spells.fire.WallOfFireSpell;
-import io.redspace.ironsspellbooks.spells.ice.SummonPolarBearSpell;
 import io.redspace.ironsspellbooks.spells.lightning.ThunderStepSpell;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -48,6 +44,22 @@ import org.apache.commons.lang3.reflect.FieldUtils;
  * @since 2025-07-27 18:26
  */
 public class MaidRecasts extends PlayerRecasts {
+    // TODO 配置化
+    private static final Set<String> SUMMON_SPELL_IDS = Set.of(
+        "irons_spellbooks:raise_dead",
+        "irons_spellbooks:summon_swords",
+        "irons_spellbooks:summon_vex",
+        "irons_spellbooks:summon_horse",
+        "irons_spellbooks:summon_polar_bear",
+        "snowwaifuspell:summon_snow_queen",
+        "cataclysm_spellbooks:conjure_koboldiator",
+        "cataclysm_spellbooks:summon_koboleton",
+        "cataclysm_spellbooks:conjure_ignited_reinforcement",
+        "cataclysm_spellbooks:conjure_thralls",
+        "cataclysm_spellbooks:conjure_amethyst_crab",
+        "discerning_the_eldritch:conjure_forsaken_aid"
+    );
+
     private static final Field recastLookupField = FieldUtils.getDeclaredField(PlayerRecasts.class, "recastLookup", true);
     private static final Field remainingTicksField = FieldUtils.getDeclaredField(RecastInstance.class, "remainingTicks", true);
 
@@ -135,20 +147,12 @@ public class MaidRecasts extends PlayerRecasts {
     private void onSpellRecastFinished(AbstractSpell spell, RecastInstance recastInstance, RecastResult recastResult, ICastDataSerializable castDataSerializable) {
         if (spell instanceof FlamingBarrageSpell flamingBarrageSpell) {
             onFlamingBarrageSpellRecastFinished(flamingBarrageSpell, recastInstance, recastResult, castDataSerializable);
-        } else if (spell instanceof RaiseDeadSpell raiseDeadSpell) {
-            onSummonXXSpellRecastFinished(raiseDeadSpell, recastInstance, recastResult, castDataSerializable);
-        } else if (spell instanceof SummonSwordsSpell summonSwordsSpell) {
-            onSummonXXSpellRecastFinished(summonSwordsSpell, recastInstance, recastResult, castDataSerializable);
-        } else if (spell instanceof SummonVexSpell summonVexSpell) {
-            onSummonXXSpellRecastFinished(summonVexSpell, recastInstance, recastResult, castDataSerializable);
-        } else if (spell instanceof SummonHorseSpell summonHorseSpell) {
-            onSummonXXSpellRecastFinished(summonHorseSpell, recastInstance, recastResult, castDataSerializable);
-        } else if (spell instanceof SummonPolarBearSpell summonPolarBearSpell) {
-            onSummonXXSpellRecastFinished(summonPolarBearSpell, recastInstance, recastResult, castDataSerializable);
         } else if (spell instanceof ThunderStepSpell thunderStepSpell) {
             onThunderStepSpellRecastFinished(thunderStepSpell, recastInstance, recastResult, castDataSerializable);
         } else if (spell instanceof WallOfFireSpell wallOfFireSpell) {
             onWallOfFireSpellRecastFinished(wallOfFireSpell, recastInstance, recastResult, castDataSerializable);
+        } else if (SUMMON_SPELL_IDS.contains(spell.getSpellId())) {
+            onSummonXXSpellRecastFinished(spell, recastInstance, recastResult, castDataSerializable);
         }
     }
 

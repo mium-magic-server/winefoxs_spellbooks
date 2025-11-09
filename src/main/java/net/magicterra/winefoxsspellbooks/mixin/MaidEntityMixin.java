@@ -502,7 +502,7 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
             return;
         }
 
-        if (spell == SpellRegistry.TELEPORT_SPELL.get() || spell == SpellRegistry.FROST_STEP_SPELL.get()) {
+        if (spell == SpellRegistry.TELEPORT_SPELL.get() || spell == SpellRegistry.FROST_STEP_SPELL.get() || spell.getSpellId().equals("discerning_the_eldritch:otherworldly_presence")) {
             setTeleportLocationBehindTarget(10);
         } else if (spell == SpellRegistry.BLOOD_STEP_SPELL.get()) {
             setTeleportLocationBehindTarget(3);

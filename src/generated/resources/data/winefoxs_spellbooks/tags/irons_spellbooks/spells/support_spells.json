@@ -1,7 +1,16 @@
 {
   "values": [
-    "irons_spellbooks:greater_heal",
-    "irons_spellbooks:heal",
-    "irons_spellbooks:ice_tomb"
+    {
+      "id": "irons_spellbooks:greater_heal",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:heal",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:ice_tomb",
+      "required": false
+    }
   ]
 }

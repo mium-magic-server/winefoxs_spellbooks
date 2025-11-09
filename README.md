@@ -14,16 +14,19 @@ This mod introduces a new "Magic Attack Mode" and supports the GeckoLib animatio
 ## ✨ Key Features
 - **Spellbooks as Accessories**: Spellbooks can be placed in the maid's accessory slot (they won't render visually), serving as a medium for spellcasting.
 - **Magic Attack Mode**: When in this mode, maids can use spells from a spellbook or enchanted gear in their main hand or accessory slot.
+- **Magic Support Mode**: When in this mode, maids will use magic to support allied mobs (include owner and maids).
 - **Mana System Support**:
     - Casting spells consumes mana.
-    - Mana regeneration is affected by "Mana Regeneration" enchantments.
-    - After a maid is struck by lightning, they gain infinite mana (100% per 0.5 seconds).
+    - Max Mana is affected by "Max Mana" attribute.
+    - After a maid is struck by lightning, they gain infinite mana (100% per 0.5 seconds), but still affected by max mana.
 - **Diverse Spell Types**:
     - Attack
     - Defense
     - Summoning
     - Movement
     - Support
+    - Positive buffs
+    - Negative buffs
     - ⚠️ Note: Some spells may accidentally damage friendly entities.
 - **Regeneration Potion Use**: If no support spells are available in Magic Attack Mode, maids will use regeneration potions to heal.
 - **GeckoLib Animation Support**:
@@ -37,7 +40,6 @@ This mod introduces a new "Magic Attack Mode" and supports the GeckoLib animatio
     - [Iron's Spells 'n Spellbooks](https://www.curseforge.com/minecraft/mc-mods/irons-spells-n-spellbooks)
 - **Compatibility**:
     - Only supports **GeckoLib**-based maids. Other models do not support animations.
-    - Yes Steve Model has limited support and requires manual editing of the tlm animation group.
     - Compatible with Minecraft 1.21.1, built on **NeoForge**.
 
 ---
