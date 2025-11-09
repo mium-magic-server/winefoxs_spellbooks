@@ -14,7 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
-import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
 
 /**
  * 女仆咒语注册表
@@ -92,7 +92,7 @@ public final class MaidSpellRegistry {
 
     private static final Map<AbstractSpell, Holder<MobEffect>> SPELL_EFFECT_MAP = new HashMap<>();
 
-    public static void registerSpell(ServerAboutToStartEvent event) {
+    public static void registerSpell(ServerStartingEvent event) {
         ATTACK_SPELLS.clear();
         DEFENSE_SPELLS.clear();
         MOVEMENT_SPELLS.clear();
