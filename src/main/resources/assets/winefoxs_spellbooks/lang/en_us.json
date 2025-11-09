@@ -15,5 +15,6 @@
   "config.winefoxs_spellbooks.max_combo_delay_tick": "Max combo delay tick",
   "config.winefoxs_spellbooks.drink_potion_in_battle": "Drink potion in battle (Default: true)",
   "config.winefoxs_spellbooks.show_chat_bubbles": "Show chat bubbles in battle (Default: true)",
+  "config.winefoxs_spellbooks.melee_attack_in_magic_task": "Allow maid use melee attack in magic attack task (Default: true)",
   "chat_bubble.winefoxs_spellbooks.casting_task.no_available_spell": "Spell reloading"
 }

@@ -24,7 +24,9 @@ import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
+import net.minecraft.world.entity.ai.behavior.MeleeAttack;
 import net.minecraft.world.entity.ai.behavior.StartAttacking;
 import net.minecraft.world.entity.ai.behavior.StopAttackingIfTargetInvalid;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -72,7 +74,7 @@ public class MaidCastingTask implements IRangedAttackTask {
         BehaviorControl<EntityMaid> maidAttackStrafingTask = new MaidSpellStrafingTask(Config.getStartSpellRange(), (float) Config.getBattleWalkSpeed());
         BehaviorControl<EntityMaid> shootTargetTask = new MaidSpellCastingTask(maid);
 
-        return Lists.newArrayList(
+        List<Pair<Integer, BehaviorControl<? super EntityMaid>>> behaviors = Lists.newArrayList(
             Pair.of(5, supplementedTask),
             Pair.of(5, findTargetTask),
             Pair.of(5, spellChooseTask),
@@ -81,6 +83,13 @@ public class MaidCastingTask implements IRangedAttackTask {
             Pair.of(5, maidAttackStrafingTask),
             Pair.of(5, shootTargetTask)
         );
+
+        if (Config.getMeleeAttackInMagicTask()) {
+            BehaviorControl<Mob> attackTargetTask = MeleeAttack.create(20);
+            behaviors.add(Pair.of(5, attackTargetTask));
+        }
+
+        return behaviors;
     }
 
     @Override
@@ -92,13 +101,20 @@ public class MaidCastingTask implements IRangedAttackTask {
         BehaviorControl<EntityMaid> drinkPotionTask = new MaidDrinkPotionsTask((float) Config.getBattleWalkSpeed(), 100);
         BehaviorControl<EntityMaid> shootTargetTask = new MaidSpellCastingTask(maid);
 
-        return Lists.newArrayList(
+        List<Pair<Integer, BehaviorControl<? super EntityMaid>>> behaviors = Lists.newArrayList(
             Pair.of(5, supplementedTask),
             Pair.of(5, findTargetTask),
             Pair.of(5, spellChooseTask),
             Pair.of(5, drinkPotionTask),
             Pair.of(5, shootTargetTask)
         );
+
+        if (Config.getMeleeAttackInMagicTask()) {
+            BehaviorControl<Mob> attackTargetTask = MeleeAttack.create(20);
+            behaviors.add(Pair.of(5, attackTargetTask));
+        }
+
+        return behaviors;
     }
 
     @Override

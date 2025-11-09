@@ -4,10 +4,10 @@
   "package": "net.magicterra.winefoxsspellbooks.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "BaubleContainerMixin",
     "GeneralConfigMixin",
     "IMagicSummonMixin",
     "MaidEntityMixin",
-    "MaidMainContainerMixin",
     "SummonManagerAccessor",
     "TargetGoalMixin"
   ],

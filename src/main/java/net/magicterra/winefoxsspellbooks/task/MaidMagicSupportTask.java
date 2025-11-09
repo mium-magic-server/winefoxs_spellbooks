@@ -91,7 +91,7 @@ public class MaidMagicSupportTask implements IRangedAttackTask {
             }
             LivingEntity attackTarget = e.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElseThrow();
             if (maid.canAttack(attackTarget) && maid.canSee(attackTarget)) {
-                return Optional.of(e);
+                return Optional.of(attackTarget);
             }
         }
         return Optional.empty();

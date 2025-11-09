@@ -1,0 +1,9 @@
+{
+  "name": "模组介绍",
+  "icon": "irons_spellbooks:gold_spell_book",
+  "category": "touhou_little_maid:winefoxs_spellbooks",
+  "pages": [
+    "这是一个为《车万女仆》和《铁之咒语魔法书》设计的联动模组，旨在扩展《车万女仆》模组中女仆的魔法战斗能力。通过与《铁之咒语魔法书》模组的结合，女仆可以穿戴魔法书作为饰品，在战斗中使用各种强大的魔法攻击和召唤技能。"
+  ],
+  "sortnum": 1
+}

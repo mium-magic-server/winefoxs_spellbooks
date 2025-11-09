@@ -6,7 +6,7 @@ import io.redspace.ironsspellbooks.compat.Curios;
 import io.redspace.ironsspellbooks.item.SpellBook;
 import io.redspace.ironsspellbooks.item.curios.CurioBaseItem;
 import java.util.function.Predicate;
-import net.magicterra.winefoxsspellbooks.api.bauble.ISlotAwareBauble;
+import net.magicterra.winefoxsspellbooks.api.bauble.ISlotPlaceableBauble;
 import net.magicterra.winefoxsspellbooks.api.event.MaidSpellBookEvent;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +24,7 @@ import top.theillusivec4.curios.api.SlotContext;
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-07-19 00:29
  */
-public class SpellBookBauble implements ISlotAwareBauble {
+public class SpellBookBauble implements ISlotPlaceableBauble {
     @Override
     public boolean canPlace(IItemHandler itemHandler, int index, ItemStack stack) {
         Predicate<Holder<Item>> predicate = itemHolder -> itemHolder.value() instanceof SpellBook;
@@ -43,7 +43,7 @@ public class SpellBookBauble implements ISlotAwareBauble {
     }
 
     @Override
-    public void onEquipped(EntityMaid maid, IItemHandler itemHandler, int index, ItemStack stack) {
+    public void onPutOn(EntityMaid maid, ItemStack stack) {
         if (stack.getItem() instanceof CurioBaseItem curioBaseItem) {
             SlotContext slotContext = new SlotContext(Curios.SPELLBOOK_SLOT, maid, 0, false, true);
             Multimap<Holder<Attribute>, AttributeModifier> map = curioBaseItem.getAttributeModifiers(slotContext, ResourceLocation.withDefaultNamespace("empty"), stack);
@@ -52,11 +52,11 @@ public class SpellBookBauble implements ISlotAwareBauble {
             }
         }
 
-        NeoForge.EVENT_BUS.post(new MaidSpellBookEvent.Equipment(maid, itemHandler, index, stack));
+        NeoForge.EVENT_BUS.post(new MaidSpellBookEvent.Equipment(maid, stack));
     }
 
     @Override
-    public void onUnequipped(EntityMaid maid, IItemHandler itemHandler, int index, ItemStack stack) {
+    public void onTakeOff(EntityMaid maid, ItemStack stack) {
         if (stack.getItem() instanceof CurioBaseItem curioBaseItem) {
             SlotContext slotContext = new SlotContext(Curios.SPELLBOOK_SLOT, maid, 0, false, true);
             Multimap<Holder<Attribute>, AttributeModifier> map = curioBaseItem.getAttributeModifiers(slotContext, ResourceLocation.withDefaultNamespace("empty"), stack);
@@ -65,6 +65,6 @@ public class SpellBookBauble implements ISlotAwareBauble {
             }
         }
 
-        NeoForge.EVENT_BUS.post(new MaidSpellBookEvent.UnEquipment(maid, itemHandler, index, stack));
+        NeoForge.EVENT_BUS.post(new MaidSpellBookEvent.UnEquipment(maid, stack));
     }
 }

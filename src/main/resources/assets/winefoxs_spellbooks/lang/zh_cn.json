@@ -15,5 +15,6 @@
   "config.winefoxs_spellbooks.max_combo_delay_tick": "最大施法间隔刻",
   "config.winefoxs_spellbooks.drink_potion_in_battle": "法术战斗中无限治疗药水 (默认: true)",
   "config.winefoxs_spellbooks.show_chat_bubbles": "法术战斗中显示法术名称 (Default: true)",
+  "config.winefoxs_spellbooks.melee_attack_in_magic_task": "允许女仆在法术攻击时使用近战武器 (Default: true)",
   "chat_bubble.winefoxs_spellbooks.casting_task.no_available_spell": "冷却中"
 }

@@ -1,0 +1,9 @@
+{
+  "name": "法术书",
+  "icon": "irons_spellbooks:diamond_spell_book",
+  "category": "touhou_little_maid:winefoxs_spellbooks",
+  "pages": [
+    "法术书是女仆施法的媒介，女仆不可以使用法术卷轴施法，法术书需要装备到女仆的饰品栏中才能发挥作用。$(br)除了常规的法术书，注入法术的武器和装备也可以用作施法媒介。"
+  ],
+  "sortnum": 3
+}

@@ -1,6 +1,7 @@
-// 1.21.1	2025-09-09T02:34:10.7343208	Tags for irons_spellbooks:spells mod id winefoxs_spellbooks
-b150717e54497d2d36c8e3d9886b3fa73fc45985 data/winefoxs_spellbooks/tags/irons_spellbooks/spells/attack_spells.json
+// 1.21.1	2025-11-09T04:00:46.3834973	Tags for irons_spellbooks:spells mod id winefoxs_spellbooks
+4995a2e0509e3d32c4fb1a3ab39f20f5baddbc19 data/winefoxs_spellbooks/tags/irons_spellbooks/spells/attack_spells.json
 5390d03da872b4a5de36bc5b7041bc619a35cfe5 data/winefoxs_spellbooks/tags/irons_spellbooks/spells/defense_spells.json
+921f30704f4639aba83f8a4e258df9c885b38b3b data/winefoxs_spellbooks/tags/irons_spellbooks/spells/maid_should_recast_spells.json
 caf92b7796fc45e0f82e45f0d06db622e847ac75 data/winefoxs_spellbooks/tags/irons_spellbooks/spells/movement_spells.json
 6c3171b5347d1bf980f89ba16c8db92fc47caab2 data/winefoxs_spellbooks/tags/irons_spellbooks/spells/negative_effect_spells.json
 7e44ca1adc93e5d8f7938715e886c08f34080b43 data/winefoxs_spellbooks/tags/irons_spellbooks/spells/positive_effect_spells.json

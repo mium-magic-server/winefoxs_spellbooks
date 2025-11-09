@@ -21,7 +21,6 @@ import io.redspace.ironsspellbooks.spells.fire.BurningDashSpell;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
-import net.magicterra.winefoxsspellbooks.api.bauble.ISlotAwareBauble;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicData;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
@@ -301,8 +300,8 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
             ItemStack stackInSlot = maidBauble.getStackInSlot(i);
             if (!stackInSlot.isEmpty()) {
                 IMaidBauble baubleInSlot = maidBauble.getBaubleInSlot(i);
-                if (baubleInSlot instanceof ISlotAwareBauble slotAwareBauble) {
-                    slotAwareBauble.onEquipped((EntityMaid) self(), maidBauble, i, stackInSlot);
+                if (baubleInSlot != null) {
+                    baubleInSlot.onPutOn((EntityMaid) self(), stackInSlot);
                 }
             }
         }

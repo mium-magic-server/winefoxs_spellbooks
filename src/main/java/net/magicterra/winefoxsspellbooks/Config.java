@@ -31,6 +31,8 @@ public class Config {
 
     private static ModConfigSpec.BooleanValue SHOW_CHAT_BUBBLES;
 
+    private static ModConfigSpec.BooleanValue MELEE_ATTACK_IN_MAGIC_TASK;
+
     public static void init(ModConfigSpec.Builder builder) {
         builder.translation(TRANSLATE_KEY).push(WinefoxsSpellbooks.MODID);
 
@@ -52,7 +54,7 @@ public class Config {
 
         MAX_COMBO_DELAY_TICK = builder.comment("Max combo delay tick")
             .translation(translateKey("max_combo_delay_tick"))
-            .defineInRange("maxComboDelayTick", 4, 1, 600);
+            .defineInRange("maxComboDelayTick", 10, 1, 600);
 
         DRINK_POTION_IN_BATTLE = builder.comment("Drink potion in battle (Default: true)")
             .translation(translateKey("drink_potion_in_battle"))
@@ -61,6 +63,10 @@ public class Config {
         SHOW_CHAT_BUBBLES = builder.comment("Show chat bubbles in battle (Default: true)")
             .translation(translateKey("show_chat_bubbles"))
             .define("showChatBubblesInSpellBattle", true);
+
+        MELEE_ATTACK_IN_MAGIC_TASK = builder.comment("Allow maid use melee attack in magic attack task (Default: true)")
+            .translation(translateKey("melee_attack_in_magic_task"))
+            .define("meleeAttackInMagicTask", true);
 
         builder.pop();
     }
@@ -91,6 +97,10 @@ public class Config {
 
     public static boolean getShowChatBubbles() {
         return SHOW_CHAT_BUBBLES.getAsBoolean();
+    }
+
+    public static boolean getMeleeAttackInMagicTask() {
+        return MELEE_ATTACK_IN_MAGIC_TASK.getAsBoolean();
     }
 
     private static String translateKey(String key) {

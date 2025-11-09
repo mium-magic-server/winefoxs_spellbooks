@@ -3,7 +3,6 @@ package net.magicterra.winefoxsspellbooks.api.event;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.event.entity.living.LivingEvent;
-import net.neoforged.neoforge.items.IItemHandler;
 
 /**
  * 女仆装备法术书装备卸下事件
@@ -18,16 +17,6 @@ public class MaidSpellBookEvent extends LivingEvent {
     private final EntityMaid maid;
 
     /**
-     * 饰品栏物品
-     */
-    private final IItemHandler itemHandler;
-
-    /**
-     * 栏位
-     */
-    private final int slotIndex;
-
-    /**
      * 饰品物品
      */
     private final ItemStack stack;
@@ -35,29 +24,17 @@ public class MaidSpellBookEvent extends LivingEvent {
     /**
      * 构造事件
      *
-     * @param maid 女仆实体
-     * @param itemHandler 饰品栏物品
-     * @param slotIndex 栏位
+     * @param maid  女仆实体
      * @param stack 物品
      */
-    protected MaidSpellBookEvent(EntityMaid maid, IItemHandler itemHandler, int slotIndex, ItemStack stack) {
+    protected MaidSpellBookEvent(EntityMaid maid, ItemStack stack) {
         super(maid);
         this.maid = maid;
-        this.itemHandler = itemHandler;
-        this.slotIndex = slotIndex;
         this.stack = stack;
     }
 
     public EntityMaid getMaid() {
         return maid;
-    }
-
-    public IItemHandler getItemHandler() {
-        return itemHandler;
-    }
-
-    public int getSlotIndex() {
-        return slotIndex;
     }
 
     public ItemStack getStack() {
@@ -68,13 +45,11 @@ public class MaidSpellBookEvent extends LivingEvent {
         /**
          * 构造事件
          *
-         * @param maid        女仆实体
-         * @param itemHandler 饰品栏物品
-         * @param slotIndex   栏位
-         * @param stack       物品
+         * @param maid  女仆实体
+         * @param stack 物品
          */
-        public Equipment(EntityMaid maid, IItemHandler itemHandler, int slotIndex, ItemStack stack) {
-            super(maid, itemHandler, slotIndex, stack);
+        public Equipment(EntityMaid maid, ItemStack stack) {
+            super(maid, stack);
         }
     }
 
@@ -82,13 +57,11 @@ public class MaidSpellBookEvent extends LivingEvent {
         /**
          * 构造事件
          *
-         * @param maid        女仆实体
-         * @param itemHandler 饰品栏物品
-         * @param slotIndex   栏位
-         * @param stack       物品
+         * @param maid  女仆实体
+         * @param stack 物品
          */
-        public UnEquipment(EntityMaid maid, IItemHandler itemHandler, int slotIndex, ItemStack stack) {
-            super(maid, itemHandler, slotIndex, stack);
+        public UnEquipment(EntityMaid maid, ItemStack stack) {
+            super(maid, stack);
         }
     }
 }
