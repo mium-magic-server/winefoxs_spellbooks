@@ -20,6 +20,9 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -49,6 +52,9 @@ public class MaidSpellStrafingTask extends Behavior<EntityMaid> {
 
     @Override
     protected boolean checkExtraStartConditions(ServerLevel worldIn, EntityMaid owner) {
+        if (owner.getBrain().checkMemory(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_PRESENT)) {
+            return false;
+        }
         return owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).filter(LivingEntity::isAlive).isPresent() ||
             owner.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()).filter(LivingEntity::isAlive).isPresent();
     }
@@ -72,36 +78,55 @@ public class MaidSpellStrafingTask extends Behavior<EntityMaid> {
         double spellRange = spellData == null ? projectileRange : MaidSpellRegistry.getSpellRange(spellData.getSpell());
         double spellRangeSqr = spellRange * spellRange;
 
-
         float speed = (magicEntity.isCasting() ? .75f : 1f) * movementSpeed;
         // 保持距离, 拉近距离, 或者四处走位
         float fleeDist = 0.5f;
         float ss = 1.2f;
+        if (++strafingTime > 50) {
+            if (owner.getRandom().nextDouble() < .1) {
+                strafingClockwise = !strafingClockwise;
+                strafingTime = 0;
+            }
+        }
+        int strafeDir = strafingClockwise ? 1 : -1; // 左右走位方向
         if (!magicEntity.isCasting() && --fleeCooldown <= 0 && distanceSquared < spellRangeSqr * (fleeDist * fleeDist)) {
             // 尝试远离敌人
-            Vec3 flee = DefaultRandomPos.getPosAway(owner, Mth.floor(spellRange), 7, target.position());
+            Vec3 flee = DefaultRandomPos.getPosAway(owner, Mth.clamp(Mth.floor(spellRange), 1, 10), 4, target.position());
             if (flee != null) {
-                owner.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(flee, (float) (speed * 1.5), 1));
+                // owner.getNavigation().moveTo(flee.x, flee.y, flee.z, speed * 1.5F);
+                owner.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(flee, speed * 1.5F, 1));
             } else {
-                owner.getMoveControl().strafe(-(float) speed * ss, (float) speed * ss);
+                float forward = -speed * ss;
+                float strafe = speed * strafeDir * ss;
+                owner.getMoveControl().strafe(forward, strafe);
             }
             fleeCooldown = 100;
         } else if (distanceSquared < spellRangeSqr && owner.canSee(target)) {
             // 在敌人附近
             owner.getNavigation().stop();
-            if (++strafingTime > 50) {
-                if (owner.getRandom().nextDouble() < .1) {
-                    strafingClockwise = !strafingClockwise;
-                    strafingTime = 0;
-                }
-            }
             float strafeForward = (distanceSquared * 6 < spellRangeSqr ? -1.2f : .5f) * movementSpeed; // 前后走位矢量
-            int strafeDir = strafingClockwise ? 1 : -1; // 左右走位方向
-            owner.getMoveControl().strafe(strafeForward * ss, speed * strafeDir * ss);
+            float forward = strafeForward * ss;
+            float strafe = speed * strafeDir * ss;
+            owner.getMoveControl().strafe(forward, strafe);
+            if (owner.getNavigation().isStuck() || checkNeedJump(owner, forward, strafe)) {
+                owner.getJumpControl().jump();
+            }
             if (owner.horizontalCollision && owner.getRandom().nextFloat() < .1f) {
                 tryJump(owner);
             }
             owner.setYRot(Mth.rotateIfNecessary(owner.getYRot(), owner.yHeadRot, 0.0F));
+        } else if (distanceSquared > spellRangeSqr && owner.canSee(target)) {
+            // 超出施法范围，拉近
+            Vec3 towards = DefaultRandomPos.getPosTowards(owner, Mth.floor(spellRange), 4, target.position(), Mth.HALF_PI);
+            if (towards != null) {
+                owner.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(towards, speed, 1));
+            } else {
+                float forward = speed * ss;
+                float strafe = speed * strafeDir * ss;
+                owner.getMoveControl().strafe(forward, strafe);
+            }
+            owner.setYRot(Mth.rotateIfNecessary(owner.getYRot(), owner.yHeadRot, 0.0F));
+            fleeCooldown = 100;
         }
         BehaviorUtils.lookAtEntity(owner, target);
     }
@@ -112,12 +137,35 @@ public class MaidSpellStrafingTask extends Behavior<EntityMaid> {
 
     @Override
     protected void stop(ServerLevel worldIn, EntityMaid entityIn, long gameTimeIn) {
+        entityIn.getNavigation().stop();
         entityIn.getMoveControl().strafe(0, 0);
     }
 
     @Override
     protected boolean canStillUse(ServerLevel worldIn, EntityMaid entityIn, long gameTimeIn) {
         return this.checkExtraStartConditions(worldIn, entityIn);
+    }
+
+    private boolean checkStrafePathSafe(EntityMaid maid, float forward, float strafe) {
+        // 略消耗性能，不检测
+        BlockPos targetBlockPos = getStrafeTargetBlockPos(maid, forward, strafe, 3);
+        PathType pathNodeType = WalkNodeEvaluator.getPathTypeStatic(maid, targetBlockPos);
+        return pathNodeType == PathType.WALKABLE;
+    }
+
+    private boolean checkNeedJump(EntityMaid maid, float forward, float strafe) {
+        BlockPos targetBlockPos = getStrafeTargetBlockPos(maid, forward, strafe, 1);
+        return maid.level.getBlockState(targetBlockPos).isSolidRender(maid.level, targetBlockPos) &&
+            maid.level.getBlockState(targetBlockPos.above()).isAir() &&
+            maid.level.getBlockState(targetBlockPos.above(2)).isAir();
+    }
+
+    private BlockPos getStrafeTargetBlockPos(EntityMaid maid, float forward, float strafe, float factor) {
+        Vec3 facing = maid.getForward();
+        Vec3 position = maid.position();
+        Vec2 offset = new Vec2(forward, strafe).normalized().scale(factor);
+        Vec3 nextPosition = position.add(facing.x * offset.x + facing.z * offset.y, 0, facing.z * offset.x + facing.x * offset.y);
+        return BlockPos.containing(nextPosition.x, nextPosition.y, nextPosition.z);
     }
 
     protected void tryJump(EntityMaid maid) {

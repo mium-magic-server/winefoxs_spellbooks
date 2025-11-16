@@ -25,7 +25,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -44,22 +44,6 @@ import org.apache.commons.lang3.reflect.FieldUtils;
  * @since 2025-07-27 18:26
  */
 public class MaidRecasts extends PlayerRecasts {
-    // TODO 配置化
-    private static final Set<String> SUMMON_SPELL_IDS = Set.of(
-        "irons_spellbooks:raise_dead",
-        "irons_spellbooks:summon_swords",
-        "irons_spellbooks:summon_vex",
-        "irons_spellbooks:summon_horse",
-        "irons_spellbooks:summon_polar_bear",
-        "snowwaifuspell:summon_snow_queen",
-        "cataclysm_spellbooks:conjure_koboldiator",
-        "cataclysm_spellbooks:summon_koboleton",
-        "cataclysm_spellbooks:conjure_ignited_reinforcement",
-        "cataclysm_spellbooks:conjure_thralls",
-        "cataclysm_spellbooks:conjure_amethyst_crab",
-        "discerning_the_eldritch:conjure_forsaken_aid"
-    );
-
     private static final Field recastLookupField = FieldUtils.getDeclaredField(PlayerRecasts.class, "recastLookup", true);
     private static final Field remainingTicksField = FieldUtils.getDeclaredField(RecastInstance.class, "remainingTicks", true);
 
@@ -145,13 +129,14 @@ public class MaidRecasts extends PlayerRecasts {
     }
 
     private void onSpellRecastFinished(AbstractSpell spell, RecastInstance recastInstance, RecastResult recastResult, ICastDataSerializable castDataSerializable) {
+        // TODO 兼容附属的 Recast
         if (spell instanceof FlamingBarrageSpell flamingBarrageSpell) {
             onFlamingBarrageSpellRecastFinished(flamingBarrageSpell, recastInstance, recastResult, castDataSerializable);
         } else if (spell instanceof ThunderStepSpell thunderStepSpell) {
             onThunderStepSpellRecastFinished(thunderStepSpell, recastInstance, recastResult, castDataSerializable);
         } else if (spell instanceof WallOfFireSpell wallOfFireSpell) {
             onWallOfFireSpellRecastFinished(wallOfFireSpell, recastInstance, recastResult, castDataSerializable);
-        } else if (SUMMON_SPELL_IDS.contains(spell.getSpellId())) {
+        } else if (MaidSpellRegistry.isSummonSpell(spell)) {
             onSummonXXSpellRecastFinished(spell, recastInstance, recastResult, castDataSerializable);
         }
     }

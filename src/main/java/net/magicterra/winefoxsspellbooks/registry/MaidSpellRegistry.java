@@ -2,18 +2,18 @@ package net.magicterra.winefoxsspellbooks.registry;
 
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
-import io.redspace.ironsspellbooks.registries.MobEffectRegistry;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffects;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 
 /**
@@ -73,6 +73,13 @@ public final class MaidSpellRegistry {
         ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "negative_effect_spells")
     );
     /**
+     * 召唤法术，需要标记以避免重新咏唱
+     */
+    public static final TagKey<AbstractSpell> SUMMON_SPELLS_TAG = TagKey.create(
+        SpellRegistry.SPELL_REGISTRY_KEY,
+        ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "summon_spells")
+    );
+    /**
      * 需要二重咏唱的法术，例如 炽焰追踪弹幕
      */
     public static final TagKey<AbstractSpell> MAID_SHOULD_RECAST_SPELLS_TAG = TagKey.create(
@@ -87,6 +94,7 @@ public final class MaidSpellRegistry {
     public static final Set<AbstractSpell> POSITIVE_EFFECT_SPELLS = new HashSet<>();
     public static final Set<AbstractSpell> SUPPORT_EFFECT_SPELLS = new HashSet<>();
     public static final Set<AbstractSpell> NEGATIVE_EFFECT_SPELLS = new HashSet<>();
+    public static final Set<AbstractSpell> SUMMON_SPELLS = new HashSet<>();
     public static final Set<AbstractSpell> MAID_SHOULD_RECAST_SPELLS = new HashSet<>();
     private static final Map<AbstractSpell, Float> SPELL_RANGE_MAP = new HashMap<>();
 
@@ -100,6 +108,7 @@ public final class MaidSpellRegistry {
         POSITIVE_EFFECT_SPELLS.clear();
         SUPPORT_EFFECT_SPELLS.clear();
         NEGATIVE_EFFECT_SPELLS.clear();
+        SUMMON_SPELLS.clear();
         MAID_SHOULD_RECAST_SPELLS.clear();
         SPELL_RANGE_MAP.clear();
         SPELL_EFFECT_MAP.clear();
@@ -110,6 +119,7 @@ public final class MaidSpellRegistry {
         SpellRegistry.REGISTRY.getOrCreateTag(POSITIVE_EFFECT_SPELLS_TAG).stream().forEach(s -> POSITIVE_EFFECT_SPELLS.add(s.value()));
         SpellRegistry.REGISTRY.getOrCreateTag(SUPPORT_EFFECT_SPELLS_TAG).stream().forEach(s -> SUPPORT_EFFECT_SPELLS.add(s.value()));
         SpellRegistry.REGISTRY.getOrCreateTag(NEGATIVE_EFFECT_SPELLS_TAG).stream().forEach(s -> NEGATIVE_EFFECT_SPELLS.add(s.value()));
+        SpellRegistry.REGISTRY.getOrCreateTag(SUMMON_SPELLS_TAG).stream().forEach(s -> SUMMON_SPELLS.add(s.value()));
         SpellRegistry.REGISTRY.getOrCreateTag(MAID_SHOULD_RECAST_SPELLS_TAG).stream().forEach(s -> MAID_SHOULD_RECAST_SPELLS.add(s.value()));
 
         for (String extraSpellId : Config.getExtraAttackSpells()) {
@@ -133,34 +143,40 @@ public final class MaidSpellRegistry {
         for (String extraSpellId : Config.getExtraSupportEffectSpells()) {
             SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(SUPPORT_EFFECT_SPELLS::add);
         }
+        for (String extraSpellId : Config.getExtraSummonSpells()) {
+            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(SUMMON_SPELLS::add);
+        }
         for (String extraSpellId : Config.getMaidShouldRecastSpells()) {
             SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(MAID_SHOULD_RECAST_SPELLS::add);
         }
 
         // 配置攻击范围，女仆在使用这些法术时会尝试靠近到小于指定的距离再发动法术
-        // TODO 迁移到配置文件
-        SPELL_RANGE_MAP.put(SpellRegistry.DIVINE_SMITE_SPELL.get(), 1.7F);
-        SPELL_RANGE_MAP.put(SpellRegistry.CLEANSE_SPELL.get(), 3.0F);
-        SPELL_RANGE_MAP.put(SpellRegistry.HEALING_CIRCLE_SPELL.get(), 5.0F);
         SPELL_RANGE_MAP.put(SpellRegistry.none(), 15.0F);
+        Map<String, Float> spellStartCastingRangeInConfig = Config.getSpellStartCastingRange();
+        if (spellStartCastingRangeInConfig.isEmpty()) {
+            spellStartCastingRangeInConfig = Config.DEFAULT_SPELL_CASTING_RANGE_RAW;
+        }
+        for (Map.Entry<String, Float> entry : spellStartCastingRangeInConfig.entrySet()) {
+            String key = entry.getKey();
+            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(key)).ifPresent(s -> SPELL_RANGE_MAP.put(s, entry.getValue()));
+        }
 
         // 配置法术导致的药水效果，这里仅考虑主要效果，如果有法术导致多个效果可能会出问题
-        SPELL_EFFECT_MAP.put(SpellRegistry.HEARTSTOP_SPELL.get(), MobEffectRegistry.HEARTSTOP);
-        SPELL_EFFECT_MAP.put(SpellRegistry.ECHOING_STRIKES_SPELL.get(), MobEffectRegistry.ECHOING_STRIKES);
-        SPELL_EFFECT_MAP.put(SpellRegistry.INVISIBILITY_SPELL.get(), MobEffects.INVISIBILITY);
-        SPELL_EFFECT_MAP.put(SpellRegistry.CHARGE_SPELL.get(), MobEffectRegistry.CHARGED);
-        SPELL_EFFECT_MAP.put(SpellRegistry.SPIDER_ASPECT_SPELL.get(), MobEffectRegistry.SPIDER_ASPECT);
-        SPELL_EFFECT_MAP.put(SpellRegistry.OAKSKIN_SPELL.get(), MobEffectRegistry.OAKSKIN);
-        SPELL_EFFECT_MAP.put(SpellRegistry.GLUTTONY_SPELL.get(), MobEffectRegistry.GLUTTONY);
-        SPELL_EFFECT_MAP.put(SpellRegistry.ABYSSAL_SHROUD_SPELL.get(), MobEffectRegistry.ABYSSAL_SHROUD);
-        SPELL_EFFECT_MAP.put(SpellRegistry.SLOW_SPELL.get(), MobEffects.MOVEMENT_SLOWDOWN);
-        SPELL_EFFECT_MAP.put(SpellRegistry.HEAT_SURGE_SPELL.get(), MobEffectRegistry.REND);
-        SPELL_EFFECT_MAP.put(SpellRegistry.FROSTWAVE_SPELL.get(), MobEffectRegistry.CHILLED);
-        SPELL_EFFECT_MAP.put(SpellRegistry.BLIGHT_SPELL.get(), MobEffectRegistry.BLIGHT);
-        SPELL_EFFECT_MAP.put(SpellRegistry.FORTIFY_SPELL.get(), MobEffectRegistry.FORTIFY);
-        SPELL_EFFECT_MAP.put(SpellRegistry.HASTE_SPELL.get(), MobEffectRegistry.HASTENED);
-        SPELL_EFFECT_MAP.put(SpellRegistry.FROSTBITE_SPELL.get(), MobEffectRegistry.FROSTBITTEN_STRIKES);
-        // TODO 注册附属模组的效果
+        Map<String, String> extraSpellCausedEffects = Config.getExtraSpellCausedEffects();
+        if (extraSpellCausedEffects.isEmpty()) {
+            extraSpellCausedEffects = Config.DEFAULT_SPELL_CAUSED_EFFECTS_RAW;
+        }
+        for (Map.Entry<String, String> entry : extraSpellCausedEffects.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            Optional<AbstractSpell> spellOptional = SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(key));
+            Optional<MobEffect> effectOptional = BuiltInRegistries.MOB_EFFECT.getOptional(ResourceLocation.parse(value));
+            if (spellOptional.isPresent() && effectOptional.isPresent()) {
+                AbstractSpell spell = spellOptional.get();
+                MobEffect effect = effectOptional.get();
+                SPELL_EFFECT_MAP.put(spell, Holder.direct(effect));
+            }
+        }
     }
 
     public static float getSpellRange(AbstractSpell spell) {
@@ -193,6 +209,10 @@ public final class MaidSpellRegistry {
 
     public static boolean isNegativeEffectSpell(AbstractSpell spell) {
         return NEGATIVE_EFFECT_SPELLS.contains(spell);
+    }
+
+    public static boolean isSummonSpell(AbstractSpell spell) {
+        return SUMMON_SPELLS.contains(spell);
     }
 
     public static boolean maidShouldRecast(AbstractSpell spell) {

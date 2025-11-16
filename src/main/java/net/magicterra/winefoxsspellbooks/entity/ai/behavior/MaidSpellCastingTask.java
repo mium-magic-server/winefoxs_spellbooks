@@ -8,7 +8,9 @@ import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -116,7 +118,7 @@ public class MaidSpellCastingTask extends Behavior<EntityMaid> {
     @Override
     protected void start(ServerLevel worldIn, EntityMaid maid, long gameTimeIn) {
         maid.setAggressive(true);
-        doSpellAction();
+        doSpellAction(maid);
     }
 
     @Override
@@ -133,7 +135,7 @@ public class MaidSpellCastingTask extends Behavior<EntityMaid> {
 //        }
     }
 
-    protected void doSpellAction() {
+    protected void doSpellAction(EntityMaid maid) {
         // 获取咒语类型
         var spellData = currentSpell;
         var spell = spellData.getSpell();
@@ -145,6 +147,13 @@ public class MaidSpellCastingTask extends Behavior<EntityMaid> {
 
         //Make sure cast is valid. if not, try again shortly
         if (currentSpell != SpellData.EMPTY && !hasRecastForSpell) {
+            LivingEntity target = maid.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
+                .or(() -> maid.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
+                .orElse(null);
+            if (target != null) {
+                maid.setYRot(Mth.rotateIfNecessary(maid.getYRot(), maid.yHeadRot, 0.0F));
+                maid.lookAt(EntityAnchorArgument.Anchor.EYES, target.getEyePosition());
+            }
             magicEntity.initiateCastSpell(spell, spellLevel);
         }
     }

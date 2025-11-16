@@ -210,6 +210,13 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
                              getPositiveWeightForSpecifiedEntity(nearbyAlliedEntity);
                 if (weight > 0) {
                     maid.getBrain().setMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get(), nearbyAlliedEntity);
+                    if (maid.getBrain().checkMemory(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT)) {
+                        // 转换目标
+                        maid.getNavigation().stop();
+                        maid.getMoveControl().strafe(0, 0);
+                        maid.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+                        maid.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
+                    }
                     break;
                 }
             }
@@ -265,8 +272,8 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
             weightedSpells.put(total, MaidSpellAction.SUPPORT);
         }
 
-        // attackTarget 为空且附近有队友，或者其他模组指定了 SUPPORT_TARGET，优先选择支援队友类型，判断强化还是治疗
-        if ((attackTarget == null && !nearbyAlliedEntities.isEmpty()) || supportTarget != null) {
+        // 附近有队友，或者其他模组指定了 SUPPORT_TARGET，优先选择支援队友类型，判断强化还是治疗
+        if (!nearbyAlliedEntities.isEmpty() || supportTarget != null) {
             positiveEffectWeight += getPositiveWeight(supportTarget);
             supportEffectWeight += getSupportOtherWeight(supportTarget);
 
@@ -368,8 +375,8 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
                 // 还没上此 buff
                 usableSpellWeight += 20;
             } else {
-                // 未知效果的法术，暂且计 1 分
-                usableSpellWeight += 1;
+                // 未知效果的法术，暂且计 10 分
+                usableSpellWeight += 10;
             }
         }
 
@@ -445,6 +452,10 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
                     return 1000;
                 }
             }
+            if (causedEffect == null) {
+                // 未知效果的法术，暂且计 10 分
+                return 10;
+            }
         }
         return 0;
     }
@@ -457,6 +468,9 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
             if (causedEffect != null && !target.hasEffect(causedEffect)) {
                 // 敌人没有这个 buff
                 baseWeight += 10;
+            } else {
+                // 未知效果的法术，暂且计 5 分
+                baseWeight += 5;
             }
         }
         return baseWeight;

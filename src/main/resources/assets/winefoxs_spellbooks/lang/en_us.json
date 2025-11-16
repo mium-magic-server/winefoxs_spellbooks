@@ -25,6 +25,11 @@
   "config.winefoxs_spellbooks.spell_compat.extra_positive_effect_spells": "Extral positive effect spells",
   "config.winefoxs_spellbooks.spell_compat.extra_negative_effect_spells": "Extral negative effect spells",
   "config.winefoxs_spellbooks.spell_compat.extra_support_effect_spells": "Extral support other spells",
+  "config.winefoxs_spellbooks.spell_compat.extra_summon_spells": "Extra summon spell ids",
   "config.winefoxs_spellbooks.spell_compat.maid_should_recast_spells": "Maid should recast spell ids",
-  "chat_bubble.winefoxs_spellbooks.casting_task.no_available_spell": "Spell reloading"
+  "config.winefoxs_spellbooks.spell_compat.spell_start_casting_range": "Maid start casting range every spell id (override default)",
+  "config.winefoxs_spellbooks.spell_compat.extra_spell_caused_effects": "Extra spell cause effect registry (spell id => effect id)",
+  "chat_bubble.winefoxs_spellbooks.casting_task.no_available_spell": "Spell reloading",
+  "item.winefoxs_spellbooks.icons": "Icon Item",
+  "tooltips.winefoxs_spellbooks.icons.desc": "For icon display only"
 }

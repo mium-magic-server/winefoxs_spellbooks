@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "winefoxs_spellbooks:item/magic_support_task_icon"
+  }
+}

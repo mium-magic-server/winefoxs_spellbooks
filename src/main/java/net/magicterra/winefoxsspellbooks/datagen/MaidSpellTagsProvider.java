@@ -1,4 +1,4 @@
-package net.magicterra.winefoxsspellbooks.data;
+package net.magicterra.winefoxsspellbooks.datagen;
 
 import com.gametechbc.gtbcs_geomancy_plus.init.GGSpells;
 import com.google.common.collect.Sets;
@@ -6,6 +6,7 @@ import com.rinko1231.SnowWaifuSpell.init.ModSpellRegistry;
 import com.snackpirate.aeromancy.spells.AASpells;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
+import io.redspace.ironsspellbooks.api.spells.CastType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import net.Iceforkkk.DreamlessAditions.registries.SpellRegistries;
+import net.acetheeldritchking.cataclysm_spellbooks.spells.nature.AmethystPunctureSpell;
 import net.ender.ess_requiem.registries.GGSpellRegistry;
 import net.ender.ess_requiem.spells.blood.uncraftable.DecayingWillSpell;
 import net.ender.ess_requiem.spells.ice.uncraftable.LordOfTheFinalFrostSpell;
@@ -35,7 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * 根据法术的描述，生成标签
+ * 根据法术的特征，生成标签
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-07-26 00:33
@@ -70,6 +72,7 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         var positiveEffectTag = tag(MaidSpellRegistry.POSITIVE_EFFECT_SPELLS_TAG);
         var supportEffectTag = tag(MaidSpellRegistry.SUPPORT_EFFECT_SPELLS_TAG);
         var negativeEffectTag = tag(MaidSpellRegistry.NEGATIVE_EFFECT_SPELLS_TAG);
+        var summonTag = tag(MaidSpellRegistry.SUMMON_SPELLS_TAG);
         var maidShouldRecastTag = tag(MaidSpellRegistry.MAID_SHOULD_RECAST_SPELLS_TAG);
 
         List<String> unknownSpells = new ArrayList<>();
@@ -97,7 +100,7 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         // 物理攻击法术 （词条包含伤害）
         for (AbstractSpell abstractSpell : SpellRegistry.REGISTRY) {
             LivingEntity caster = null;
-            if (abstractSpell instanceof DecayingWillSpell || abstractSpell instanceof LordOfTheFinalFrostSpell) {
+            if (abstractSpell instanceof DecayingWillSpell || abstractSpell instanceof LordOfTheFinalFrostSpell || abstractSpell instanceof AmethystPunctureSpell) {
                 caster = fakeEntity;
             }
             Set<String> descriptions = abstractSpell.getUniqueInfo(1, caster)
@@ -123,6 +126,15 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
                 attackTag.addOptional(abstractSpell.getSpellResource());
             } else {
                 unknownSpells.add(spellId);
+            }
+
+            int minLevelRecast = abstractSpell.getRecastCount(abstractSpell.getMinLevel(), caster);
+            if (minLevelRecast > 1) {
+                if (minLevelRecast == 2 && minLevelRecast == abstractSpell.getRecastCount(abstractSpell.getMaxLevel(), caster) && abstractSpell.getCastType() == CastType.LONG) {
+                    summonTag.addOptional(abstractSpell.getSpellResource());
+                } else {
+                    maidShouldRecastTag.addOptional(abstractSpell.getSpellResource());
+                }
             }
         }
 
@@ -230,12 +242,5 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         negativeEffectTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.BOOGIE_WOOGIE.get().getSpellResource());
         negativeEffectTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.GUARDIANS_GAZE.get().getSpellResource());
         negativeEffectTag.addOptional(MFTESpellRegistries.LAUNCH_SPELL.get().getSpellResource());
-
-        // 需要二段咏唱的法术
-        // TODO 检查其他法术
-        maidShouldRecastTag.addOptional(SpellRegistry.FLAMING_BARRAGE_SPELL.get().getSpellResource());
-        maidShouldRecastTag.addOptional(SpellRegistry.WALL_OF_FIRE_SPELL.get().getSpellResource());
-        maidShouldRecastTag.addOptional(net.fireofpower.firesenderexpansion.registries.SpellRegistries.HOLLOW_CRYSTAL.get().getSpellResource());
-        maidShouldRecastTag.addOptional(net.acetheeldritchking.cataclysm_spellbooks.registries.SpellRegistries.ABYSS_FIREBALL.get().getSpellResource());
     }
 }

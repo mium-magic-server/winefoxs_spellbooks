@@ -6,7 +6,7 @@ import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
 import com.github.tartaricacid.touhoulittlemaid.util.SoundUtil;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
-import io.redspace.ironsspellbooks.registries.ItemRegistry;
+import io.redspace.ironsspellbooks.api.spells.ISpellContainer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -15,22 +15,31 @@ import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.MaidDrinkPotionsTask;
+import net.magicterra.winefoxsspellbooks.entity.ai.behavior.MaidMagicMeleeAttack;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.MaidSpellAttackWalkToTarget;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.MaidSpellCastingTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.MaidSpellChooseTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.MaidSpellStrafingTask;
+import net.magicterra.winefoxsspellbooks.entity.ai.behavior.MaidStartAttacking;
+import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
+import net.magicterra.winefoxsspellbooks.registry.InitItems;
+import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.MeleeAttack;
-import net.minecraft.world.entity.ai.behavior.StartAttacking;
 import net.minecraft.world.entity.ai.behavior.StopAttackingIfTargetInvalid;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -49,7 +58,7 @@ public class MaidCastingTask implements IRangedAttackTask {
 
     @Override
     public ItemStack getIcon() {
-        return ItemRegistry.GOLD_SPELL_BOOK.get().getDefaultInstance();
+        return InitItems.CASTING_TASK_ICON.toStack();
     }
 
     @Override
@@ -65,7 +74,7 @@ public class MaidCastingTask implements IRangedAttackTask {
 
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
-        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
+        BehaviorControl<EntityMaid> supplementedTask = MaidStartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
         BehaviorControl<EntityMaid> spellChooseTask = new MaidSpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
             Set.of(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT, MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE));
@@ -94,7 +103,7 @@ public class MaidCastingTask implements IRangedAttackTask {
 
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
-        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
+        BehaviorControl<EntityMaid> supplementedTask = MaidStartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
         BehaviorControl<EntityMaid> spellChooseTask = new MaidSpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
             Set.of(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT, MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE));
@@ -110,7 +119,7 @@ public class MaidCastingTask implements IRangedAttackTask {
         );
 
         if (Config.getMeleeAttackInMagicTask()) {
-            BehaviorControl<Mob> attackTargetTask = MeleeAttack.create(20);
+            BehaviorControl<Mob> attackTargetTask = MaidMagicMeleeAttack.create(20);
             behaviors.add(Pair.of(5, attackTargetTask));
         }
 
@@ -141,16 +150,27 @@ public class MaidCastingTask implements IRangedAttackTask {
 
     @Override
     public boolean enableLookAndRandomWalk(EntityMaid maid) {
-        return maid.getTarget() == null;
+        return maid.getBrain().checkMemory(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_ABSENT)
+            && maid.getBrain().checkMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get(), MemoryStatus.VALUE_ABSENT);
     }
 
-    private boolean hasSpells(EntityMaid maid) {
+    protected boolean hasSpells(EntityMaid maid) {
+        if (maid.level.isClientSide()) {
+            IItemHandler invWrapper = new CombinedInvWrapper(maid.getArmorInvWrapper(), new ItemStackHandler(NonNullList.of(ItemStack.EMPTY, maid.getMainHandItem())), maid.getMaidBauble());
+            for (int i = 0; i < invWrapper.getSlots(); i++) {
+                ItemStack stack = invWrapper.getStackInSlot(i);
+                if (!stack.isEmpty() && ISpellContainer.isSpellContainer(stack)) {
+                    return true;
+                }
+            }
+            return false;
+        }
         MaidMagicEntity magicEntity = (MaidMagicEntity) maid;
         MaidSpellDataHolder spellDataHolder = magicEntity.winefoxsSpellbooks$getSpellDataHolder();
         return spellDataHolder.hasAnyCastingTaskSpells();
     }
 
-    private boolean farAway(LivingEntity target, EntityMaid maid) {
+    protected boolean farAway(LivingEntity target, EntityMaid maid) {
         return maid.distanceTo(target) > this.searchRadius(maid);
     }
 }

@@ -25,6 +25,11 @@
   "config.winefoxs_spellbooks.spell_compat.extra_positive_effect_spells": "额外的正面效果法术ID",
   "config.winefoxs_spellbooks.spell_compat.extra_negative_effect_spells": "额外的负面效果法术ID",
   "config.winefoxs_spellbooks.spell_compat.extra_support_effect_spells": "额外的恢复效果法术ID",
+  "config.winefoxs_spellbooks.spell_compat.extra_summon_spells": "额外的召唤法术ID",
   "config.winefoxs_spellbooks.spell_compat.maid_should_recast_spells": "需要女仆多次咏唱的法术ID",
-  "chat_bubble.winefoxs_spellbooks.casting_task.no_available_spell": "冷却中"
+  "config.winefoxs_spellbooks.spell_compat.spell_start_casting_range": "女仆开始施法距离按法术ID配置 (覆盖默认)",
+  "config.winefoxs_spellbooks.spell_compat.extra_spell_caused_effects": "额外的法术到药水效果映射 (法术ID => 药水效果ID)",
+  "chat_bubble.winefoxs_spellbooks.casting_task.no_available_spell": "冷却中",
+  "item.winefoxs_spellbooks.icons": "图标物品",
+  "tooltips.winefoxs_spellbooks.icons.desc": "仅用作图标显示"
 }

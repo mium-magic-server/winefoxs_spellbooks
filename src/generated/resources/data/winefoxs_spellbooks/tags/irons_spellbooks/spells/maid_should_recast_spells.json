@@ -1,11 +1,15 @@
 {
   "values": [
     {
-      "id": "irons_spellbooks:flaming_barrage",
+      "id": "aero_additions:updraft",
       "required": false
     },
     {
-      "id": "irons_spellbooks:wall_of_fire",
+      "id": "aero_additions:airstep",
+      "required": false
+    },
+    {
+      "id": "gtbcs_geomancy_plus:geo_conductor",
       "required": false
     },
     {
@@ -13,7 +17,31 @@
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:abyss_fireball",
+      "id": "irons_spellbooks:wall_of_fire",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:flaming_barrage",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:eldritch_blast",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:void_beam",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:amethyst_puncture",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:rip_and_tear",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:soul_catalyst",
       "required": false
     }
   ]

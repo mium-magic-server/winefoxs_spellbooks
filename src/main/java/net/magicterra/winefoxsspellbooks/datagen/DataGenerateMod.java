@@ -1,4 +1,4 @@
-package net.magicterra.winefoxsspellbooks.data;
+package net.magicterra.winefoxsspellbooks.datagen;
 
 import java.util.concurrent.CompletableFuture;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
@@ -35,5 +35,7 @@ public class DataGenerateMod {
 
         // other providers here
         generator.addProvider(event.includeServer(), new MaidSpellTagsProvider(output, lookupProvider, WinefoxsSpellbooks.MODID, existingFileHelper));
+
+        generator.addProvider(event.includeClient(), new ItemModelGenerator(output, existingFileHelper));
     }
 }
