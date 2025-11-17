@@ -23,6 +23,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.NeoForge;
@@ -105,9 +106,13 @@ public class MaidMagicManager {
         return levelEvent.getLevel();
     }
 
-    public static boolean isSpellUsable(EntityMaid maid, SpellData spellData) {
-        MaidMagicEntity magicMaid = (MaidMagicEntity) maid;
-        IMagicEntity spellCastingMob = (IMagicEntity) maid;
+    public static boolean isSpellUsable(Mob mob, SpellData spellData) {
+        if (!(mob instanceof IMagicEntity spellCastingMob)) {
+            return false;
+        }
+        if (!(mob instanceof MaidMagicEntity magicMaid)) {
+            return false;
+        }
         PlayerRecasts playerRecasts = spellCastingMob.getMagicData().getPlayerRecasts();
         float mana = spellCastingMob.getMagicData().getMana();
         int manaCost = magicMaid.winefoxsSpellbooks$getManaCost(spellData.getSpell(), spellData.getLevel());

@@ -20,6 +20,8 @@ import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.StartAttacking;
 import net.minecraft.world.entity.ai.behavior.StopAttackingIfTargetInvalid;
@@ -64,11 +66,11 @@ public class MaidDrinkPotionTask implements IRangedAttackTask {
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
-        BehaviorControl<EntityMaid> spellChooseTask = new MaidSpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
+        BehaviorControl<Mob> spellChooseTask = new MaidSpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
             Set.of(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT, MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE));
-        BehaviorControl<EntityMaid> moveToTargetTask = MaidSpellAttackWalkToTarget.create((float) Config.getBattleWalkSpeed());
-        BehaviorControl<EntityMaid> drinkPotionTask = new MaidDrinkPotionsTask((float) Config.getBattleWalkSpeed(), 100);
-        BehaviorControl<EntityMaid> maidAttackStrafingTask = new MaidSpellStrafingTask(Config.getStartSpellRange(), (float) Config.getBattleWalkSpeed());
+        BehaviorControl<Mob> moveToTargetTask = MaidSpellAttackWalkToTarget.create((float) Config.getBattleWalkSpeed());
+        BehaviorControl<Mob> drinkPotionTask = new MaidDrinkPotionsTask((float) Config.getBattleWalkSpeed(), 100);
+        BehaviorControl<PathfinderMob> maidAttackStrafingTask = new MaidSpellStrafingTask(Config.getStartSpellRange(), (float) Config.getBattleWalkSpeed());
 
         return Lists.newArrayList(
             Pair.of(5, supplementedTask),

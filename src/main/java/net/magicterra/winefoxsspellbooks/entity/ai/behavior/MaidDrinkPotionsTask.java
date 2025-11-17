@@ -1,6 +1,5 @@
 package net.magicterra.winefoxsspellbooks.entity.ai.behavior;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import net.magicterra.winefoxsspellbooks.Config;
@@ -8,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-11-02 19:43
  */
-public class MaidDrinkPotionsTask extends Behavior<EntityMaid> {
+public class MaidDrinkPotionsTask extends Behavior<Mob> {
     private final float fleeSpeed;
     private final int drinkCooldown;
 
@@ -36,8 +36,10 @@ public class MaidDrinkPotionsTask extends Behavior<EntityMaid> {
     }
 
     @Override
-    protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid owner) {
-        IMagicEntity magicEntity = (IMagicEntity) owner;
+    protected boolean checkExtraStartConditions(ServerLevel level, Mob owner) {
+        if (!(owner instanceof IMagicEntity magicEntity)) {
+            return false;
+        }
         if (!owner.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {
             // 非战斗状态
             return false;
@@ -67,13 +69,13 @@ public class MaidDrinkPotionsTask extends Behavior<EntityMaid> {
     }
 
     @Override
-    protected boolean canStillUse(ServerLevel level, EntityMaid entity, long gameTime) {
+    protected boolean canStillUse(ServerLevel level, Mob entity, long gameTime) {
         IMagicEntity magicEntity = (IMagicEntity) entity;
         return magicEntity.isDrinkingPotion();
     }
 
     @Override
-    protected void start(ServerLevel level, EntityMaid entity, long gameTime) {
+    protected void start(ServerLevel level, Mob entity, long gameTime) {
         LivingEntity target = entity.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
         if (target == null) {
             return;
@@ -82,6 +84,7 @@ public class MaidDrinkPotionsTask extends Behavior<EntityMaid> {
         magicEntity.startDrinkingPotion();
 
         // 朝相反方向逃跑
+        // TODO 测试此功能
         Vec3 fleeVector = target.getForward().reverse().scale(10);
 
         BlockPos fleePos = target.blockPosition().offset(Mth.floor(fleeVector.x), Mth.floor(fleeVector.y), Mth.floor(fleeVector.z));
@@ -89,7 +92,7 @@ public class MaidDrinkPotionsTask extends Behavior<EntityMaid> {
     }
 
     @Override
-    protected void tick(ServerLevel level, EntityMaid owner, long gameTime) {
+    protected void tick(ServerLevel level, Mob owner, long gameTime) {
         LivingEntity target = owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
         if (target == null) {
             return;
@@ -100,7 +103,7 @@ public class MaidDrinkPotionsTask extends Behavior<EntityMaid> {
     }
 
     @Override
-    protected void stop(ServerLevel level, EntityMaid entity, long gameTime) {
+    protected void stop(ServerLevel level, Mob entity, long gameTime) {
         lastDrinkTick = level.getServer().getTickCount();
     }
 }

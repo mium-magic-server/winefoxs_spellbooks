@@ -9,7 +9,10 @@ import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModul
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
+import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.behavior.EntityTracker;
 import net.minecraft.world.entity.ai.behavior.PositionTracker;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -25,11 +28,11 @@ import org.jetbrains.annotations.NotNull;
  * 修改了原版的走向攻击目标的 AI，现在能够依据法术攻击距离和 home 范围进行行走判断
  */
 public class MaidSpellAttackWalkToTarget {
-    public static BehaviorControl<EntityMaid> create(float speedModifier) {
+    public static BehaviorControl<Mob> create(float speedModifier) {
         return create(entity -> speedModifier);
     }
 
-    public static BehaviorControl<EntityMaid> create(Function<LivingEntity, Float> speedModifier) {
+    public static BehaviorControl<Mob> create(Function<LivingEntity, Float> speedModifier) {
         return BehaviorBuilder.create(maidInstance -> maidInstance.group(
                         maidInstance.registered(MemoryModuleType.WALK_TARGET),
                         maidInstance.registered(MemoryModuleType.LOOK_TARGET),
@@ -48,38 +51,50 @@ public class MaidSpellAttackWalkToTarget {
     }
 
     @NotNull
-    private static Trigger<EntityMaid> setTarget(Function<LivingEntity, Float> speedModifier,
-                                                 BehaviorBuilder.Instance<EntityMaid> maidInstance,
+    private static Trigger<Mob> setTarget(Function<LivingEntity, Float> speedModifier,
+                                                 BehaviorBuilder.Instance<Mob> maidInstance,
                                                  MemoryAccessor<OptionalBox.Mu, WalkTarget> walkTargetMemory,
                                                  MemoryAccessor<OptionalBox.Mu, PositionTracker> positionMemory,
                                                  MemoryAccessor<IdF.Mu, SpellData> spellDataMemory,
                                                  MemoryAccessor<OptionalBox.Mu, LivingEntity> attackTargetMemory,
                                                  MemoryAccessor<OptionalBox.Mu, LivingEntity> supportTargetMemory,
                                                  MemoryAccessor<OptionalBox.Mu, NearestVisibleLivingEntities> livingEntitiesMemory) {
-        return (level, maid, gameTime) -> {
+        return (level, mob, gameTime) -> {
             LivingEntity attackTarget = maidInstance.tryGet(attackTargetMemory).orElse(null);
             LivingEntity supportTarget = maidInstance.tryGet(supportTargetMemory).orElse(null);
             LivingEntity target = attackTarget == null ? supportTarget : attackTarget;
             if (target == null) {
                 return false;
             }
-            if (maid.canSee(target) && shouldEraseWalkTarget(maid, target, maidInstance.get(spellDataMemory))) {
+            boolean canSee;
+            if (mob instanceof EntityMaid maid) {
+                canSee = maid.canSee(target);
+            } else {
+                canSee = BehaviorUtils.canSee(mob, target);
+            }
+            boolean shouldEraseWalkTarget;
+            if (mob instanceof TamableAnimal tamableAnimal) {
+                shouldEraseWalkTarget = shouldEraseWalkTarget(tamableAnimal, target, maidInstance.get(spellDataMemory));
+            } else {
+                shouldEraseWalkTarget = shouldEraseWalkTarget(mob, target, maidInstance.get(spellDataMemory));
+            }
+            if (canSee && shouldEraseWalkTarget) {
                 walkTargetMemory.erase();
             } else {
                 positionMemory.set(new EntityTracker(target, true));
-                walkTargetMemory.set(new WalkTarget(new EntityTracker(target, false), speedModifier.apply(maid), 0));
+                walkTargetMemory.set(new WalkTarget(new EntityTracker(target, false), speedModifier.apply(mob), 0));
             }
             return true;
         };
     }
 
-    private static boolean shouldEraseWalkTarget(EntityMaid maid, LivingEntity target, SpellData spellData) {
-        float restrictRadius = maid.getRestrictRadius() - 2;
+    private static boolean shouldEraseWalkTarget(TamableAnimal tamableAnimal, LivingEntity target, SpellData spellData) {
+        float restrictRadius = tamableAnimal.getRestrictRadius() - 2;
         double checkRadius = 8;
-        if (maid.hasRestriction()) {
-            BlockPos center = maid.getRestrictCenter();
+        if (tamableAnimal.hasRestriction()) {
+            BlockPos center = tamableAnimal.getRestrictCenter();
             checkRadius = Math.sqrt(target.distanceToSqr(center.getX(), center.getY(), center.getZ()));
-        } else if (maid.getOwner() instanceof Player player) {
+        } else if (tamableAnimal.getOwner() instanceof Player player) {
             checkRadius = target.distanceTo(player);
         }
         // 在 最大限制范围-2 外，则清除目标
@@ -88,6 +103,22 @@ public class MaidSpellAttackWalkToTarget {
         }
         float reachableRange = MaidSpellRegistry.getSpellRange(spellData.getSpell());
         // 已到达施法范围内，清除目标
-        return maid.distanceTo(target) <= reachableRange;
+        return tamableAnimal.distanceTo(target) <= reachableRange;
+    }
+
+    private static boolean shouldEraseWalkTarget(Mob mob, LivingEntity target, SpellData spellData) {
+        float restrictRadius = mob.getRestrictRadius() - 2;
+        double checkRadius = 8;
+        if (mob.hasRestriction()) {
+            BlockPos center = mob.getRestrictCenter();
+            checkRadius = Math.sqrt(target.distanceToSqr(center.getX(), center.getY(), center.getZ()));
+        }
+        // 在 最大限制范围-2 外，则清除目标
+        if (checkRadius >= restrictRadius) {
+            return true;
+        }
+        float reachableRange = MaidSpellRegistry.getSpellRange(spellData.getSpell());
+        // 已到达施法范围内，清除目标
+        return mob.distanceTo(target) <= reachableRange;
     }
 }

@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.api.task.IRangedAttackTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
+import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,8 @@ import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.registry.InitItems;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.StopAttackingIfTargetInvalid;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -83,11 +86,11 @@ public class MaidMagicSupportTask extends MaidCastingTask {
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         BehaviorControl<EntityMaid> supplementedTask = MaidStartAttacking.create(this::hasSpells, MaidMagicSupportTask::findNearbyFriendsAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
-        BehaviorControl<EntityMaid> spellChooseTask = new MaidSpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
+        BehaviorControl<Mob> spellChooseTask = new MaidSpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
             Set.of(MaidSpellAction.DEFENSE, MaidSpellAction.SUPPORT, MaidSpellAction.POSITIVE, MaidSpellAction.NEGATIVE, MaidSpellAction.SUPPORT_OTHER));
-        BehaviorControl<EntityMaid> moveToTargetTask = MaidSpellAttackWalkToTarget.create((float) Config.getBattleWalkSpeed());
-        BehaviorControl<EntityMaid> maidAttackStrafingTask = new MaidSpellStrafingTask(Config.getStartSpellRange(), (float) Config.getBattleWalkSpeed());
-        BehaviorControl<EntityMaid> shootTargetTask = new MaidSpellCastingTask(maid);
+        BehaviorControl<Mob> moveToTargetTask = MaidSpellAttackWalkToTarget.create((float) Config.getBattleWalkSpeed());
+        BehaviorControl<PathfinderMob> maidAttackStrafingTask = new MaidSpellStrafingTask(Config.getStartSpellRange(), (float) Config.getBattleWalkSpeed());
+        BehaviorControl<Mob> shootTargetTask = new MaidSpellCastingTask(((IMagicEntity) maid));
 
         return Lists.newArrayList(
             Pair.of(5, supplementedTask),
@@ -103,9 +106,9 @@ public class MaidMagicSupportTask extends MaidCastingTask {
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
         BehaviorControl<EntityMaid> supplementedTask = MaidStartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
-        BehaviorControl<EntityMaid> spellChooseTask = new MaidSpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
+        BehaviorControl<Mob> spellChooseTask = new MaidSpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
             Set.of(MaidSpellAction.DEFENSE, MaidSpellAction.SUPPORT, MaidSpellAction.POSITIVE, MaidSpellAction.NEGATIVE, MaidSpellAction.SUPPORT_OTHER));
-        BehaviorControl<EntityMaid> shootTargetTask = new MaidSpellCastingTask(maid);
+        BehaviorControl<Mob> shootTargetTask = new MaidSpellCastingTask(((IMagicEntity) maid));
 
         return Lists.newArrayList(
             Pair.of(5, supplementedTask),

@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
@@ -32,7 +33,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-11-02 00:35
  */
-public class MaidSpellStrafingTask extends Behavior<EntityMaid> {
+public class MaidSpellStrafingTask extends Behavior<PathfinderMob> {
     private final float projectileRange;
     private final float strafeSpeed;
     private boolean strafingClockwise;
@@ -51,7 +52,13 @@ public class MaidSpellStrafingTask extends Behavior<EntityMaid> {
     }
 
     @Override
-    protected boolean checkExtraStartConditions(ServerLevel worldIn, EntityMaid owner) {
+    protected boolean checkExtraStartConditions(ServerLevel worldIn, PathfinderMob owner) {
+        if (!(owner instanceof IMagicEntity)) {
+            return false;
+        }
+        if (owner instanceof EntityMaid maid && maid.isOrderedToSit()) {
+            return false;
+        }
         if (owner.getBrain().checkMemory(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_PRESENT)) {
             return false;
         }
@@ -60,8 +67,10 @@ public class MaidSpellStrafingTask extends Behavior<EntityMaid> {
     }
 
     @Override
-    protected void tick(ServerLevel worldIn, EntityMaid owner, long gameTime) {
-        IMagicEntity magicEntity = (IMagicEntity) owner;
+    protected void tick(ServerLevel worldIn, PathfinderMob owner, long gameTime) {
+        if (!(owner instanceof IMagicEntity magicEntity)) {
+            return;
+        }
         MaidSpellAction maidSpellAction = owner.getBrain().getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get()).orElse(MaidSpellAction.ATTACK);
         LivingEntity attackTarget = owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
         LivingEntity supportTarget = owner.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()).orElse(null);
@@ -71,6 +80,13 @@ public class MaidSpellStrafingTask extends Behavior<EntityMaid> {
             default -> target = attackTarget;
         }
         SpellData spellData = owner.getBrain().getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get()).orElse(null);
+
+        boolean canSee;
+        if (owner instanceof EntityMaid maid) {
+            canSee = target != null && maid.canSee(target);
+        } else {
+            canSee = target != null && BehaviorUtils.canSee(owner, target);
+        }
 
         float movementSpeed = (float) (strafeSpeed * owner.getAttributeValue(Attributes.MOVEMENT_SPEED));
 
@@ -101,7 +117,7 @@ public class MaidSpellStrafingTask extends Behavior<EntityMaid> {
                 owner.getMoveControl().strafe(forward, strafe);
             }
             fleeCooldown = 100;
-        } else if (distanceSquared < spellRangeSqr && owner.canSee(target)) {
+        } else if (distanceSquared < spellRangeSqr && canSee) {
             // 在敌人附近
             owner.getNavigation().stop();
             float strafeForward = (distanceSquared * 6 < spellRangeSqr ? -1.2f : .5f) * movementSpeed; // 前后走位矢量
@@ -115,7 +131,7 @@ public class MaidSpellStrafingTask extends Behavior<EntityMaid> {
                 tryJump(owner);
             }
             owner.setYRot(Mth.rotateIfNecessary(owner.getYRot(), owner.yHeadRot, 0.0F));
-        } else if (distanceSquared > spellRangeSqr && owner.canSee(target)) {
+        } else if (distanceSquared > spellRangeSqr && canSee) {
             // 超出施法范围，拉近
             Vec3 towards = DefaultRandomPos.getPosTowards(owner, Mth.floor(spellRange), 4, target.position(), Mth.HALF_PI);
             if (towards != null) {
@@ -132,35 +148,35 @@ public class MaidSpellStrafingTask extends Behavior<EntityMaid> {
     }
 
     @Override
-    protected void start(ServerLevel worldIn, EntityMaid entityIn, long gameTimeIn) {
+    protected void start(ServerLevel worldIn, PathfinderMob entityIn, long gameTimeIn) {
     }
 
     @Override
-    protected void stop(ServerLevel worldIn, EntityMaid entityIn, long gameTimeIn) {
+    protected void stop(ServerLevel worldIn, PathfinderMob entityIn, long gameTimeIn) {
         entityIn.getNavigation().stop();
         entityIn.getMoveControl().strafe(0, 0);
     }
 
     @Override
-    protected boolean canStillUse(ServerLevel worldIn, EntityMaid entityIn, long gameTimeIn) {
+    protected boolean canStillUse(ServerLevel worldIn, PathfinderMob entityIn, long gameTimeIn) {
         return this.checkExtraStartConditions(worldIn, entityIn);
     }
 
-    private boolean checkStrafePathSafe(EntityMaid maid, float forward, float strafe) {
+    private boolean checkStrafePathSafe(PathfinderMob maid, float forward, float strafe) {
         // 略消耗性能，不检测
         BlockPos targetBlockPos = getStrafeTargetBlockPos(maid, forward, strafe, 3);
         PathType pathNodeType = WalkNodeEvaluator.getPathTypeStatic(maid, targetBlockPos);
         return pathNodeType == PathType.WALKABLE;
     }
 
-    private boolean checkNeedJump(EntityMaid maid, float forward, float strafe) {
+    private boolean checkNeedJump(PathfinderMob maid, float forward, float strafe) {
         BlockPos targetBlockPos = getStrafeTargetBlockPos(maid, forward, strafe, 1);
         return maid.level.getBlockState(targetBlockPos).isSolidRender(maid.level, targetBlockPos) &&
             maid.level.getBlockState(targetBlockPos.above()).isAir() &&
             maid.level.getBlockState(targetBlockPos.above(2)).isAir();
     }
 
-    private BlockPos getStrafeTargetBlockPos(EntityMaid maid, float forward, float strafe, float factor) {
+    private BlockPos getStrafeTargetBlockPos(PathfinderMob maid, float forward, float strafe, float factor) {
         Vec3 facing = maid.getForward();
         Vec3 position = maid.position();
         Vec2 offset = new Vec2(forward, strafe).normalized().scale(factor);
@@ -168,7 +184,7 @@ public class MaidSpellStrafingTask extends Behavior<EntityMaid> {
         return BlockPos.containing(nextPosition.x, nextPosition.y, nextPosition.z);
     }
 
-    protected void tryJump(EntityMaid maid) {
+    protected void tryJump(PathfinderMob maid) {
         Vec3 nextBlock = new Vec3(maid.xxa, 0, maid.zza).normalize();
 
         BlockPos blockpos = BlockPos.containing(maid.position().add(nextBlock));

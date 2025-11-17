@@ -6,6 +6,7 @@ import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
 import com.github.tartaricacid.touhoulittlemaid.util.SoundUtil;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
+import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.spells.ISpellContainer;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +31,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.MeleeAttack;
 import net.minecraft.world.entity.ai.behavior.StopAttackingIfTargetInvalid;
@@ -76,12 +78,12 @@ public class MaidCastingTask implements IRangedAttackTask {
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         BehaviorControl<EntityMaid> supplementedTask = MaidStartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
-        BehaviorControl<EntityMaid> spellChooseTask = new MaidSpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
+        BehaviorControl<Mob> spellChooseTask = new MaidSpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
             Set.of(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT, MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE));
-        BehaviorControl<EntityMaid> moveToTargetTask = MaidSpellAttackWalkToTarget.create((float) Config.getBattleWalkSpeed());
-        BehaviorControl<EntityMaid> drinkPotionTask = new MaidDrinkPotionsTask((float) Config.getBattleWalkSpeed(), 100);
-        BehaviorControl<EntityMaid> maidAttackStrafingTask = new MaidSpellStrafingTask(Config.getStartSpellRange(), (float) Config.getBattleWalkSpeed());
-        BehaviorControl<EntityMaid> shootTargetTask = new MaidSpellCastingTask(maid);
+        BehaviorControl<Mob> moveToTargetTask = MaidSpellAttackWalkToTarget.create((float) Config.getBattleWalkSpeed());
+        BehaviorControl<Mob> drinkPotionTask = new MaidDrinkPotionsTask((float) Config.getBattleWalkSpeed(), 100);
+        BehaviorControl<PathfinderMob> maidAttackStrafingTask = new MaidSpellStrafingTask(Config.getStartSpellRange(), (float) Config.getBattleWalkSpeed());
+        BehaviorControl<Mob> shootTargetTask = new MaidSpellCastingTask(((IMagicEntity) maid));
 
         List<Pair<Integer, BehaviorControl<? super EntityMaid>>> behaviors = Lists.newArrayList(
             Pair.of(5, supplementedTask),
@@ -105,10 +107,10 @@ public class MaidCastingTask implements IRangedAttackTask {
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
         BehaviorControl<EntityMaid> supplementedTask = MaidStartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
-        BehaviorControl<EntityMaid> spellChooseTask = new MaidSpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
+        BehaviorControl<Mob> spellChooseTask = new MaidSpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
             Set.of(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT, MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE));
-        BehaviorControl<EntityMaid> drinkPotionTask = new MaidDrinkPotionsTask((float) Config.getBattleWalkSpeed(), 100);
-        BehaviorControl<EntityMaid> shootTargetTask = new MaidSpellCastingTask(maid);
+        BehaviorControl<Mob> drinkPotionTask = new MaidDrinkPotionsTask((float) Config.getBattleWalkSpeed(), 100);
+        BehaviorControl<Mob> shootTargetTask = new MaidSpellCastingTask(((IMagicEntity) maid));
 
         List<Pair<Integer, BehaviorControl<? super EntityMaid>>> behaviors = Lists.newArrayList(
             Pair.of(5, supplementedTask),

@@ -12,7 +12,9 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
@@ -22,13 +24,13 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-11-08 20:27
  */
-public class MaidSpellCastingTask extends Behavior<EntityMaid> {
+public class MaidSpellCastingTask extends Behavior<Mob> {
     protected final IMagicEntity magicEntity;
 
     protected SpellData currentSpell = SpellData.EMPTY;
     protected int seeTime = 0;
 
-    public MaidSpellCastingTask(EntityMaid maid) {
+    public MaidSpellCastingTask(IMagicEntity magicEntity) {
         super(ImmutableMap.of(
             MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED,
             MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED,
@@ -38,13 +40,15 @@ public class MaidSpellCastingTask extends Behavior<EntityMaid> {
             MemoryModuleType.ATTACK_TARGET, MemoryStatus.REGISTERED,
             MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get(), MemoryStatus.REGISTERED
         ), 1200);
-
-        this.magicEntity = (IMagicEntity) maid;
+        this.magicEntity = magicEntity;
     }
 
     @Override
-    protected boolean checkExtraStartConditions(ServerLevel worldIn, EntityMaid maid) {
-        SpellData spellData = maid.getBrain().getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get()).orElse(null);
+    protected boolean checkExtraStartConditions(ServerLevel worldIn, Mob mob) {
+        if (!(mob instanceof IMagicEntity)) {
+            return false;
+        }
+        SpellData spellData = mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get()).orElse(null);
         if (spellData == null || spellData == SpellData.EMPTY) {
             return false;
         }
@@ -59,19 +63,25 @@ public class MaidSpellCastingTask extends Behavior<EntityMaid> {
             return false;
         }
 
-        LivingEntity target = maid.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
-            .or(() -> maid.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
+        LivingEntity target = mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
+            .or(() -> mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
             .orElse(null);
         if (target == null) {
             return true;
         }
 
-        boolean condition = (maid.canSee(target) || seeTime > -50) && target.isAlive();
+        boolean canSee;
+        if (mob instanceof EntityMaid maid) {
+            canSee = maid.canSee(target);
+        } else {
+            canSee = BehaviorUtils.canSee(mob, target);
+        }
+        boolean condition = (canSee || seeTime > -50) && target.isAlive();
         if (!condition) {
             return false;
         }
 
-        double distanceSquared = target == null ? 0 : maid.distanceToSqr(target);
+        double distanceSquared = target == null ? 0 : mob.distanceToSqr(target);
         float spellcastingRange = MaidSpellRegistry.getSpellRange(currentSpell.getSpell());
         float spellcastingRangeSqr = spellcastingRange * spellcastingRange;
 
@@ -85,13 +95,13 @@ public class MaidSpellCastingTask extends Behavior<EntityMaid> {
     }
 
     @Override
-    protected boolean canStillUse(ServerLevel worldIn, EntityMaid maid, long gameTimeIn) {
+    protected boolean canStillUse(ServerLevel worldIn, Mob mob, long gameTimeIn) {
         MagicData magicData = magicEntity.getMagicData();
         if (!magicData.isCasting()) {
             return false;
         }
-        LivingEntity target = maid.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
-            .or(() -> maid.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
+        LivingEntity target = mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
+            .or(() -> mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
             .orElse(null);
         if (target == null) {
             return true;
@@ -99,7 +109,12 @@ public class MaidSpellCastingTask extends Behavior<EntityMaid> {
         if (target.isDeadOrDying()) {
             return false;
         }
-        boolean canSee = maid.canSee(target);
+        boolean canSee;
+        if (mob instanceof EntityMaid maid) {
+            canSee = maid.canSee(target);
+        } else {
+            canSee = BehaviorUtils.canSee(mob, target);
+        }
         if (canSee) {
             this.seeTime++;
         } else {
@@ -109,33 +124,33 @@ public class MaidSpellCastingTask extends Behavior<EntityMaid> {
             return false;
         }
         SpellData spellData = magicData.getCastingSpell();
-        if (spellData.getSpell().shouldAIStopCasting(spellData.getLevel(), maid, target)) {
+        if (spellData.getSpell().shouldAIStopCasting(spellData.getLevel(), mob, target)) {
             return false;
         }
         return true;
     }
 
     @Override
-    protected void start(ServerLevel worldIn, EntityMaid maid, long gameTimeIn) {
-        maid.setAggressive(true);
-        doSpellAction(maid);
+    protected void start(ServerLevel worldIn, Mob mob, long gameTimeIn) {
+        mob.setAggressive(true);
+        doSpellAction(mob);
     }
 
     @Override
-    protected void stop(ServerLevel worldIn, EntityMaid entityIn, long gameTimeIn) {
+    protected void stop(ServerLevel worldIn, Mob mob, long gameTimeIn) {
         seeTime = 0;
-        entityIn.setAggressive(false);
+        mob.setAggressive(false);
         if (magicEntity.isCasting()) {
             magicEntity.cancelCast();
         }
-        entityIn.getBrain().eraseMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get());
+        mob.getBrain().eraseMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get());
 //        PlayerRecasts playerRecasts = spellCastingMob.getMagicData().getPlayerRecasts();
 //        for (RecastInstance activeRecast : playerRecasts.getActiveRecasts()) {
 //            spellCastingMob.initiateCastSpell(SpellRegistry.getSpell(activeRecast.getSpellId()), activeRecast.getSpellLevel());
 //        }
     }
 
-    protected void doSpellAction(EntityMaid maid) {
+    protected void doSpellAction(Mob mob) {
         // 获取咒语类型
         var spellData = currentSpell;
         var spell = spellData.getSpell();
@@ -147,12 +162,12 @@ public class MaidSpellCastingTask extends Behavior<EntityMaid> {
 
         //Make sure cast is valid. if not, try again shortly
         if (currentSpell != SpellData.EMPTY && !hasRecastForSpell) {
-            LivingEntity target = maid.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
-                .or(() -> maid.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
+            LivingEntity target = mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
+                .or(() -> mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
                 .orElse(null);
             if (target != null) {
-                maid.setYRot(Mth.rotateIfNecessary(maid.getYRot(), maid.yHeadRot, 0.0F));
-                maid.lookAt(EntityAnchorArgument.Anchor.EYES, target.getEyePosition());
+                mob.setYRot(Mth.rotateIfNecessary(mob.getYRot(), mob.yHeadRot, 0.0F));
+                mob.lookAt(EntityAnchorArgument.Anchor.EYES, target.getEyePosition());
             }
             magicEntity.initiateCastSpell(spell, spellLevel);
         }

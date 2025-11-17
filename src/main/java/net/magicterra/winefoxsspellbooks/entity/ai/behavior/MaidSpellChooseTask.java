@@ -27,7 +27,10 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.phys.AABB;
@@ -38,9 +41,9 @@ import net.minecraft.world.phys.AABB;
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-11-03 01:35
  */
-public class MaidSpellChooseTask extends Behavior<EntityMaid> {
+public class MaidSpellChooseTask extends Behavior<Mob> {
     protected final Set<MaidSpellAction> allowedActions;
-    protected final EntityMaid maid;
+    protected final Mob mob;
     protected final IMagicEntity magicEntity;
     protected final double startCastingRange;
     protected final double startCastingRangeSqr;
@@ -59,32 +62,35 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
     protected int maxDelayTicks;
     protected int nextSpellTickCount;
 
-    public MaidSpellChooseTask(double startCastingRange, int maxDelayTicks, EntityMaid maid, Set<MaidSpellAction> allowedActions) {
+    public MaidSpellChooseTask(double startCastingRange, int maxDelayTicks, Mob mob, Set<MaidSpellAction> allowedActions) {
         super(ImmutableMap.of(
             MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get(), MemoryStatus.REGISTERED,
             MaidCastingMemoryModuleTypes.CURRENT_SPELL.get(), MemoryStatus.VALUE_ABSENT,
             MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get(), MemoryStatus.REGISTERED,
             MemoryModuleType.ATTACK_TARGET, MemoryStatus.REGISTERED
         ), 1200);
-        this.maid = maid;
-        this.magicEntity = (IMagicEntity) maid;
+        this.mob = mob;
+        this.magicEntity = (IMagicEntity) mob;
         this.allowedActions = allowedActions;
         this.startCastingRange = startCastingRange;
         this.startCastingRangeSqr = startCastingRange * startCastingRange;
         this.alliedEntityPredicate = (entity) -> {
-            if (Objects.equals(entity, maid)) {
+            if (Objects.equals(entity, mob)) {
                 return false;
             }
             if (entity.isDeadOrDying()) {
                 return false;
             }
-            return Objects.equals(maid.getOwner(), entity) || entity.isAlliedTo(maid);
+            if (mob instanceof TamableAnimal tamableAnimal && Objects.equals(tamableAnimal.getOwner(), entity)) {
+                return true;
+            }
+            return entity.isAlliedTo(mob);
         };
         this.maxDelayTicks = maxDelayTicks;
     }
 
     @Override
-    protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid owner) {
+    protected boolean checkExtraStartConditions(ServerLevel level, Mob owner) {
         if (this.nextSpellTickCount > 0) {
             --this.nextSpellTickCount;
             return false;
@@ -165,7 +171,16 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
         // 计算附近队友，检查有无可用支援队友的法术，如果没有可用法术则跳过
         nearbyAlliedEntities.clear();
         if (usablePositiveEffectSpells.size() + usableSupportEffectSpells.size() > 0) {
-            AABB aabb = owner.searchDimension();
+            AABB aabb;
+            if (mob instanceof EntityMaid maid) {
+                aabb = maid.searchDimension();
+            } else if (mob.hasRestriction()) {
+                float restrictRadius = mob.getRestrictRadius();
+                aabb = new AABB(mob.getRestrictCenter()).inflate(restrictRadius, 4, restrictRadius);
+            } else {
+                double radius = 16;
+                aabb = mob.getBoundingBox().inflate(radius, 4, radius);
+            }
             List<LivingEntity> list = level.getEntitiesOfClass(LivingEntity.class, aabb, this.alliedEntityPredicate);
             list.sort(Comparator.comparingDouble(owner::distanceToSqr));
             nearbyAlliedEntities.addAll(list);
@@ -177,12 +192,12 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
             return false;
         }
 
-        maid.getBrain().setMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get(), nextSpellAction);
+        mob.getBrain().setMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get(), nextSpellAction);
         return true;
     }
 
     @Override
-    protected void start(ServerLevel level, EntityMaid entity, long gameTime) {
+    protected void start(ServerLevel level, Mob entity, long gameTime) {
         // 设置记忆
         MaidSpellAction nextSpellAction = entity.getBrain().getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get()).orElseThrow();
         // 随机挑选法术，根据操作类型
@@ -201,7 +216,9 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
         }
         SpellData spellData = availableSpells.get(entity.getRandom().nextInt(availableSpells.size()));
         entity.getBrain().setMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get(), spellData);
-        MaidMagicManager.showCurrentSpellInChatBubble(entity, spellData, false);
+        if (entity instanceof EntityMaid maid) {
+            MaidMagicManager.showCurrentSpellInChatBubble(maid, spellData, false);
+        }
 
         if (nextSpellAction == MaidSpellAction.SUPPORT_OTHER || nextSpellAction == MaidSpellAction.POSITIVE) {
             for (LivingEntity nearbyAlliedEntity : nearbyAlliedEntities) {
@@ -209,13 +226,13 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
                              getSupportOtherWeightForSpecifiedEntity(nearbyAlliedEntity) :
                              getPositiveWeightForSpecifiedEntity(nearbyAlliedEntity);
                 if (weight > 0) {
-                    maid.getBrain().setMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get(), nearbyAlliedEntity);
-                    if (maid.getBrain().checkMemory(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT)) {
+                    mob.getBrain().setMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get(), nearbyAlliedEntity);
+                    if (mob.getBrain().checkMemory(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT)) {
                         // 转换目标
-                        maid.getNavigation().stop();
-                        maid.getMoveControl().strafe(0, 0);
-                        maid.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
-                        maid.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
+                        mob.getNavigation().stop();
+                        mob.getMoveControl().strafe(0, 0);
+                        mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+                        mob.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
                     }
                     break;
                 }
@@ -226,13 +243,13 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
     }
 
     @Override
-    protected boolean canStillUse(ServerLevel level, EntityMaid entity, long gameTime) {
+    protected boolean canStillUse(ServerLevel level, Mob entity, long gameTime) {
         // 记忆没有清除就继续
         return entity.getBrain().hasMemoryValue(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get());
     }
 
     @Override
-    protected void stop(ServerLevel level, EntityMaid entity, long gameTime) {
+    protected void stop(ServerLevel level, Mob entity, long gameTime) {
         // 清理记忆
         entity.getBrain().eraseMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get());
         entity.getBrain().eraseMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get());
@@ -250,10 +267,15 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
     }
 
     protected MaidSpellAction getNextSpellAction() {
-        LivingEntity attackTarget = maid.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
-        LivingEntity supportTarget = maid.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()).orElse(null);
-        boolean canSee = attackTarget != null && maid.canSee(attackTarget);
-        double distanceSquared = attackTarget != null ? maid.distanceToSqr(attackTarget) : 0;
+        LivingEntity attackTarget = mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
+        LivingEntity supportTarget = mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()).orElse(null);
+        boolean canSee;
+        if (mob instanceof EntityMaid maid) {
+            canSee = attackTarget != null && maid.canSee(attackTarget);
+        } else {
+            canSee = attackTarget != null && BehaviorUtils.canSee(mob, attackTarget);
+        }
+        double distanceSquared = attackTarget != null ? mob.distanceToSqr(attackTarget) : 0;
 
         NavigableMap<Integer, MaidSpellAction> weightedSpells = new TreeMap<>();
         int attackWeight = 0;
@@ -288,10 +310,10 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
             }
 
             if (total > 0) {
-                int seed = maid.getRandom().nextInt(total);
+                int seed = mob.getRandom().nextInt(total);
                 return weightedSpells.higherEntry(seed).getValue();
             }
-            if (usableSupportEffectSpells.isEmpty() && supportEffectWeight > 0) {
+            if (mob instanceof EntityMaid maid && usableSupportEffectSpells.isEmpty() && supportEffectWeight > 0) {
                 MaidMagicManager.showCurrentSpellInChatBubble(maid, SpellData.EMPTY, true);
             }
         }
@@ -325,7 +347,7 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
         }
 
         if (total > 0) {
-            int seed = maid.getRandom().nextInt(total);
+            int seed = mob.getRandom().nextInt(total);
             return weightedSpells.higherEntry(seed).getValue();
         }
 
@@ -357,8 +379,8 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
 
         //https://www.desmos.com/calculator/tqs7dudcmv
         //https://www.desmos.com/calculator/7skhcvpic0
-        float x = maid.getHealth();
-        float m = maid.getMaxHealth();
+        float x = mob.getHealth();
+        float m = mob.getMaxHealth();
         //int healthWeight = (int) (50 * (Math.pow(-(x / m) * (x - m), 3) / Math.pow(m / 2, 3)) * 8);
         int healthWeight = (int) (50 * (-(x * x * x) / (m * m * m) + 1));
 
@@ -371,7 +393,7 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
         int usableSpellWeight = 0;
         for (SpellData spellData : usableDefenseSpells) {
             Holder<MobEffect> causedEffect = MaidSpellRegistry.getSpellCausedEffect(spellData.getSpell());
-            if (causedEffect != null && !maid.hasEffect(causedEffect)) {
+            if (causedEffect != null && !mob.hasEffect(causedEffect)) {
                 // 还没上此 buff
                 usableSpellWeight += 20;
             } else {
@@ -394,7 +416,7 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
 
         int losWeight = hasLineOfSight ? 0 : 80;
 
-        float healthInverted = 1 - maid.getHealth() / maid.getMaxHealth();
+        float healthInverted = 1 - mob.getHealth() / mob.getMaxHealth();
         float distanceInverted = (float) (1 - distancePercent);
         int runWeight = (int) (400 * healthInverted * healthInverted * distanceInverted * distanceInverted);
 
@@ -405,7 +427,7 @@ public class MaidSpellChooseTask extends Behavior<EntityMaid> {
         //We want to support/buff ourselves if we are weak
         int baseWeight = -10;
 
-        float health = 1 - maid.getHealth() / maid.getMaxHealth();
+        float health = 1 - mob.getHealth() / mob.getMaxHealth();
         int healthWeight = (int) (200 * health);
 
         //If our target is close we should probably not drink a potion right in front of them
