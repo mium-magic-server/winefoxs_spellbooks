@@ -1,0 +1,270 @@
+{
+  "tiers": [
+    {
+      "armor": {
+        "helmet": {
+          "chance": 0.2,
+          "pools": [
+            {
+              "entries": [
+                {
+                  "type": "tag",
+                  "expand": true,
+                  "name": "winefoxs_spellbooks:maid_loadout/armor/helmets/tier1"
+                }
+              ],
+              "rolls": 1
+            }
+          ]
+        }
+      },
+      "conditions": [
+        {
+          "condition": "winefoxs_spellbooks:summon_level",
+          "max": 3,
+          "min": 1
+        }
+      ],
+      "spell_level_cap": 2,
+      "spells": {
+        "attack": {
+          "entries": [
+            {
+              "type": "tag",
+              "expand": true,
+              "name": "winefoxs_spellbooks:attack_spells"
+            }
+          ],
+          "rolls": {
+            "max": 3,
+            "min": 2
+          }
+        }
+      },
+      "weapon": {
+        "entries": [
+          {
+            "type": "tag",
+            "expand": true,
+            "name": "winefoxs_spellbooks:maid_loadout/weapons/tier1"
+          }
+        ],
+        "rolls": 1
+      }
+    },
+    {
+      "armor": {
+        "chestplate": {
+          "chance": 0.3,
+          "pools": [
+            {
+              "entries": [
+                {
+                  "type": "tag",
+                  "expand": true,
+                  "name": "winefoxs_spellbooks:maid_loadout/armor/chestplates/tier2"
+                }
+              ],
+              "rolls": 1
+            }
+          ]
+        },
+        "helmet": {
+          "chance": 0.4,
+          "pools": [
+            {
+              "entries": [
+                {
+                  "type": "tag",
+                  "expand": true,
+                  "name": "winefoxs_spellbooks:maid_loadout/armor/helmets/tier2"
+                }
+              ],
+              "rolls": 1
+            }
+          ]
+        }
+      },
+      "conditions": [
+        {
+          "condition": "winefoxs_spellbooks:summon_level",
+          "max": 6,
+          "min": 4
+        }
+      ],
+      "spell_level_cap": 4,
+      "spells": {
+        "attack": {
+          "entries": [
+            {
+              "type": "tag",
+              "expand": true,
+              "name": "winefoxs_spellbooks:attack_spells"
+            }
+          ],
+          "rolls": {
+            "max": 4,
+            "min": 3
+          }
+        },
+        "defense": {
+          "entries": [
+            {
+              "type": "tag",
+              "expand": true,
+              "name": "winefoxs_spellbooks:defense_spells"
+            }
+          ],
+          "rolls": 1
+        },
+        "negative_effect": {
+          "entries": [
+            {
+              "type": "tag",
+              "expand": true,
+              "name": "winefoxs_spellbooks:negative_effect_spells"
+            }
+          ],
+          "rolls": {
+            "max": 1,
+            "min": 0
+          }
+        }
+      },
+      "weapon": {
+        "entries": [
+          {
+            "type": "tag",
+            "expand": true,
+            "name": "winefoxs_spellbooks:maid_loadout/weapons/tier2"
+          }
+        ],
+        "rolls": 1
+      }
+    },
+    {
+      "armor": {
+        "boots": {
+          "chance": 0.5,
+          "pools": [
+            {
+              "entries": [
+                {
+                  "type": "tag",
+                  "expand": true,
+                  "name": "winefoxs_spellbooks:maid_loadout/armor/boots/tier3"
+                }
+              ],
+              "rolls": 1
+            }
+          ]
+        },
+        "chestplate": {
+          "chance": 0.5,
+          "pools": [
+            {
+              "entries": [
+                {
+                  "type": "tag",
+                  "expand": true,
+                  "name": "winefoxs_spellbooks:maid_loadout/armor/chestplates/tier3"
+                }
+              ],
+              "rolls": 1
+            }
+          ]
+        },
+        "helmet": {
+          "chance": 0.6,
+          "pools": [
+            {
+              "entries": [
+                {
+                  "type": "tag",
+                  "expand": true,
+                  "name": "winefoxs_spellbooks:maid_loadout/armor/helmets/tier3"
+                }
+              ],
+              "rolls": 1
+            }
+          ]
+        },
+        "leggings": {
+          "chance": 0.4,
+          "pools": [
+            {
+              "entries": [
+                {
+                  "type": "tag",
+                  "expand": true,
+                  "name": "winefoxs_spellbooks:maid_loadout/armor/leggings/tier3"
+                }
+              ],
+              "rolls": 1
+            }
+          ]
+        }
+      },
+      "conditions": [
+        {
+          "condition": "winefoxs_spellbooks:summon_level",
+          "max": 10,
+          "min": 7
+        }
+      ],
+      "spell_level_cap": 6,
+      "spells": {
+        "attack": {
+          "entries": [
+            {
+              "type": "tag",
+              "expand": true,
+              "name": "winefoxs_spellbooks:attack_spells"
+            }
+          ],
+          "rolls": {
+            "max": 5,
+            "min": 4
+          }
+        },
+        "defense": {
+          "entries": [
+            {
+              "type": "tag",
+              "expand": true,
+              "name": "winefoxs_spellbooks:defense_spells"
+            }
+          ],
+          "rolls": {
+            "max": 2,
+            "min": 1
+          }
+        },
+        "negative_effect": {
+          "entries": [
+            {
+              "type": "tag",
+              "expand": true,
+              "name": "winefoxs_spellbooks:negative_effect_spells"
+            }
+          ],
+          "rolls": {
+            "max": 2,
+            "min": 1
+          }
+        }
+      },
+      "weapon": {
+        "entries": [
+          {
+            "type": "tag",
+            "expand": true,
+            "name": "winefoxs_spellbooks:maid_loadout/weapons/tier3"
+          }
+        ],
+        "rolls": 1
+      }
+    }
+  ],
+  "weight": 35
+}

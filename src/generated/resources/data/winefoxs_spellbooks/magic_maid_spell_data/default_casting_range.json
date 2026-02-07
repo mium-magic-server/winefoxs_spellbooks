@@ -1,0 +1,56 @@
+{
+  "values": [
+    {
+      "range": 2.0,
+      "spell": "irons_spellbooks:divine_smite"
+    },
+    {
+      "range": 2.0,
+      "spell": "irons_spellbooks:flaming_strike"
+    },
+    {
+      "range": 3.0,
+      "spell": "irons_spellbooks:cleanse"
+    },
+    {
+      "range": 5.0,
+      "spell": "irons_spellbooks:healing_circle"
+    },
+    {
+      "range": 2.0,
+      "spell": "discerning_the_eldritch:esoteric_strike"
+    },
+    {
+      "range": 2.0,
+      "spell": "discerning_the_eldritch:soul_slice"
+    },
+    {
+      "range": 2.0,
+      "spell": "cataclysm_spellbooks:abyssal_slash"
+    },
+    {
+      "range": 2.0,
+      "spell": "ess_requiem:rip_and_tear"
+    },
+    {
+      "range": 2.0,
+      "spell": "ess_requiem:cataphract_slam"
+    },
+    {
+      "range": 2.0,
+      "spell": "ess_requiem:cataphract_tackle"
+    },
+    {
+      "range": 2.0,
+      "spell": "hazennstuff:scorching_slash"
+    },
+    {
+      "range": 2.0,
+      "spell": "hazennstuff:nights_edge_strike"
+    },
+    {
+      "range": 15.0,
+      "spell": "irons_spellbooks:none"
+    }
+  ]
+}

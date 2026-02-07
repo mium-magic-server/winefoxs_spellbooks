@@ -5,7 +5,15 @@
       "required": false
     },
     {
+      "id": "irons_spellbooks:abyssal_shroud",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:echoing_strikes",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:evasion",
       "required": false
     },
     {
@@ -21,19 +29,15 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:spider_aspect",
-      "required": false
-    },
-    {
       "id": "irons_spellbooks:oakskin",
       "required": false
     },
     {
-      "id": "irons_spellbooks:gluttony",
+      "id": "irons_spellbooks:spider_aspect",
       "required": false
     },
     {
-      "id": "irons_spellbooks:abyssal_shroud",
+      "id": "aero_additions:airstep",
       "required": false
     },
     {
@@ -45,19 +49,7 @@
       "required": false
     },
     {
-      "id": "gtbcs_geomancy_plus:tremor_step",
-      "required": false
-    },
-    {
-      "id": "dreamless_spells:jadeskin",
-      "required": false
-    },
-    {
-      "id": "firesenderexpansion:dimensional_adaptation",
-      "required": false
-    },
-    {
-      "id": "cataclysm_spellbooks:depth_charge",
+      "id": "aero_additions:flush",
       "required": false
     },
     {
@@ -65,7 +57,15 @@
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:sandstorm",
+      "id": "discerning_the_eldritch:abracadabra",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:ravenous_revenant",
+      "required": false
+    },
+    {
+      "id": "dreamless_spells:jadeskin",
       "required": false
     },
     {
@@ -81,15 +81,39 @@
       "required": false
     },
     {
-      "id": "ess_requiem:finality_of_decay",
+      "id": "ess_requiem:ebony_armor",
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:mend_flesh",
+      "id": "ess_requiem:protection_of_the_fallen",
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:abracadabra",
+      "id": "ess_requiem:cursed_immortality",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:ebony_cataphract",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:bastion_of_light",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:aspect_of_the_shulker",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:dimensional_adaptation",
+      "required": false
+    },
+    {
+      "id": "gtbcs_geomancy_plus:geo_conductor",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:bagua_array_circle",
       "required": false
     },
     {

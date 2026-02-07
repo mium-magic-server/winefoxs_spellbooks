@@ -1,23 +1,7 @@
 {
   "values": [
     {
-      "id": "aero_additions:updraft",
-      "required": false
-    },
-    {
-      "id": "aero_additions:airstep",
-      "required": false
-    },
-    {
-      "id": "gtbcs_geomancy_plus:geo_conductor",
-      "required": false
-    },
-    {
-      "id": "firesenderexpansion:hollow_crystal",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:wall_of_fire",
+      "id": "irons_spellbooks:eldritch_blast",
       "required": false
     },
     {
@@ -25,15 +9,19 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:eldritch_blast",
+      "id": "irons_spellbooks:wall_of_fire",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:void_beam",
+      "id": "irons_spellbooks:raise_hell",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:amethyst_puncture",
+      "id": "gtbcs_geomancy_plus:geo_conductor",
+      "required": false
+    },
+    {
+      "id": "gtbcs_geomancy_plus:tremor_spike",
       "required": false
     },
     {
@@ -41,7 +29,59 @@
       "required": false
     },
     {
-      "id": "iss_magicfromtheeast:soul_catalyst",
+      "id": "ess_requiem:boiling_blood",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:twilight_assault",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:hollow_crystal",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:binary_stars",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:scintillating_stride",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:rift_walker",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:boogie_woogie",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:blades_of_rancor",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:anchoring_kunai",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:bone_hands",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:void_beam",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:piercing_bone",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:amethyst_puncture",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:abyss_fireball",
       "required": false
     }
   ]

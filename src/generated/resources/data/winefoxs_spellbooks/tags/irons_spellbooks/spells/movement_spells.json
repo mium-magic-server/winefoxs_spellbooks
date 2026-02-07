@@ -5,10 +5,6 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:evasion",
-      "required": false
-    },
-    {
       "id": "irons_spellbooks:teleport",
       "required": false
     },
@@ -17,11 +13,51 @@
       "required": false
     },
     {
+      "id": "irons_spellbooks:ascension",
+      "required": false
+    },
+    {
       "id": "aero_additions:dash",
       "required": false
     },
     {
+      "id": "cataclysm_spellbooks:cursed_rush",
+      "required": false
+    },
+    {
       "id": "discerning_the_eldritch:otherworldly_presence",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:rift_walker",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:boogie_woogie",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:scintillating_stride",
+      "required": false
+    },
+    {
+      "id": "gtbcs_geomancy_plus:tremor_step",
+      "required": false
+    },
+    {
+      "id": "gtbcs_geomancy_plus:seismic_surf",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:cloud_ride",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:cinderous_step",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:chaotic_teleport",
       "required": false
     }
   ]

@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.LittleMaidExtension;
 import com.github.tartaricacid.touhoulittlemaid.api.event.AddJadeInfoEvent;
 import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
+import com.github.tartaricacid.touhoulittlemaid.config.subconfig.MaidConfig;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ExtraMaidBrainManager;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
@@ -12,6 +13,7 @@ import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.IPresetSpellContainer;
 import io.redspace.ironsspellbooks.item.weapons.StaffItem;
+import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.magicterra.winefoxsspellbooks.bauble.SpellBookBauble;
@@ -53,6 +55,9 @@ public class LittleMaidSpellbooksCompat implements ILittleMaid {
 
     @Override
     public void bindMaidBauble(BaubleManager manager) {
+        if (MaidConfig.ENABLE_MAID_CURIOS.get()) {
+            return;
+        }
         SpellBookBauble bauble = new SpellBookBauble();
         for (Item book : REGISTERED_SPELL_BOOKS) {
             manager.bind(book, bauble);
@@ -114,5 +119,9 @@ public class LittleMaidSpellbooksCompat implements ILittleMaid {
 
     public static boolean isSpellId(String spellId) {
         return ALL_SPELL_IDS.contains(spellId);
+    }
+
+    public static Collection<String> getAllSpellIds() {
+        return ALL_SPELL_IDS;
     }
 }

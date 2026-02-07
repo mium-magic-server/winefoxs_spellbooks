@@ -17,10 +17,6 @@
       "required": false
     },
     {
-      "id": "snowwaifuspell:summon_snow_queen",
-      "required": false
-    },
-    {
       "id": "cataclysm_spellbooks:conjure_koboldiator",
       "required": false
     },
@@ -41,19 +37,27 @@
       "required": false
     },
     {
-      "id": "ess_requiem:summon_skulls",
-      "required": false
-    },
-    {
       "id": "discerning_the_eldritch:conjure_forsaken_aid",
       "required": false
     },
     {
-      "id": "iss_magicfromtheeast:jiangshi_invoke",
+      "id": "discerning_the_eldritch:conjure_gaoler",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:call_ascended_one",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:summon_skulls",
       "required": false
     },
     {
       "id": "iss_magicfromtheeast:punishing_heaven",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:jiangshi_invoke",
       "required": false
     },
     {
@@ -66,6 +70,14 @@
     },
     {
       "id": "iss_magicfromtheeast:ashigaru_squad",
+      "required": false
+    },
+    {
+      "id": "snowwaifuspell:summon_snow_queen",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:call_forth_terraprisma",
       "required": false
     }
   ]

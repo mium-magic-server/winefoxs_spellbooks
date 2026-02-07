@@ -1,22 +1,6 @@
 {
   "values": [
     {
-      "id": "aero_additions:wind_blade",
-      "required": false
-    },
-    {
-      "id": "firesenderexpansion:partial_teleport",
-      "required": false
-    },
-    {
-      "id": "firesenderexpansion:dragons_fury",
-      "required": false
-    },
-    {
-      "id": "firesenderexpansion:gate_of_ender",
-      "required": false
-    },
-    {
       "id": "irons_spellbooks:acupuncture",
       "required": false
     },
@@ -33,10 +17,6 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:raise_dead",
-      "required": false
-    },
-    {
       "id": "irons_spellbooks:ray_of_siphoning",
       "required": false
     },
@@ -46,6 +26,26 @@
     },
     {
       "id": "irons_spellbooks:sacrifice",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:raise_dead",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:eldritch_blast",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:sculk_tentacles",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:sonic_boom",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:black_hole",
       "required": false
     },
     {
@@ -61,15 +61,19 @@
       "required": false
     },
     {
+      "id": "irons_spellbooks:shadow_slash",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:starfall",
       "required": false
     },
     {
-      "id": "irons_spellbooks:black_hole",
+      "id": "irons_spellbooks:summon_swords",
       "required": false
     },
     {
-      "id": "irons_spellbooks:summon_swords",
+      "id": "irons_spellbooks:arrow_volley",
       "required": false
     },
     {
@@ -97,15 +101,11 @@
       "required": false
     },
     {
+      "id": "irons_spellbooks:throw",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:summon_vex",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:arrow_volley",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:wololo",
       "required": false
     },
     {
@@ -117,6 +117,14 @@
       "required": false
     },
     {
+      "id": "irons_spellbooks:fire_arrow",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:fire_breath",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:fireball",
       "required": false
     },
@@ -125,15 +133,7 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:fire_breath",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:magma_bomb",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:wall_of_fire",
+      "id": "irons_spellbooks:flaming_barrage",
       "required": false
     },
     {
@@ -141,19 +141,23 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:scorch",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:flaming_barrage",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:fire_arrow",
+      "id": "irons_spellbooks:magma_bomb",
       "required": false
     },
     {
       "id": "irons_spellbooks:raise_hell",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:scorch",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:wall_of_fire",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:divine_smite",
       "required": false
     },
     {
@@ -169,11 +173,15 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:divine_smite",
+      "id": "irons_spellbooks:cone_of_cold",
       "required": false
     },
     {
-      "id": "irons_spellbooks:cone_of_cold",
+      "id": "irons_spellbooks:frostbite",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:frostwave",
       "required": false
     },
     {
@@ -181,11 +189,11 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:icicle",
+      "id": "irons_spellbooks:ice_spikes",
       "required": false
     },
     {
-      "id": "irons_spellbooks:summon_polar_bear",
+      "id": "irons_spellbooks:icicle",
       "required": false
     },
     {
@@ -193,15 +201,15 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:ice_spikes",
-      "required": false
-    },
-    {
       "id": "irons_spellbooks:snowball",
       "required": false
     },
     {
-      "id": "irons_spellbooks:ascension",
+      "id": "irons_spellbooks:summon_polar_bear",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:ball_lightning",
       "required": false
     },
     {
@@ -229,11 +237,23 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:ball_lightning",
+      "id": "irons_spellbooks:volt_strike",
       "required": false
     },
     {
-      "id": "irons_spellbooks:volt_strike",
+      "id": "irons_spellbooks:acid_orb",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:blight",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:earthquake",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:firefly_swarm",
       "required": false
     },
     {
@@ -249,31 +269,43 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:firefly_swarm",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:earthquake",
-      "required": false
-    },
-    {
       "id": "irons_spellbooks:stomp",
       "required": false
     },
     {
-      "id": "irons_spellbooks:sculk_tentacles",
+      "id": "aero_additions:wind_charge",
       "required": false
     },
     {
-      "id": "irons_spellbooks:sonic_boom",
+      "id": "aero_additions:asphyxiate",
       "required": false
     },
     {
-      "id": "irons_spellbooks:eldritch_blast",
+      "id": "aero_additions:wind_blade",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:void_beam",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:abyssal_blast",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:dimensional_rift",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:depth_charge",
       "required": false
     },
     {
       "id": "cataclysm_spellbooks:abyssal_slash",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:tidal_grab",
       "required": false
     },
     {
@@ -282,6 +314,10 @@
     },
     {
       "id": "cataclysm_spellbooks:void_bulwark",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:incineration",
       "required": false
     },
     {
@@ -305,6 +341,10 @@
       "required": false
     },
     {
+      "id": "cataclysm_spellbooks:abyss_fireball",
+      "required": false
+    },
+    {
       "id": "cataclysm_spellbooks:tectonic_tremble",
       "required": false
     },
@@ -313,7 +353,7 @@
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:cursed_rush",
+      "id": "cataclysm_spellbooks:sandstorm",
       "required": false
     },
     {
@@ -329,11 +369,79 @@
       "required": false
     },
     {
-      "id": "ess_requiem:rip_and_tear",
+      "id": "cataclysm_spellbooks:conjure_koboldiator",
       "required": false
     },
     {
-      "id": "ess_requiem:summon_skulls",
+      "id": "cataclysm_spellbooks:summon_koboleton",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:conjure_ignited_reinforcement",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:conjure_thralls",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:conjure_amethyst_crab",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:vein_ripper",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:esoteric_edge",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:esoteric_strike",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:guardians_gaze",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:soul_slice",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:soul_set_ablaze",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:glacial_edge",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:blades_of_rancor",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:zealous_harbinger",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:libras_judgement",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:conjure_forsaken_aid",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:conjure_gaoler",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:call_ascended_one",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:rip_and_tear",
       "required": false
     },
     {
@@ -353,11 +461,23 @@
       "required": false
     },
     {
-      "id": "ess_requiem:corpse_explosion",
+      "id": "ess_requiem:spikes_of_agony",
       "required": false
     },
     {
-      "id": "ess_requiem:glacial_sculpting",
+      "id": "ess_requiem:tentacle_whip",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:pale_flame",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:twilight_assault",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:damnation",
       "required": false
     },
     {
@@ -365,99 +485,39 @@
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:esoteric_edge",
+      "id": "ess_requiem:cataphract_tackle",
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:conjure_gaoler",
+      "id": "ess_requiem:cataphract_slam",
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:rift_walker",
+      "id": "ess_requiem:summon_skulls",
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:esoteric_strike",
+      "id": "firesenderexpansion:partial_teleport",
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:glacial_edge",
+      "id": "firesenderexpansion:hollow_crystal",
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:crystalline_carver",
+      "id": "firesenderexpansion:obsidian_rod",
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:call_ascended_one",
+      "id": "firesenderexpansion:dragons_fury",
       "required": false
     },
     {
-      "id": "iss_magicfromtheeast:qigong_controlling",
+      "id": "firesenderexpansion:gate_of_ender",
       "required": false
     },
     {
-      "id": "iss_magicfromtheeast:sword_dance",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:bagua_array_circle",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:dragon_glide",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:jade_judgement",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:jiangshi_invoke",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:underworld_aid",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:punishing_heaven",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:soul_catalyst",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:soul_burst",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:bone_hands",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:calamity_cut",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:kitsune_pack",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:revenant_of_honor",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:ashigaru_squad",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:phantom_charge",
-      "required": false
-    },
-    {
-      "id": "aero_additions:wind_charge",
+      "id": "firesenderexpansion:binary_stars",
       "required": false
     },
     {
@@ -485,10 +545,6 @@
       "required": false
     },
     {
-      "id": "gtbcs_geomancy_plus:geo_conductor",
-      "required": false
-    },
-    {
       "id": "gtbcs_geomancy_plus:petrivise",
       "required": false
     },
@@ -501,63 +557,79 @@
       "required": false
     },
     {
-      "id": "firesenderexpansion:hollow_crystal",
+      "id": "iss_magicfromtheeast:sword_dance",
       "required": false
     },
     {
-      "id": "firesenderexpansion:obsidian_rod",
+      "id": "iss_magicfromtheeast:dragon_glide",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:void_beam",
+      "id": "iss_magicfromtheeast:jade_judgement",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:abyssal_blast",
+      "id": "iss_magicfromtheeast:punishing_heaven",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:dimensional_rift",
+      "id": "iss_magicfromtheeast:nephrite_slash",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:tidal_grab",
+      "id": "iss_magicfromtheeast:jade_bullet",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:gravity_storm",
+      "id": "iss_magicfromtheeast:soul_burst",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:pilfer",
+      "id": "iss_magicfromtheeast:spirit_challenging",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:conjure_koboldiator",
+      "id": "iss_magicfromtheeast:bone_hands",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:summon_koboleton",
+      "id": "iss_magicfromtheeast:calamity_cut",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:incineration",
+      "id": "iss_magicfromtheeast:phantom_charge",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:conjure_ignited_reinforcement",
+      "id": "iss_magicfromtheeast:anchoring_kunai",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:abyss_fireball",
+      "id": "iss_magicfromtheeast:splitting_shuriken",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:conjure_thralls",
+      "id": "iss_magicfromtheeast:soul_catalyst",
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:conjure_amethyst_crab",
+      "id": "iss_magicfromtheeast:jiangshi_invoke",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:underworld_aid",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:kitsune_pack",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:revenant_of_honor",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:ashigaru_squad",
       "required": false
     },
     {
@@ -565,7 +637,75 @@
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:conjure_forsaken_aid",
+      "id": "hazennstuff:brimstone_hellblast",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:scorching_slash",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:fiery_dagger",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:ice_arrow",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:crystal_volley",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:energy_burst",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:thorn_chakram",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:counterspell_spider_lily",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:shard_sword",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:death_sentence",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:spectral_axe",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:syringe_barrage",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:shooting_star",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:stellar_collapse",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:terraprismic_barrage",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:nights_edge_strike",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:soul_seekers",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:call_forth_terraprisma",
       "required": false
     }
   ]

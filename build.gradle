@@ -188,8 +188,10 @@ dependencies {
 
     // Jade
     implementation("maven.modrinth:jade:${jade_version}")
+    // JEI
+    implementation("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
     // Touhou little maid
-    implementation("curse.maven:touhou-little-maid-355044:${tlm_curse_version}") {
+    implementation("com.github.tartaricacid:touhoulittlemaid:1.5.0-neoforge+mc1.21.1:all") {
         exclude group: "maven.modrinth", module: "sodium"
         exclude group: "maven.modrinth", module: "embeddium"
     }
@@ -206,7 +208,7 @@ dependencies {
     // SnackPirate's Aeromancy Additions
     implementation("maven.modrinth:aeromancy-additions:${aeromancy_additions_version}")
     // Hazen 'N Stuff
-    // implementation("curse.maven:hazen-n-stuff-1231627:${hazen_n_stuff_version}")
+    implementation("curse.maven:hazen-n-stuff-1231627:${hazen_n_stuff_version}")
     // Discerning The Eldritch
     implementation("curse.maven:discerning-the-eldritch-1143065:${discerning_the_eldritch_version}")
     implementation("curse.maven:aces-spell-utils-1299492:${aces_spell_utils_version}")
@@ -313,4 +315,14 @@ modrinth {
         required.project "touhou-little-maid"
         required.project "irons-spells-n-spellbooks"
     }
+}
+
+tasks.register('cleanLibs', Delete) {
+    delete layout.projectDirectory.dir('agent_context/libs')
+}
+
+tasks.register('exportClasspath', Copy) {
+    dependsOn 'cleanLibs'
+    from configurations.compileClasspath
+    into layout.projectDirectory.dir('agent_context/libs')
 }

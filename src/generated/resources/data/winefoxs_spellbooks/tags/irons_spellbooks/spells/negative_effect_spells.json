@@ -5,19 +5,11 @@
       "required": false
     },
     {
+      "id": "irons_spellbooks:wololo",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:heat_surge",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:frostwave",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:acid_orb",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:blight",
       "required": false
     },
     {
@@ -25,27 +17,7 @@
       "required": false
     },
     {
-      "id": "aero_additions:updraft",
-      "required": false
-    },
-    {
-      "id": "aero_additions:asphyxiate",
-      "required": false
-    },
-    {
-      "id": "dreamless_spells:drained",
-      "required": false
-    },
-    {
-      "id": "dreamless_spells:dullard",
-      "required": false
-    },
-    {
-      "id": "dreamless_spells:doorway_effect",
-      "required": false
-    },
-    {
-      "id": "firesenderexpansion:displacement_cage",
+      "id": "cataclysm_spellbooks:gravity_storm",
       "required": false
     },
     {
@@ -57,15 +29,23 @@
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:boogie_woogie",
+      "id": "ess_requiem:finality_of_decay",
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:guardians_gaze",
+      "id": "ess_requiem:eternal_battlefield",
       "required": false
     },
     {
-      "id": "iss_magicfromtheeast:throw_up",
+      "id": "firesenderexpansion:infinite_void",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:displacement_cage",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:golden_shower",
       "required": false
     }
   ]

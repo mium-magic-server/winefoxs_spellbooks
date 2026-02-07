@@ -1,0 +1,188 @@
+{
+  "values": [
+    {
+      "effect": "irons_spellbooks:heartstop",
+      "spell": "irons_spellbooks:heartstop"
+    },
+    {
+      "effect": "irons_spellbooks:echoing_strikes",
+      "spell": "irons_spellbooks:echoing_strikes"
+    },
+    {
+      "effect": "irons_spellbooks:evasion",
+      "spell": "irons_spellbooks:evasion"
+    },
+    {
+      "effect": "irons_spellbooks:true_invisibility",
+      "spell": "irons_spellbooks:invisibility"
+    },
+    {
+      "effect": "irons_spellbooks:charged",
+      "spell": "irons_spellbooks:charge"
+    },
+    {
+      "effect": "irons_spellbooks:spider_aspect",
+      "spell": "irons_spellbooks:spider_aspect"
+    },
+    {
+      "effect": "irons_spellbooks:oakskin",
+      "spell": "irons_spellbooks:oakskin"
+    },
+    {
+      "effect": "irons_spellbooks:abyssal_shroud",
+      "spell": "irons_spellbooks:abyssal_shroud"
+    },
+    {
+      "effect": "irons_spellbooks:gluttony",
+      "spell": "irons_spellbooks:gluttony"
+    },
+    {
+      "effect": "irons_spellbooks:fortify",
+      "spell": "irons_spellbooks:fortify"
+    },
+    {
+      "effect": "irons_spellbooks:hastened",
+      "spell": "irons_spellbooks:haste"
+    },
+    {
+      "effect": "irons_spellbooks:slowed",
+      "spell": "irons_spellbooks:slow"
+    },
+    {
+      "effect": "irons_spellbooks:rend",
+      "spell": "irons_spellbooks:heat_surge"
+    },
+    {
+      "effect": "irons_spellbooks:chilled",
+      "spell": "irons_spellbooks:frostwave"
+    },
+    {
+      "effect": "irons_spellbooks:blight",
+      "spell": "irons_spellbooks:blight"
+    },
+    {
+      "effect": "irons_spellbooks:frostbite",
+      "spell": "irons_spellbooks:frostbite"
+    },
+    {
+      "effect": "aero_additions:airstepping",
+      "spell": "aero_additions:airstep"
+    },
+    {
+      "effect": "aero_additions:wind_shield",
+      "spell": "aero_additions:wind_shield"
+    },
+    {
+      "effect": "aero_additions:flight",
+      "spell": "aero_additions:feather_fall"
+    },
+    {
+      "effect": "aero_additions:breathless",
+      "spell": "aero_additions:asphyxiate"
+    },
+    {
+      "effect": "gtbcs_geomancy_plus:aegis",
+      "spell": "gtbcs_geomancy_plus:geo_conductor"
+    },
+    {
+      "effect": "gtbcs_geomancy_plus:tremor_step_effect",
+      "spell": "gtbcs_geomancy_plus:tremor_step"
+    },
+    {
+      "effect": "dreamless_spells:jadeskin",
+      "spell": "dreamless_spells:jadeskin"
+    },
+    {
+      "effect": "cataclysm_spellbooks:abyssal_predator_effect",
+      "spell": "cataclysm_spellbooks:abyssal_predator"
+    },
+    {
+      "effect": "discerning_the_eldritch:mend_flesh_potion_effect",
+      "spell": "discerning_the_eldritch:mend_flesh"
+    },
+    {
+      "effect": "discerning_the_eldritch:abracadabra_potion_effect",
+      "spell": "discerning_the_eldritch:abracadabra"
+    },
+    {
+      "effect": "discerning_the_eldritch:predator_potion_effect",
+      "spell": "discerning_the_eldritch:ravenous_revenant"
+    },
+    {
+      "effect": "discerning_the_eldritch:silence_potion_effect",
+      "spell": "discerning_the_eldritch:silence"
+    },
+    {
+      "effect": "minecraft:nausea",
+      "spell": "discerning_the_eldritch:boogie_woogie"
+    },
+    {
+      "effect": "minecraft:mining_fatigue",
+      "spell": "discerning_the_eldritch:guardians_gaze"
+    },
+    {
+      "effect": "ess_requiem:undead_pact",
+      "spell": "ess_requiem:pact_of_the_dead"
+    },
+    {
+      "effect": "ess_requiem:strained",
+      "spell": "ess_requiem:strain"
+    },
+    {
+      "effect": "ess_requiem:reaper",
+      "spell": "ess_requiem:reaper"
+    },
+    {
+      "effect": "ess_requiem:ebony_armor",
+      "spell": "ess_requiem:ebony_armor"
+    },
+    {
+      "effect": "ess_requiem:protection_of_ash",
+      "spell": "ess_requiem:protection_of_the_fallen"
+    },
+    {
+      "effect": "ess_requiem:cursed_immortality",
+      "spell": "ess_requiem:cursed_immortality"
+    },
+    {
+      "effect": "ess_requiem:ebony_cataphract",
+      "spell": "ess_requiem:ebony_cataphract"
+    },
+    {
+      "effect": "ess_requiem:bastion_of_light",
+      "spell": "ess_requiem:bastion_of_light"
+    },
+    {
+      "effect": "minecraft:regeneration",
+      "spell": "ess_requiem:cataphract_heal"
+    },
+    {
+      "effect": "ess_requiem:finality_of_decay",
+      "spell": "ess_requiem:finality_of_decay"
+    },
+    {
+      "effect": "ess_requiem:cursed_immortality",
+      "spell": "ess_requiem:eternal_battlefield"
+    },
+    {
+      "effect": "firesenderexpansion:aspect_of_the_shulker_effect",
+      "spell": "firesenderexpansion:aspect_of_the_shulker"
+    },
+    {
+      "effect": "minecraft:fire_resistance",
+      "spell": "firesenderexpansion:dimensional_adaptation"
+    },
+    {
+      "effect": "firesenderexpansion:infinite_void_effect",
+      "spell": "firesenderexpansion:infinite_void"
+    },
+    {
+      "effect": "iss_magicfromtheeast:reversal_healing",
+      "spell": "iss_magicfromtheeast:bagua_array_circle"
+    },
+    {
+      "effect": "hazennstuff:ichor",
+      "spell": "hazennstuff:golden_shower"
+    }
+  ]
+}

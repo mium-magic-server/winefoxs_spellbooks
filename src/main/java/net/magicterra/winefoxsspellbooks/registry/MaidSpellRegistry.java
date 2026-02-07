@@ -2,18 +2,17 @@ package net.magicterra.winefoxsspellbooks.registry;
 
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.api.event.RegisterSpellTypeEvent;
+import net.magicterra.winefoxsspellbooks.magic.data.SpellDataManager;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffect;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 
 /**
@@ -96,9 +95,6 @@ public final class MaidSpellRegistry {
     public static final Set<AbstractSpell> NEGATIVE_EFFECT_SPELLS = new HashSet<>();
     public static final Set<AbstractSpell> SUMMON_SPELLS = new HashSet<>();
     public static final Set<AbstractSpell> MAID_SHOULD_RECAST_SPELLS = new HashSet<>();
-    private static final Map<AbstractSpell, Float> SPELL_RANGE_MAP = new HashMap<>();
-
-    private static final Map<AbstractSpell, Holder<MobEffect>> SPELL_EFFECT_MAP = new HashMap<>();
 
     public static void registerSpell(ServerStartingEvent event) {
         ATTACK_SPELLS.clear();
@@ -110,8 +106,7 @@ public final class MaidSpellRegistry {
         NEGATIVE_EFFECT_SPELLS.clear();
         SUMMON_SPELLS.clear();
         MAID_SHOULD_RECAST_SPELLS.clear();
-        SPELL_RANGE_MAP.clear();
-        SPELL_EFFECT_MAP.clear();
+
         SpellRegistry.REGISTRY.getOrCreateTag(ATTACK_SPELLS_TAG).stream().forEach(s -> ATTACK_SPELLS.add(s.value()));
         SpellRegistry.REGISTRY.getOrCreateTag(DEFENSE_SPELLS_TAG).stream().forEach(s -> DEFENSE_SPELLS.add(s.value()));
         SpellRegistry.REGISTRY.getOrCreateTag(MOVEMENT_SPELLS_TAG).stream().forEach(s -> MOVEMENT_SPELLS.add(s.value()));
@@ -121,6 +116,19 @@ public final class MaidSpellRegistry {
         SpellRegistry.REGISTRY.getOrCreateTag(NEGATIVE_EFFECT_SPELLS_TAG).stream().forEach(s -> NEGATIVE_EFFECT_SPELLS.add(s.value()));
         SpellRegistry.REGISTRY.getOrCreateTag(SUMMON_SPELLS_TAG).stream().forEach(s -> SUMMON_SPELLS.add(s.value()));
         SpellRegistry.REGISTRY.getOrCreateTag(MAID_SHOULD_RECAST_SPELLS_TAG).stream().forEach(s -> MAID_SHOULD_RECAST_SPELLS.add(s.value()));
+
+        // 触发事件，允许其他模组修改法术类型集合
+        NeoForge.EVENT_BUS.post(new RegisterSpellTypeEvent(
+            ATTACK_SPELLS,
+            DEFENSE_SPELLS,
+            MOVEMENT_SPELLS,
+            SUPPORT_SPELLS,
+            POSITIVE_EFFECT_SPELLS,
+            SUPPORT_EFFECT_SPELLS,
+            NEGATIVE_EFFECT_SPELLS,
+            SUMMON_SPELLS,
+            MAID_SHOULD_RECAST_SPELLS
+        ));
 
         for (String extraSpellId : Config.getExtraAttackSpells()) {
             SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(ATTACK_SPELLS::add);
@@ -149,38 +157,17 @@ public final class MaidSpellRegistry {
         for (String extraSpellId : Config.getMaidShouldRecastSpells()) {
             SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(MAID_SHOULD_RECAST_SPELLS::add);
         }
-
-        // 配置攻击范围，女仆在使用这些法术时会尝试靠近到小于指定的距离再发动法术
-        SPELL_RANGE_MAP.put(SpellRegistry.none(), 15.0F);
-        Map<String, Float> spellStartCastingRangeInConfig = Config.getSpellStartCastingRange();
-        if (spellStartCastingRangeInConfig.isEmpty()) {
-            spellStartCastingRangeInConfig = Config.DEFAULT_SPELL_CASTING_RANGE_RAW;
-        }
-        for (Map.Entry<String, Float> entry : spellStartCastingRangeInConfig.entrySet()) {
-            String key = entry.getKey();
-            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(key)).ifPresent(s -> SPELL_RANGE_MAP.put(s, entry.getValue()));
-        }
-
-        // 配置法术导致的药水效果，这里仅考虑主要效果，如果有法术导致多个效果可能会出问题
-        Map<String, String> extraSpellCausedEffects = Config.getExtraSpellCausedEffects();
-        if (extraSpellCausedEffects.isEmpty()) {
-            extraSpellCausedEffects = Config.DEFAULT_SPELL_CAUSED_EFFECTS_RAW;
-        }
-        for (Map.Entry<String, String> entry : extraSpellCausedEffects.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            Optional<AbstractSpell> spellOptional = SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(key));
-            Optional<MobEffect> effectOptional = BuiltInRegistries.MOB_EFFECT.getOptional(ResourceLocation.parse(value));
-            if (spellOptional.isPresent() && effectOptional.isPresent()) {
-                AbstractSpell spell = spellOptional.get();
-                MobEffect effect = effectOptional.get();
-                SPELL_EFFECT_MAP.put(spell, Holder.direct(effect));
-            }
-        }
     }
 
+    /**
+     * 获取法术施法范围
+     * 数据由 {@link SpellDataManager} 从数据包加载
+     *
+     * @param spell 法术
+     * @return 施法范围
+     */
     public static float getSpellRange(AbstractSpell spell) {
-        return SPELL_RANGE_MAP.getOrDefault(spell, 10F);
+        return SpellDataManager.getInstance().getSpellRange(spell);
     }
 
     public static boolean isAttackSpell(AbstractSpell spell) {
@@ -219,7 +206,14 @@ public final class MaidSpellRegistry {
         return MAID_SHOULD_RECAST_SPELLS.contains(spell);
     }
 
+    /**
+     * 获取法术导致的效果
+     * 数据由 {@link SpellDataManager} 从数据包加载
+     *
+     * @param spell 法术
+     * @return 效果 Holder，可能为 null
+     */
     public static Holder<MobEffect> getSpellCausedEffect(AbstractSpell spell) {
-        return SPELL_EFFECT_MAP.get(spell);
+        return SpellDataManager.getInstance().getSpellCausedEffect(spell);
     }
 }

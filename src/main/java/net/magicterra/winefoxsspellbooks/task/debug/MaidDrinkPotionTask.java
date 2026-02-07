@@ -12,10 +12,10 @@ import java.util.Set;
 import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
-import net.magicterra.winefoxsspellbooks.entity.ai.behavior.MaidDrinkPotionsTask;
-import net.magicterra.winefoxsspellbooks.entity.ai.behavior.MaidSpellAttackWalkToTarget;
-import net.magicterra.winefoxsspellbooks.entity.ai.behavior.MaidSpellChooseTask;
-import net.magicterra.winefoxsspellbooks.entity.ai.behavior.MaidSpellStrafingTask;
+import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.DrinkPotionsTask;
+import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellAttackWalkToTarget;
+import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellChooseTask;
+import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellStrafingTask;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -66,11 +66,11 @@ public class MaidDrinkPotionTask implements IRangedAttackTask {
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
-        BehaviorControl<Mob> spellChooseTask = new MaidSpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
+        BehaviorControl<Mob> spellChooseTask = new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
             Set.of(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT, MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE));
-        BehaviorControl<Mob> moveToTargetTask = MaidSpellAttackWalkToTarget.create((float) Config.getBattleWalkSpeed());
-        BehaviorControl<Mob> drinkPotionTask = new MaidDrinkPotionsTask((float) Config.getBattleWalkSpeed(), 100);
-        BehaviorControl<PathfinderMob> maidAttackStrafingTask = new MaidSpellStrafingTask(Config.getStartSpellRange(), (float) Config.getBattleWalkSpeed());
+        BehaviorControl<Mob> moveToTargetTask = SpellAttackWalkToTarget.create((float) Config.getBattleWalkSpeed());
+        BehaviorControl<Mob> drinkPotionTask = new DrinkPotionsTask((float) Config.getBattleWalkSpeed(), 100);
+        BehaviorControl<PathfinderMob> maidAttackStrafingTask = new SpellStrafingTask(Config.getStartSpellRange(), (float) Config.getBattleWalkSpeed());
 
         return Lists.newArrayList(
             Pair.of(5, supplementedTask),

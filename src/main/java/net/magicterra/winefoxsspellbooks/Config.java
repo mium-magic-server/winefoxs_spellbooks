@@ -37,6 +37,18 @@ public class Config {
 
     private static ModConfigSpec.BooleanValue MELEE_ATTACK_IN_MAGIC_TASK;
 
+    private static ModConfigSpec.DoubleValue AIR_FORCE_BASE_CHANCE;
+
+    private static ModConfigSpec.DoubleValue AIR_FORCE_CHANCE_PER_LEVEL;
+
+    private static ModConfigSpec.DoubleValue FOLLOW_HEIGHT;
+
+    private static ModConfigSpec.DoubleValue FOLLOW_RADIUS;
+
+    private static ModConfigSpec.DoubleValue FLY_SPEED;
+
+    private static ModConfigSpec.DoubleValue MIN_AIR_ATTACK_RANGE;
+
     private static ModConfigSpec.ConfigValue<List<String>> EXTRA_ATTACK_SPELLS;
 
     private static ModConfigSpec.ConfigValue<List<String>> EXTRA_DEFENSE_SPELLS;
@@ -55,63 +67,15 @@ public class Config {
 
     private static ModConfigSpec.ConfigValue<List<String>> MAID_SHOULD_RECAST_SPELLS;
 
-    private static ModConfigSpec.ConfigValue<com.electronwill.nightconfig.core.Config> SPELL_START_CASTING_RANGE;
+    private static ModConfigSpec.ConfigValue<com.electronwill.nightconfig.core.Config> EXTRA_SPELL_CASTING_RANGE;
 
     private static ModConfigSpec.ConfigValue<com.electronwill.nightconfig.core.Config> EXTRA_SPELL_CAUSED_EFFECTS;
 
     private final static String SPELL_ID_PLACEHOLDER = "irons_spellbooks:fireball";
 
-    public final static Map<String, Float> DEFAULT_SPELL_CASTING_RANGE_RAW = Map.of(
-        "irons_spellbooks:divine_smite", 2F,
-        "irons_spellbooks:cleanse", 3F,
-        "irons_spellbooks:healing_circle", 5F,
-        "irons_spellbooks:flaming_strike", 3.25F,
-        "irons_spellbooks:none", 15F
-    );
-
-    private final static com.electronwill.nightconfig.core.Config DEFAULT_SPELL_CASTING_RANGE = com.electronwill.nightconfig.core.Config.of(() ->
-        new LinkedHashMap<>(DEFAULT_SPELL_CASTING_RANGE_RAW), InMemoryFormat.withUniversalSupport());
-
-    public final static Map<String, String> DEFAULT_SPELL_CAUSED_EFFECTS_RAW = Map.ofEntries(
-        Map.entry("irons_spellbooks:heartstop", "irons_spellbooks:heartstop"),
-        Map.entry("irons_spellbooks:echoing_strikes", "irons_spellbooks:echoing_strikes"),
-        Map.entry("irons_spellbooks:invisibility", "irons_spellbooks:true_invisibility"),
-        Map.entry("irons_spellbooks:charge", "irons_spellbooks:charged"),
-        Map.entry("irons_spellbooks:spider_aspect", "irons_spellbooks:spider_aspect"),
-        Map.entry("irons_spellbooks:oakskin", "irons_spellbooks:oakskin"),
-        Map.entry("irons_spellbooks:gluttony", "irons_spellbooks:gluttony"),
-        Map.entry("irons_spellbooks:abyssal_shroud", "irons_spellbooks:abyssal_shroud"),
-        Map.entry("irons_spellbooks:slow", "irons_spellbooks:slowed"),
-        Map.entry("irons_spellbooks:heat_surge", "irons_spellbooks:rend"),
-        Map.entry("irons_spellbooks:frostwave", "irons_spellbooks:chilled"),
-        Map.entry("irons_spellbooks:blight", "irons_spellbooks:blight"),
-        Map.entry("irons_spellbooks:fortify", "irons_spellbooks:fortify"),
-        Map.entry("irons_spellbooks:haste", "irons_spellbooks:hastened"),
-        Map.entry("irons_spellbooks:frostbite", "irons_spellbooks:frostbite"),
-        Map.entry("aero_additions:wind_shield", "aero_additions:wind_shield"),
-        Map.entry("aero_additions:feather_fall", "aero_additions:flight"),
-        Map.entry("aero_additions:updraft", "minecraft:slowness"),
-        Map.entry("aero_additions:asphyxiate", "aero_additions:breathless"),
-        Map.entry("gtbcs_geomancy_plus:tremor_step", "gtbcs_geomancy_plus:tremor_step_effect"),
-        Map.entry("dreamless_spells:jadeskin", "dreamless_spells:jadeskin"),
-        Map.entry("dreamless_spells:drained", "dreamless_spells:drained"),
-        Map.entry("dreamless_spells:dullard", "dreamless_spells:dullard"),
-        Map.entry("dreamless_spells:doorway_effect", "dreamless_spells:doorway_effect"),
-        Map.entry("cataclysm_spellbooks:abyssal_predator", "cataclysm_spellbooks:abyssal_predator_effect"),
-        Map.entry("ess_requiem:pact_of_the_dead", "ess_requiem:undead_pact"),
-        Map.entry("ess_requiem:strain", "ess_requiem:strained"),
-        Map.entry("ess_requiem:reaper", "ess_requiem:reaper"),
-        Map.entry("ess_requiem:finality_of_decay", "ess_requiem:finality_of_decay"),
-        Map.entry("discerning_the_eldritch:mend_flesh", "discerning_the_eldritch:mend_flesh_potion_effect"),
-        Map.entry("discerning_the_eldritch:abracadabra", "discerning_the_eldritch:abracadabra_potion_effect"),
-        Map.entry("discerning_the_eldritch:silence", "discerning_the_eldritch:silence_potion_effect"),
-        Map.entry("discerning_the_eldritch:boogie_woogie", "minecraft:nausea"),
-        Map.entry("discerning_the_eldritch:guardians_gaze", "minecraft:mining_fatigue"),
-        Map.entry("firesenderexpansion:aspect_of_the_shulker", "firesenderexpansion:aspect_of_the_shulker_effect")
-    );
-
-    private final static com.electronwill.nightconfig.core.Config DEFAULT_SPELL_CAUSED_EFFECTS = com.electronwill.nightconfig.core.Config.of(() ->
-        new LinkedHashMap<>(DEFAULT_SPELL_CAUSED_EFFECTS_RAW), InMemoryFormat.withUniversalSupport());
+    /** 空的配置对象，用于配置默认值 */
+    private final static com.electronwill.nightconfig.core.Config EMPTY_CONFIG = com.electronwill.nightconfig.core.Config.of(
+        LinkedHashMap::new, InMemoryFormat.withUniversalSupport());
 
     static {
         init(BUILDER);
@@ -152,6 +116,30 @@ public class Config {
         MELEE_ATTACK_IN_MAGIC_TASK = builder.comment("Allow maid use melee attack in magic attack task (Default: true)")
             .translation(translateKey("melee_attack_in_magic_task"))
             .define("meleeAttackInMagicTask", true);
+
+        AIR_FORCE_BASE_CHANCE = builder.comment("Base chance for air force maid (Default: 0.1)")
+            .translation(translateKey("air_force_base_chance"))
+            .defineInRange("airForceBaseChance", 0.1D, 0.0D, 1.0D);
+
+        AIR_FORCE_CHANCE_PER_LEVEL = builder.comment("Air force chance per level (Default: 0.1)")
+            .translation(translateKey("air_force_chance_per_level"))
+            .defineInRange("airForceChancePerLevel", 0.1D, 0.0D, 1.0D);
+
+        FOLLOW_HEIGHT = builder.comment("Air force follow height (Default: 4.0)")
+            .translation(translateKey("air_force_follow_height"))
+            .defineInRange("airForceFollowHeight", 4.0D, 0.0D, 64.0D);
+
+        FOLLOW_RADIUS = builder.comment("Air force follow radius (Default: 6.0)")
+            .translation(translateKey("air_force_follow_radius"))
+            .defineInRange("airForceFollowRadius", 6.0D, 0.0D, 32.0D);
+
+        FLY_SPEED = builder.comment("Air force fly speed (Default: 0.4)")
+            .translation(translateKey("air_force_fly_speed"))
+            .defineInRange("airForceFlySpeed", 0.4D, 0.0D, 3.0D);
+
+        MIN_AIR_ATTACK_RANGE = builder.comment("Min air attack spell range (Default: 5.0)")
+            .translation(translateKey("air_force_min_attack_range"))
+            .defineInRange("airForceMinAttackRange", 5.0D, 0.0D, 64.0D);
 
         builder.translation(translateKey("spell_compat")).push("spell_compat");
 
@@ -203,13 +191,13 @@ public class Config {
                 .translation(translateKey("spell_compat.maid_should_recast_spells"))
                 .defineListAllowEmpty("maidShouldRecastSpells", Collections::emptyList, placeholderSupplier, spellElementChecker);
 
-        SPELL_START_CASTING_RANGE = builder.comment("Maid start casting range every spell id (override default)")
-                .translation(translateKey("spell_compat.spell_start_casting_range")).worldRestart()
-                .define("spell_start_casting_range", DEFAULT_SPELL_CASTING_RANGE, Config::checkSpellCastingRangeMap);
+        EXTRA_SPELL_CASTING_RANGE = builder.comment("Extra spell casting range (spell id => range). Default values are loaded from datapack.")
+                .translation(translateKey("spell_compat.extra_spell_casting_range")).worldRestart()
+                .define("extra_spell_casting_range", EMPTY_CONFIG, Config::checkSpellCastingRangeMap);
 
-        EXTRA_SPELL_CAUSED_EFFECTS = builder.comment("Extra spell cause effect registry (spell id => effect id)")
+        EXTRA_SPELL_CAUSED_EFFECTS = builder.comment("Extra spell caused effects (spell id => effect id). Default values are loaded from datapack.")
             .translation(translateKey("spell_compat.extra_spell_caused_effects")).worldRestart()
-            .define("extra_spell_caused_effects", DEFAULT_SPELL_CAUSED_EFFECTS, Config::checkSpellCausedEffectsMap);
+            .define("extra_spell_caused_effects", EMPTY_CONFIG, Config::checkSpellCausedEffectsMap);
 
         builder.pop();
     }
@@ -248,6 +236,30 @@ public class Config {
         return MELEE_ATTACK_IN_MAGIC_TASK.getAsBoolean();
     }
 
+    public static float getAirForceBaseChance() {
+        return AIR_FORCE_BASE_CHANCE.get().floatValue();
+    }
+
+    public static float getAirForceChancePerLevel() {
+        return AIR_FORCE_CHANCE_PER_LEVEL.get().floatValue();
+    }
+
+    public static float getFollowHeight() {
+        return FOLLOW_HEIGHT.get().floatValue();
+    }
+
+    public static float getFollowRadius() {
+        return FOLLOW_RADIUS.get().floatValue();
+    }
+
+    public static float getFlySpeed() {
+        return FLY_SPEED.get().floatValue();
+    }
+
+    public static float getMinAirAttackRange() {
+        return MIN_AIR_ATTACK_RANGE.get().floatValue();
+    }
+
     public static List<String> getExtraAttackSpells() {
         return EXTRA_ATTACK_SPELLS.get();
     }
@@ -284,9 +296,9 @@ public class Config {
         return MAID_SHOULD_RECAST_SPELLS.get();
     }
 
-    public static Map<String, Float> getSpellStartCastingRange() {
+    public static Map<String, Float> getExtraSpellCastingRange() {
         Map<String, Float> map = new LinkedHashMap<>();
-        for (com.electronwill.nightconfig.core.Config.Entry entry : SPELL_START_CASTING_RANGE.get().entrySet()) {
+        for (com.electronwill.nightconfig.core.Config.Entry entry : EXTRA_SPELL_CASTING_RANGE.get().entrySet()) {
             map.put(entry.getKey(), entry.getValue());
         }
         return map;

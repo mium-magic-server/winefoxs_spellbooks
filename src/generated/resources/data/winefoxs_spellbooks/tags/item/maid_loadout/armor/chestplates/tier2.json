@@ -1,0 +1,10 @@
+{
+  "values": [
+    "irons_spellbooks:wizard_chestplate",
+    "irons_spellbooks:pyromancer_chestplate",
+    "irons_spellbooks:cryomancer_chestplate",
+    "irons_spellbooks:electromancer_chestplate",
+    "minecraft:iron_chestplate",
+    "minecraft:diamond_chestplate"
+  ]
+}

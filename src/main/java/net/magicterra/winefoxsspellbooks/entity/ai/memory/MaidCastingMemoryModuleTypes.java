@@ -3,9 +3,11 @@ package net.magicterra.winefoxsspellbooks.entity.ai.memory;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import java.util.Optional;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.behavior.PositionTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -24,4 +26,13 @@ public class MaidCastingMemoryModuleTypes {
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<MaidSpellAction>> CURRENT_SPELL_ACTION = MAID_CASTING_MEMORY_MODULE_TYPES.register("current_spell_action", (key) -> new MemoryModuleType<>(Optional.empty()));
 
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<LivingEntity>> SUPPORT_TARGET = MAID_CASTING_MEMORY_MODULE_TYPES.register("support_target", (key) -> new MemoryModuleType<>(Optional.empty()));
+
+    public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<SummonedMaidBroom>> BROOM_ENTITY =
+        MAID_CASTING_MEMORY_MODULE_TYPES.register("broom_entity", (key) -> new MemoryModuleType<>(Optional.empty()));
+
+    public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<PositionTracker>> FLIGHT_TARGET =
+        MAID_CASTING_MEMORY_MODULE_TYPES.register("flight_target", (key) -> new MemoryModuleType<>(Optional.empty()));
+
+    public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Boolean>> IS_HOVERING =
+        MAID_CASTING_MEMORY_MODULE_TYPES.register("is_hovering", (key) -> new MemoryModuleType<>(Optional.empty()));
 }

@@ -1,0 +1,16 @@
+// 1.21.1	2026-01-20T03:56:29.445851	Tags for minecraft:item mod id winefoxs_spellbooks
+aa56bd126138c5817ad857571e79c247e67a57ce data/winefoxs_spellbooks/tags/item/maid_loadout/armor/boots/tier1.json
+c0e9ce28e8e1a78a4599f2bb958b456ceb7703c6 data/winefoxs_spellbooks/tags/item/maid_loadout/armor/boots/tier2.json
+f0167d38fe2d64ff03e498d8eec83f7f850d511d data/winefoxs_spellbooks/tags/item/maid_loadout/armor/boots/tier3.json
+cbc47902679a8b22d8c87c23ef5c7d484a0b560f data/winefoxs_spellbooks/tags/item/maid_loadout/armor/chestplates/tier1.json
+3caf970c941f04c27220823c2524e52a814a66a6 data/winefoxs_spellbooks/tags/item/maid_loadout/armor/chestplates/tier2.json
+16f3c3aaf429515bde225d2d6741c6b596cb6ff1 data/winefoxs_spellbooks/tags/item/maid_loadout/armor/chestplates/tier3.json
+529332bc115feda785c91aa683a19386b74fd97f data/winefoxs_spellbooks/tags/item/maid_loadout/armor/helmets/tier1.json
+5d24a201cf8f8634ea57348a76d6207077b0a260 data/winefoxs_spellbooks/tags/item/maid_loadout/armor/helmets/tier2.json
+4a563cad62d9d725fabc538385858fcdba644f7b data/winefoxs_spellbooks/tags/item/maid_loadout/armor/helmets/tier3.json
+a2d55387dc3378b146118798232232040ce197c0 data/winefoxs_spellbooks/tags/item/maid_loadout/armor/leggings/tier1.json
+520ede42977e81b8f16826a98d923fd6bc1d912b data/winefoxs_spellbooks/tags/item/maid_loadout/armor/leggings/tier2.json
+f2f6cc6919475a31cad09235766270a762674781 data/winefoxs_spellbooks/tags/item/maid_loadout/armor/leggings/tier3.json
+bf3a5954ecee56b1fdf83cb04d0602a4bb44041c data/winefoxs_spellbooks/tags/item/maid_loadout/weapons/tier1.json
+c68ca9e59a1231d107ce777ab05dd98228af9328 data/winefoxs_spellbooks/tags/item/maid_loadout/weapons/tier2.json
+8010d36aab7b4b8c30e8627450630149181620a4 data/winefoxs_spellbooks/tags/item/maid_loadout/weapons/tier3.json

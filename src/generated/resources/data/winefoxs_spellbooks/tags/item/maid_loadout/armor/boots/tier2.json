@@ -1,0 +1,10 @@
+{
+  "values": [
+    "irons_spellbooks:wizard_boots",
+    "irons_spellbooks:pyromancer_boots",
+    "irons_spellbooks:cryomancer_boots",
+    "irons_spellbooks:electromancer_boots",
+    "minecraft:iron_boots",
+    "minecraft:diamond_boots"
+  ]
+}

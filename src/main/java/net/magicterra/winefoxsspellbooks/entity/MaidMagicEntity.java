@@ -1,7 +1,7 @@
 package net.magicterra.winefoxsspellbooks.entity;
 
+import com.github.tartaricacid.touhoulittlemaid.api.animation.IMagicCastingState;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
-import io.redspace.ironsspellbooks.api.spells.SpellData;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 
 /**
@@ -13,17 +13,15 @@ import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
  * @since 2025-07-23 00:30
  */
 public interface MaidMagicEntity {
-    SpellData winefoxsSpellbooks$getCastingSpell();
-
-    AbstractSpell winefoxsSpellbooks$getInstantCastSpellType();
-
-    void winefoxsSpellbooks$setInstantCastSpellType(AbstractSpell instantCastSpellType);
+    IMagicCastingState winefoxSpellbooks$getMagicCastingState();
 
     boolean winefoxsSpellbooks$getCancelCastAnimation();
 
     void winefoxsSpellbooks$setCancelCastAnimation(boolean cancelCastAnimation);
 
     float winefoxsSpellbooks$getMana();
+
+    void winefoxsSpellbooks$setMana(float mana);
 
     int winefoxsSpellbooks$getManaCost(AbstractSpell spell, int level);
 

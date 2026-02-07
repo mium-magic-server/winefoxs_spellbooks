@@ -23,6 +23,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -36,17 +37,34 @@ public class MaidMagicManager {
     public static final int CONTINUOUS_CAST_TICK_INTERVAL = 10;
 
     public static boolean regenMaidMana(EntityMaid maid, MagicData magicData) {
-        int maidMaxMana = (int) getMaxMana(maid);
+        return regenMana(maid, magicData);
+    }
+
+    /**
+     * 恢复魔力值 (通用方法)
+     *
+     * @param entity    实体
+     * @param magicData 魔法数据
+     * @return 是否有恢复
+     */
+    public static boolean regenMana(LivingEntity entity, MagicData magicData) {
+        int maxMana = (int) getMaxMana(entity);
         var mana = magicData.getMana();
-        if (mana < maidMaxMana) {
+        if (mana < maxMana) {
             float manaRegenMultiplier;
-            if (maid.isStruckByLightning()) {
-                manaRegenMultiplier = 100;
+            if (entity instanceof EntityMaid maid && maid.isStruckByLightning()) {
+                manaRegenMultiplier = 100; // 雷击加速恢复
             } else {
-                manaRegenMultiplier = (float) maid.getAttributeValue(AttributeRegistry.MANA_REGEN);
+                manaRegenMultiplier = (float) entity.getAttributeValue(AttributeRegistry.MANA_REGEN);
             }
-            var increment = maidMaxMana * manaRegenMultiplier * .01f * ServerConfigs.MANA_REGEN_MULTIPLIER.get().floatValue();
-            magicData.setMana(Mth.clamp(magicData.getMana() + increment, 0, maidMaxMana));
+            var increment = maxMana * manaRegenMultiplier * .01f * ServerConfigs.MANA_REGEN_MULTIPLIER.get().floatValue();
+            float newMana = Mth.clamp(magicData.getMana() + increment, 0, maxMana);
+            if (entity instanceof MaidMagicEntity maidMagicEntity) {
+                maidMagicEntity.winefoxsSpellbooks$setMana(newMana);
+            } else {
+                magicData.setMana(newMana);
+            }
+
             return true;
         } else {
             return false;
@@ -54,28 +72,41 @@ public class MaidMagicManager {
     }
 
     public static double getMaxMana(EntityMaid maid) {
-        double maxMana = maid.getAttributeValue(AttributeRegistry.MAX_MANA);
+        return getMaxMana((LivingEntity) maid);
+    }
+
+    /**
+     * 获取最大魔力值 (通用方法)
+     *
+     * @param entity 实体
+     * @return 最大魔力值
+     */
+    public static double getMaxMana(LivingEntity entity) {
+        double maxMana = entity.getAttributeValue(AttributeRegistry.MAX_MANA);
         return Config.getMaxManaMultiplier() * maxMana;
     }
 
-    public static void addCooldown(EntityMaid maid, AbstractSpell spell, CastSource castSource) {
+    public static void addCooldown(LivingEntity entity, AbstractSpell spell, CastSource castSource) {
         if (castSource == CastSource.SCROLL)
             return;
-        int effectiveCooldown = getEffectiveSpellCooldown(spell, maid, castSource);
-
-        IMagicEntity magicEntity = (IMagicEntity) maid;
+        if (!(entity instanceof IMagicEntity magicEntity)) {
+            return;
+        }
+        int effectiveCooldown = getEffectiveSpellCooldown(spell, entity, castSource);
         MagicData magicData = magicEntity.getMagicData();
         magicData.getPlayerCooldowns().addCooldown(spell, effectiveCooldown);
     }
 
-    public static void clearCooldowns(EntityMaid maid) {
-        IMagicEntity magicEntity = (IMagicEntity) maid;
+    public static void clearCooldowns(LivingEntity entity) {
+        if (!(entity instanceof IMagicEntity magicEntity)) {
+            return;
+        }
         MagicData magicData = magicEntity.getMagicData();
         magicData.getPlayerCooldowns().clearCooldowns();
     }
 
-    public static int getEffectiveSpellCooldown(AbstractSpell spell, EntityMaid maid, CastSource castSource) {
-        double playerCooldownModifier = maid.getAttributeValue(AttributeRegistry.COOLDOWN_REDUCTION);
+    public static int getEffectiveSpellCooldown(AbstractSpell spell, LivingEntity entity, CastSource castSource) {
+        double playerCooldownModifier = entity.getAttributeValue(AttributeRegistry.COOLDOWN_REDUCTION);
 
         float itemCoolDownModifer = 1;
         if (castSource == CastSource.SWORD) {
