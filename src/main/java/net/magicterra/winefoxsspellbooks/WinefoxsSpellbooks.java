@@ -37,6 +37,7 @@ public class WinefoxsSpellbooks {
         modBus.addListener(LittleMaidSpellbooksCompat::onRegisterItem);
 
         NeoForge.EVENT_BUS.addListener(MaidSpellRegistry::registerSpell);
+        NeoForge.EVENT_BUS.addListener(MaidSpellRegistry::onTagsUpdated);
         NeoForge.EVENT_BUS.addListener(WinefoxsSpellbooks::onAddReloadListener);
         NeoForge.EVENT_BUS.addListener(InitCommands::onRegisterCommands);
 

@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffect;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 
 /**
@@ -97,6 +98,17 @@ public final class MaidSpellRegistry {
     public static final Set<AbstractSpell> MAID_SHOULD_RECAST_SPELLS = new HashSet<>();
 
     public static void registerSpell(ServerStartingEvent event) {
+        refreshSpellTypes();
+    }
+
+    public static void onTagsUpdated(TagsUpdatedEvent event) {
+        if (!event.shouldUpdateStaticData()) {
+            return;
+        }
+        refreshSpellTypes();
+    }
+
+    private static void refreshSpellTypes() {
         ATTACK_SPELLS.clear();
         DEFENSE_SPELLS.clear();
         MOVEMENT_SPELLS.clear();
@@ -130,32 +142,29 @@ public final class MaidSpellRegistry {
             MAID_SHOULD_RECAST_SPELLS
         ));
 
-        for (String extraSpellId : Config.getExtraAttackSpells()) {
-            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(ATTACK_SPELLS::add);
-        }
-        for (String extraSpellId : Config.getExtraDefenseSpells()) {
-            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(DEFENSE_SPELLS::add);
-        }
-        for (String extraSpellId : Config.getExtraMovementSpells()) {
-            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(MOVEMENT_SPELLS::add);
-        }
-        for (String extraSpellId : Config.getExtraSupportSpells()) {
-            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(SUPPORT_SPELLS::add);
-        }
-        for (String extraSpellId : Config.getExtraPositiveEffectSpells()) {
-            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(POSITIVE_EFFECT_SPELLS::add);
-        }
-        for (String extraSpellId : Config.getExtraNegativeEffectSpells()) {
-            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(NEGATIVE_EFFECT_SPELLS::add);
-        }
-        for (String extraSpellId : Config.getExtraSupportEffectSpells()) {
-            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(SUPPORT_EFFECT_SPELLS::add);
-        }
-        for (String extraSpellId : Config.getExtraSummonSpells()) {
-            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(SUMMON_SPELLS::add);
-        }
-        for (String extraSpellId : Config.getMaidShouldRecastSpells()) {
-            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(extraSpellId)).ifPresent(MAID_SHOULD_RECAST_SPELLS::add);
+        addConfiguredSpells(ATTACK_SPELLS, Config.getExtraAttackSpells(), "spell_compat.extra_attack_spells");
+        addConfiguredSpells(DEFENSE_SPELLS, Config.getExtraDefenseSpells(), "spell_compat.extra_defense_spells");
+        addConfiguredSpells(MOVEMENT_SPELLS, Config.getExtraMovementSpells(), "spell_compat.extra_movement_spells");
+        addConfiguredSpells(SUPPORT_SPELLS, Config.getExtraSupportSpells(), "spell_compat.extra_support_spells");
+        addConfiguredSpells(POSITIVE_EFFECT_SPELLS, Config.getExtraPositiveEffectSpells(), "spell_compat.extra_positive_effect_spells");
+        addConfiguredSpells(NEGATIVE_EFFECT_SPELLS, Config.getExtraNegativeEffectSpells(), "spell_compat.extra_negative_effect_spells");
+        addConfiguredSpells(SUPPORT_EFFECT_SPELLS, Config.getExtraSupportEffectSpells(), "spell_compat.extra_support_effect_spells");
+        addConfiguredSpells(SUMMON_SPELLS, Config.getExtraSummonSpells(), "spell_compat.extra_summon_spells");
+        addConfiguredSpells(MAID_SHOULD_RECAST_SPELLS, Config.getMaidShouldRecastSpells(), "spell_compat.maid_should_recast_spells");
+    }
+
+    private static void addConfiguredSpells(Set<AbstractSpell> spellSet, Iterable<String> extraSpellIds, String configKey) {
+        for (String extraSpellId : extraSpellIds) {
+            if (extraSpellId == null) {
+                WinefoxsSpellbooks.LOGGER.warn("Invalid null spell id in config '{}'", configKey);
+                continue;
+            }
+            ResourceLocation spellId = ResourceLocation.tryParse(extraSpellId);
+            if (spellId == null) {
+                WinefoxsSpellbooks.LOGGER.warn("Invalid spell id '{}' in config '{}'", extraSpellId, configKey);
+                continue;
+            }
+            SpellRegistry.REGISTRY.getOptional(spellId).ifPresent(spellSet::add);
         }
     }
 
