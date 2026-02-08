@@ -232,8 +232,8 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         summonTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CONJURE_FORSAKE_AID.get().getSpellResource());
         // attackTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CONJURE_GAOLER.get().getSpellResource());
         // summonTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CONJURE_GAOLER.get().getSpellResource());
-        attackTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CALL_ASCENDED_ONE.get().getSpellResource());
-        summonTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CALL_ASCENDED_ONE.get().getSpellResource());
+        // attackTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CALL_ASCENDED_ONE.get().getSpellResource());
+        // summonTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CALL_ASCENDED_ONE.get().getSpellResource());
 
         // ========== Dreamless Spells ==========
         defenseTag.addOptional(SpellRegistries.JADESKIN.get().getSpellResource());

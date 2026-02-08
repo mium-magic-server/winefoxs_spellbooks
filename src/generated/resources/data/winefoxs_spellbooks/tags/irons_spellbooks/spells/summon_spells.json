@@ -41,10 +41,6 @@
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:call_ascended_one",
-      "required": false
-    },
-    {
       "id": "ess_requiem:summon_skulls",
       "required": false
     },
