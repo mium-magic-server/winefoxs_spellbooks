@@ -13,7 +13,15 @@
       "required": false
     },
     {
+      "id": "irons_spellbooks:frostbite",
+      "required": false
+    },
+    {
       "id": "aero_additions:feather_fall",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:aspect_of_the_shulker",
       "required": false
     }
   ]

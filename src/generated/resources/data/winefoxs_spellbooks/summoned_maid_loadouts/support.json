@@ -21,11 +21,11 @@
       "conditions": [
         {
           "condition": "winefoxs_spellbooks:summon_level",
-          "max": 3,
+          "max": 2,
           "min": 1
         }
       ],
-      "spell_level_cap": 2,
+      "spell_level_cap": 3,
       "spells": {
         "attack": {
           "entries": [
@@ -35,7 +35,10 @@
               "name": "winefoxs_spellbooks:attack_spells"
             }
           ],
-          "rolls": 1
+          "rolls": {
+            "max": 1,
+            "min": 0
+          }
         },
         "support": {
           "entries": [
@@ -43,6 +46,19 @@
               "type": "tag",
               "expand": true,
               "name": "winefoxs_spellbooks:support_spells"
+            }
+          ],
+          "rolls": {
+            "max": 1,
+            "min": 0
+          }
+        },
+        "support_other": {
+          "entries": [
+            {
+              "type": "tag",
+              "expand": true,
+              "name": "winefoxs_spellbooks:support_effect_spells"
             }
           ],
           "rolls": {
@@ -98,11 +114,11 @@
       "conditions": [
         {
           "condition": "winefoxs_spellbooks:summon_level",
-          "max": 6,
-          "min": 4
+          "max": 4,
+          "min": 3
         }
       ],
-      "spell_level_cap": 4,
+      "spell_level_cap": 6,
       "spells": {
         "attack": {
           "entries": [
@@ -127,6 +143,19 @@
           ],
           "rolls": 1
         },
+        "positive_effect": {
+          "entries": [
+            {
+              "type": "tag",
+              "expand": true,
+              "name": "winefoxs_spellbooks:positive_effect_spells"
+            }
+          ],
+          "rolls": {
+            "max": 2,
+            "min": 0
+          }
+        },
         "support": {
           "entries": [
             {
@@ -135,9 +164,19 @@
               "name": "winefoxs_spellbooks:support_spells"
             }
           ],
+          "rolls": 1
+        },
+        "support_other": {
+          "entries": [
+            {
+              "type": "tag",
+              "expand": true,
+              "name": "winefoxs_spellbooks:support_effect_spells"
+            }
+          ],
           "rolls": {
-            "max": 3,
-            "min": 2
+            "max": 2,
+            "min": 0
           }
         }
       },
@@ -218,11 +257,11 @@
       "conditions": [
         {
           "condition": "winefoxs_spellbooks:summon_level",
-          "max": 10,
-          "min": 7
+          "max": 6,
+          "min": 5
         }
       ],
-      "spell_level_cap": 6,
+      "spell_level_cap": 10,
       "spells": {
         "attack": {
           "entries": [
@@ -233,8 +272,8 @@
             }
           ],
           "rolls": {
-            "max": 3,
-            "min": 2
+            "max": 2,
+            "min": 1
           }
         },
         "defense": {
@@ -243,6 +282,19 @@
               "type": "tag",
               "expand": true,
               "name": "winefoxs_spellbooks:defense_spells"
+            }
+          ],
+          "rolls": {
+            "max": 2,
+            "min": 1
+          }
+        },
+        "positive_effect": {
+          "entries": [
+            {
+              "type": "tag",
+              "expand": true,
+              "name": "winefoxs_spellbooks:positive_effect_spells"
             }
           ],
           "rolls": {
@@ -259,8 +311,21 @@
             }
           ],
           "rolls": {
-            "max": 4,
-            "min": 3
+            "max": 2,
+            "min": 1
+          }
+        },
+        "support_other": {
+          "entries": [
+            {
+              "type": "tag",
+              "expand": true,
+              "name": "winefoxs_spellbooks:support_effect_spells"
+            }
+          ],
+          "rolls": {
+            "max": 2,
+            "min": 1
           }
         }
       },

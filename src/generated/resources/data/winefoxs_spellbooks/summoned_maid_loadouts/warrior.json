@@ -37,10 +37,11 @@
       "conditions": [
         {
           "condition": "winefoxs_spellbooks:summon_level",
-          "max": 3,
+          "max": 2,
           "min": 1
         }
       ],
+      "spell_level_cap": 3,
       "spells": {
         "attack": {
           "entries": [
@@ -133,11 +134,11 @@
       "conditions": [
         {
           "condition": "winefoxs_spellbooks:summon_level",
-          "max": 6,
-          "min": 4
+          "max": 4,
+          "min": 3
         }
       ],
-      "spell_level_cap": 3,
+      "spell_level_cap": 6,
       "spells": {
         "attack": {
           "entries": [
@@ -240,11 +241,11 @@
       "conditions": [
         {
           "condition": "winefoxs_spellbooks:summon_level",
-          "max": 10,
-          "min": 7
+          "max": 6,
+          "min": 5
         }
       ],
-      "spell_level_cap": 5,
+      "spell_level_cap": 10,
       "spells": {
         "attack": {
           "entries": [

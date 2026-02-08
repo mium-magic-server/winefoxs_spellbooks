@@ -19,10 +19,6 @@
     {
       "id": "discerning_the_eldritch:mend_flesh",
       "required": false
-    },
-    {
-      "id": "ess_requiem:cataphract_heal",
-      "required": false
     }
   ]
 }

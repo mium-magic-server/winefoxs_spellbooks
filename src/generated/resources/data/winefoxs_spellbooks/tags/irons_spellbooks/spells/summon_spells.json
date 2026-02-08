@@ -41,10 +41,6 @@
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:conjure_gaoler",
-      "required": false
-    },
-    {
       "id": "discerning_the_eldritch:call_ascended_one",
       "required": false
     },
@@ -78,6 +74,10 @@
     },
     {
       "id": "hazennstuff:call_forth_terraprisma",
+      "required": false
+    },
+    {
+      "id": "winefoxs_spellbooks:summon_maid",
       "required": false
     }
   ]

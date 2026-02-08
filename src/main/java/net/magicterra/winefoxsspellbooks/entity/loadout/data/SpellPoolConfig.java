@@ -10,7 +10,7 @@ import net.magicterra.winefoxsspellbooks.entity.loadout.pool.SpellPool;
  * @param defense        防御/自我强化法术池
  * @param movement       移动法术池
  * @param support        自我治疗法术池
- * @param positive       正面效果法术池（对队友施放）
+ * @param positiveEffect 正面效果法术池（对队友施放）
  * @param negativeEffect 负面效果法术池（对敌人施放）
  * @param supportOther   治疗效果法术池（对队友施放）
  * @author Gardel &lt;gardel741@outlook.com&gt;
@@ -21,7 +21,7 @@ public record SpellPoolConfig(
     Optional<SpellPool> defense,
     Optional<SpellPool> movement,
     Optional<SpellPool> support,
-    Optional<SpellPool> positive,
+    Optional<SpellPool> positiveEffect,
     Optional<SpellPool> negativeEffect,
     Optional<SpellPool> supportOther
 ) {
@@ -63,7 +63,7 @@ public record SpellPoolConfig(
      */
     public boolean hasAnyPool() {
         return attack.isPresent() || defense.isPresent() || movement.isPresent()
-            || support.isPresent() || positive.isPresent()
+            || support.isPresent() || positiveEffect.isPresent()
             || negativeEffect.isPresent() || supportOther.isPresent();
     }
 
@@ -79,7 +79,7 @@ public record SpellPoolConfig(
         private SpellPool defense;
         private SpellPool movement;
         private SpellPool support;
-        private SpellPool positive;
+        private SpellPool positiveEffect;
         private SpellPool negativeEffect;
         private SpellPool supportOther;
 
@@ -103,8 +103,8 @@ public record SpellPoolConfig(
             return this;
         }
 
-        public Builder positive(SpellPool pool) {
-            this.positive = pool;
+        public Builder positiveEffect(SpellPool pool) {
+            this.positiveEffect = pool;
             return this;
         }
 
@@ -124,7 +124,7 @@ public record SpellPoolConfig(
                 Optional.ofNullable(defense),
                 Optional.ofNullable(movement),
                 Optional.ofNullable(support),
-                Optional.ofNullable(positive),
+                Optional.ofNullable(positiveEffect),
                 Optional.ofNullable(negativeEffect),
                 Optional.ofNullable(supportOther)
             );

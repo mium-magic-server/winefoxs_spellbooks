@@ -286,7 +286,7 @@ public final class MaidEquipmentRandomizer {
             addSpellsFromPool(pool, spellLevelCap, movement, random));
         config.support().ifPresent(pool ->
             addSpellsFromPool(pool, spellLevelCap, support, random));
-        config.positive().ifPresent(pool ->
+        config.positiveEffect().ifPresent(pool ->
             addSpellsFromPool(pool, spellLevelCap, positive, random));
         config.negativeEffect().ifPresent(pool ->
             addSpellsFromPool(pool, spellLevelCap, negativeEffect, random));

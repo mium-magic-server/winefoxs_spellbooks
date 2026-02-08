@@ -164,7 +164,7 @@ public final class LoadoutCodecs {
         SPELL_POOL.optionalFieldOf("defense").forGetter(SpellPoolConfig::defense),
         SPELL_POOL.optionalFieldOf("movement").forGetter(SpellPoolConfig::movement),
         SPELL_POOL.optionalFieldOf("support").forGetter(SpellPoolConfig::support),
-        SPELL_POOL.optionalFieldOf("positive").forGetter(SpellPoolConfig::positive),
+        SPELL_POOL.optionalFieldOf("positive_effect").forGetter(SpellPoolConfig::positiveEffect),
         SPELL_POOL.optionalFieldOf("negative_effect").forGetter(SpellPoolConfig::negativeEffect),
         SPELL_POOL.optionalFieldOf("support_other").forGetter(SpellPoolConfig::supportOther)
     ).apply(instance, SpellPoolConfig::new));

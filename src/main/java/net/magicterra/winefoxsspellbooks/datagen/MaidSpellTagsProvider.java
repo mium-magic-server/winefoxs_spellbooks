@@ -8,6 +8,7 @@ import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import java.util.concurrent.CompletableFuture;
 import net.Iceforkkk.DreamlessAditions.registries.SpellRegistries;
 import net.ender.ess_requiem.registries.GGSpellRegistry;
+import net.hazen.hazennstuff.Spells.HnSSpellRegistries;
 import net.magicterra.winefoxsspellbooks.registry.InitSpells;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.HolderLookup;
@@ -87,7 +88,7 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         defenseTag.addOptional(SpellRegistry.INVISIBILITY_SPELL.get().getSpellResource());
         defenseTag.addOptional(SpellRegistry.SHIELD_SPELL.get().getSpellResource());
         negativeEffectTag.addOptional(SpellRegistry.SLOW_SPELL.get().getSpellResource());
-        negativeEffectTag.addOptional(SpellRegistry.WOLOLO_SPELL.get().getSpellResource());
+        attackTag.addOptional(SpellRegistry.WOLOLO_SPELL.get().getSpellResource());
         attackTag.addOptional(SpellRegistry.SUMMON_VEX_SPELL.get().getSpellResource());
         summonTag.addOptional(SpellRegistry.SUMMON_VEX_SPELL.get().getSpellResource());
 
@@ -113,6 +114,7 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         attackTag.addOptional(SpellRegistry.WISP_SPELL.get().getSpellResource());
         supportTag.addOptional(SpellRegistry.GREATER_HEAL_SPELL.get().getSpellResource());
         supportTag.addOptional(SpellRegistry.HEAL_SPELL.get().getSpellResource());
+        supportEffectTag.addOptional(SpellRegistry.HEAL_SPELL.get().getSpellResource());
         positiveEffectTag.addOptional(SpellRegistry.FORTIFY_SPELL.get().getSpellResource());
         positiveEffectTag.addOptional(SpellRegistry.HASTE_SPELL.get().getSpellResource());
         positiveEffectTag.addOptional(SpellRegistry.CLEANSE_SPELL.get().getSpellResource());
@@ -122,8 +124,8 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
 
         // ========== Iron's Spellbooks - Ice ==========
         attackTag.addOptional(SpellRegistry.CONE_OF_COLD_SPELL.get().getSpellResource());
-        attackTag.addOptional(SpellRegistry.FROSTBITE_SPELL.get().getSpellResource());
-        attackTag.addOptional(SpellRegistry.FROSTWAVE_SPELL.get().getSpellResource());
+        positiveEffectTag.addOptional(SpellRegistry.FROSTBITE_SPELL.get().getSpellResource());
+        negativeEffectTag.addOptional(SpellRegistry.FROSTWAVE_SPELL.get().getSpellResource());
         attackTag.addOptional(SpellRegistry.ICE_BLOCK_SPELL.get().getSpellResource()); // 在目标上方生成冰块砸落
         attackTag.addOptional(SpellRegistry.ICE_SPIKES_SPELL.get().getSpellResource());
         attackTag.addOptional(SpellRegistry.ICICLE_SPELL.get().getSpellResource());
@@ -147,8 +149,8 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         defenseTag.addOptional(SpellRegistry.CHARGE_SPELL.get().getSpellResource());
 
         // ========== Iron's Spellbooks - Nature ==========
-        attackTag.addOptional(SpellRegistry.ACID_ORB_SPELL.get().getSpellResource());
-        attackTag.addOptional(SpellRegistry.BLIGHT_SPELL.get().getSpellResource());
+        negativeEffectTag.addOptional(SpellRegistry.ACID_ORB_SPELL.get().getSpellResource());
+        negativeEffectTag.addOptional(SpellRegistry.BLIGHT_SPELL.get().getSpellResource());
         attackTag.addOptional(SpellRegistry.EARTHQUAKE_SPELL.get().getSpellResource());
         attackTag.addOptional(SpellRegistry.FIREFLY_SWARM_SPELL.get().getSpellResource());
         attackTag.addOptional(SpellRegistry.POISON_ARROW_SPELL.get().getSpellResource());
@@ -228,8 +230,8 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         negativeEffectTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.SILENCE.get().getSpellResource());
         attackTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CONJURE_FORSAKE_AID.get().getSpellResource());
         summonTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CONJURE_FORSAKE_AID.get().getSpellResource());
-        attackTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CONJURE_GAOLER.get().getSpellResource());
-        summonTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CONJURE_GAOLER.get().getSpellResource());
+        // attackTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CONJURE_GAOLER.get().getSpellResource());
+        // summonTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CONJURE_GAOLER.get().getSpellResource());
         attackTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CALL_ASCENDED_ONE.get().getSpellResource());
         summonTag.addOptional(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.CALL_ASCENDED_ONE.get().getSpellResource());
 
@@ -248,8 +250,8 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         attackTag.addOptional(GGSpellRegistry.TWILIGHT_ASSAULT.get().getSpellResource());
         attackTag.addOptional(GGSpellRegistry.DAMNATION.get().getSpellResource());
         attackTag.addOptional(GGSpellRegistry.LORD_OF_FROST.get().getSpellResource());
-        attackTag.addOptional(GGSpellRegistry.CATAPHRACT_TACKLE.get().getSpellResource());
-        attackTag.addOptional(GGSpellRegistry.CATAPHRACT_SLAM.get().getSpellResource());
+        // attackTag.addOptional(GGSpellRegistry.CATAPHRACT_TACKLE.get().getSpellResource());
+        // attackTag.addOptional(GGSpellRegistry.CATAPHRACT_SLAM.get().getSpellResource());
         defenseTag.addOptional(GGSpellRegistry.UNDEAD_PACT.get().getSpellResource());
         defenseTag.addOptional(GGSpellRegistry.STRAIN.get().getSpellResource());
         defenseTag.addOptional(GGSpellRegistry.REAPER.get().getSpellResource());
@@ -258,7 +260,7 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         defenseTag.addOptional(GGSpellRegistry.CURSED_IMMORTALITY.get().getSpellResource());
         defenseTag.addOptional(GGSpellRegistry.EBONY_CATAPHRACT.get().getSpellResource());
         defenseTag.addOptional(GGSpellRegistry.BASTION_OF_LIGHT.get().getSpellResource());
-        supportTag.addOptional(GGSpellRegistry.CATAPHRACT_HEAL.get().getSpellResource());
+        // supportTag.addOptional(GGSpellRegistry.CATAPHRACT_HEAL.get().getSpellResource());
         negativeEffectTag.addOptional(GGSpellRegistry.FINALITY_OF_DECAY.get().getSpellResource());
         negativeEffectTag.addOptional(GGSpellRegistry.ETERNAL_BATTLEFIELD.get().getSpellResource());
         attackTag.addOptional(GGSpellRegistry.SKULLS.get().getSpellResource());
@@ -271,10 +273,10 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         attackTag.addOptional(net.fireofpower.firesenderexpansion.registries.SpellRegistries.DRAGONS_FURY.get().getSpellResource());
         attackTag.addOptional(net.fireofpower.firesenderexpansion.registries.SpellRegistries.GATE_OF_ENDER.get().getSpellResource());
         attackTag.addOptional(net.fireofpower.firesenderexpansion.registries.SpellRegistries.BINARY_STARS.get().getSpellResource());
-        defenseTag.addOptional(net.fireofpower.firesenderexpansion.registries.SpellRegistries.ASPECT_OF_THE_SHULKER.get().getSpellResource());
+        positiveEffectTag.addOptional(net.fireofpower.firesenderexpansion.registries.SpellRegistries.ASPECT_OF_THE_SHULKER.get().getSpellResource());
         defenseTag.addOptional(net.fireofpower.firesenderexpansion.registries.SpellRegistries.DIMENSIONAL_ADAPTATION.get().getSpellResource());
         movementTag.addOptional(net.fireofpower.firesenderexpansion.registries.SpellRegistries.SCINTILLATING_STRIDE.get().getSpellResource());
-        negativeEffectTag.addOptional(net.fireofpower.firesenderexpansion.registries.SpellRegistries.INFINITE_VOID.get().getSpellResource());
+        // negativeEffectTag.addOptional(net.fireofpower.firesenderexpansion.registries.SpellRegistries.INFINITE_VOID.get().getSpellResource());
         negativeEffectTag.addOptional(net.fireofpower.firesenderexpansion.registries.SpellRegistries.DISPLACEMENT_CAGE.get().getSpellResource());
 
         // ========== Geomancy Plus ==========
@@ -325,31 +327,31 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         summonTag.addOptional(ModSpellRegistry.SUMMON_SNOW_QUEEN_SPELL.get().getSpellResource());
 
         // ========== Hazen N Stuff ==========
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.BRIMSTONE_HELLBLAST.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.SCORCHING_SLASH.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.FIERY_DAGGER.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.ICE_ARROW.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.CRYSTAL_VOLLEY.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.ENERGY_BURST.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.THORN_CHAKRAM.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.COUNTERSPELL_SPIDER_LILY.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.SHARD_SWORD.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.DEATH_SENTENCE.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.SPECTRAL_AXE.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.SYRINGE_BARRAGE.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.SHOOTING_STAR.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.STELLAR_COLLAPSE.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.TERRAPRISMIC_BARRAGE.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.NIGHTS_EDGE_STRIKE.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.SOUL_SEEKERS.get().getSpellResource());
-        movementTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.CINDEROUS_STEP.get().getSpellResource());
-        movementTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.CHAOTIC_TELEPORT.get().getSpellResource());
-        negativeEffectTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.GOLDEN_SHOWER.get().getSpellResource());
-        attackTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.CALL_FORTH_TERRAPRISMA.get().getSpellResource());
-        summonTag.addOptional(net.hazen.hazennstuff.Spells.HnSSpellRegistries.CALL_FORTH_TERRAPRISMA.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.BRIMSTONE_HELLBLAST.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.SCORCHING_SLASH.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.FIERY_DAGGER.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.ICE_ARROW.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.CRYSTAL_VOLLEY.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.ENERGY_BURST.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.THORN_CHAKRAM.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.COUNTERSPELL_SPIDER_LILY.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.SHARD_SWORD.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.DEATH_SENTENCE.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.SPECTRAL_AXE.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.SYRINGE_BARRAGE.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.SHOOTING_STAR.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.STELLAR_COLLAPSE.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.TERRAPRISMIC_BARRAGE.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.NIGHTS_EDGE_STRIKE.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.SOUL_SEEKERS.get().getSpellResource());
+        movementTag.addOptional(HnSSpellRegistries.CINDEROUS_STEP.get().getSpellResource());
+        movementTag.addOptional(HnSSpellRegistries.CHAOTIC_TELEPORT.get().getSpellResource());
+        negativeEffectTag.addOptional(HnSSpellRegistries.GOLDEN_SHOWER.get().getSpellResource());
+        attackTag.addOptional(HnSSpellRegistries.CALL_FORTH_TERRAPRISMA.get().getSpellResource());
+        summonTag.addOptional(HnSSpellRegistries.CALL_FORTH_TERRAPRISMA.get().getSpellResource());
 
         // ========== Winefox's Spellbooks ==========
-        attackTag.addOptional(InitSpells.SUMMON_MAID_SPELL.get().getSpellResource());
+        // attackTag.addOptional(InitSpells.SUMMON_MAID_SPELL.get().getSpellResource());
         summonTag.addOptional(InitSpells.SUMMON_MAID_SPELL.get().getSpellResource());
 
         // ========== Maid Should Recast Spells (需要多次施放的法术) ==========

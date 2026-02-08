@@ -105,6 +105,10 @@
       "required": false
     },
     {
+      "id": "irons_spellbooks:wololo",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:summon_vex",
       "required": false
     },
@@ -177,14 +181,6 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:frostbite",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:frostwave",
-      "required": false
-    },
-    {
       "id": "irons_spellbooks:ice_block",
       "required": false
     },
@@ -238,14 +234,6 @@
     },
     {
       "id": "irons_spellbooks:volt_strike",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:acid_orb",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:blight",
       "required": false
     },
     {
@@ -433,10 +421,6 @@
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:conjure_gaoler",
-      "required": false
-    },
-    {
       "id": "discerning_the_eldritch:call_ascended_one",
       "required": false
     },
@@ -482,14 +466,6 @@
     },
     {
       "id": "ess_requiem:lord_of_the_final_frost",
-      "required": false
-    },
-    {
-      "id": "ess_requiem:cataphract_tackle",
-      "required": false
-    },
-    {
-      "id": "ess_requiem:cataphract_slam",
       "required": false
     },
     {

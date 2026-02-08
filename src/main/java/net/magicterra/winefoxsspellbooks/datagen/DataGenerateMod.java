@@ -23,12 +23,12 @@ public class DataGenerateMod {
 
     public DataGenerateMod(IEventBus eventBus) {
         eventBus.addListener(this::gatherData);
-
-        // 模拟生成默认配置
-        ConfigTracker.INSTANCE.loadDefaultServerConfigs();
     }
 
     public void gatherData(GatherDataEvent event) {
+        // 模拟生成默认配置
+        ConfigTracker.INSTANCE.loadDefaultServerConfigs();
+
         DataGenerator generator = event.getGenerator();
         PackOutput output = generator.getPackOutput();
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();

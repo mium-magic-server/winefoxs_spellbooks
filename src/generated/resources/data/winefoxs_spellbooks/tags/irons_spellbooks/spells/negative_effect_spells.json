@@ -5,11 +5,19 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:wololo",
+      "id": "irons_spellbooks:heat_surge",
       "required": false
     },
     {
-      "id": "irons_spellbooks:heat_surge",
+      "id": "irons_spellbooks:frostwave",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:acid_orb",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:blight",
       "required": false
     },
     {
@@ -34,10 +42,6 @@
     },
     {
       "id": "ess_requiem:eternal_battlefield",
-      "required": false
-    },
-    {
-      "id": "firesenderexpansion:infinite_void",
       "required": false
     },
     {
