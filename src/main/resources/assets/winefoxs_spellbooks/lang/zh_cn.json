@@ -48,5 +48,22 @@
   "commands.winefoxs_spellbooks.wsb.summon.failed": "%d 只女仆召唤失败",
   "commands.winefoxs_spellbooks.wsb.cast.spell_not_found": "未找到法术: %s",
   "commands.winefoxs_spellbooks.wsb.cast.success": "成功让 %d 个实体施放 %s (等级 %d)",
-  "commands.winefoxs_spellbooks.wsb.cast.failed": "%d 个目标不是 IMagicEntity 或施法失败"
+  "commands.winefoxs_spellbooks.wsb.cast.failed": "%d 个目标不是 IMagicEntity 或施法失败",
+  "patchouli.touhou_little_maid.book.categories.winefoxs_spellbooks.name": "铁魔法附属",
+  "patchouli.touhou_little_maid.book.categories.winefoxs_spellbooks.description": "酒狐的魔法书是《Iron的咒语和法术书》附属模组，本模组添加了女仆的施法任务",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.start.name": "模组介绍",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.start.pages.0.text": "这是一个为《车万女仆》和《Iron 的法术与魔法书》设计的联动模组，旨在扩展《车万女仆》模组中女仆的魔法战斗能力。通过与《Iron 的法术与魔法书》模组的结合，女仆可以穿戴魔法书作为饰品，在战斗中使用各种强大的魔法攻击和召唤技能。",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.mana.name": "魔力值",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.mana.pages.0.text": "和玩家一样，魔力值是女仆施法的关键，不同类型和等级的法术需要不同的魔力值才能施放，装备法杖、法师套装可以增大最大魔力值上限。$(br)女仆的法力恢复速度受法力值恢复词条影响（未实装），默认情况下每秒恢复 2%%，此外，如果女仆曾经被闪电击中过，将会升级法力恢复速度至每 0.5s 恢复 100%%",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spellbook.name": "法术书",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spellbook.pages.0.text": "法术书是女仆施法的媒介，女仆不可以使用法术卷轴施法，法术书需要装备到女仆的饰品栏中才能发挥作用。$(br)除了常规的法术书，注入法术的武器和装备也可以用作施法媒介。",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.task.name": "新增任务模式",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.task.pages.0.text": "本模组为女仆添加了两种新任务：法术攻击和法术支援。$(br)在法术攻击任务下，女仆会施法主动攻击敌对生物，如果手中有近战武器且距离敌人比较进，也会使用武器近战攻击。$(br)在法术支援任务下，女仆不会主动攻击敌人，而是尝试治疗附近受伤的主人和同阵营的生物（包括同主人的女仆），或者为队友提供增益效果和对渡人提供负面效果。",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.task.pages.1.text": "法术被分类为攻击、防御、移动、恢复、正面效果、负面效果、增援共七种类型，可在配置文件和数据包中配置。默认支持的附属：Cataclysm: Spellbooks、SnackPirate's Aeromancy Additions、Discerning The Eldritch、Ender's Spells and Stuff: Requiem、Fire's Ender Expansion、GTBC's Spellbooks、Magic From The East、Snow Waifu Spell、Hazen 'N Stuff、Dreamless Spells",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.animation.name": "咏唱动画",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.animation.pages.0.text": "本模组为 geckolib 女仆模型适配了咏唱动作，模型包作者可以创建 animation/<packname>.iss.animation.json 文件实现自定义动作，默认的动画键名可参考此文件：$(l:https://github.com/TartaricAcid/TouhouLittleMaid/blob/1.21/src/main/resources/assets/touhou_little_maid/animation/iss.animation.json)点击打开$(/l)",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.summon_maid.name": "召唤女仆",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.summon_maid.pages.0.text": "召唤女仆是一个末影流派法术，可召唤临时的女仆战斗单位。召唤的女仆会随机获得模型、装备和法术，并自动执行攻击或支援任务。$(br)女仆分为战士、法师、辅助三种配置，各有不同的装备和法术搭配。法术等级越高，召唤数量越多，装备和法术也越强。$(br)女仆有概率骑乘扫帚飞行作战，飞行女仆会在目标周围盘旋并施法。$(br)持续时间为 10 分钟，也可通过 /wsb summon 命令自定义召唤。",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.summon_maid_datapack.name": "自定义召唤配置",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.summon_maid_datapack.pages.0.text": "召唤女仆的配置完全由数据包驱动，路径为 data/<命名空间>/summoned_maid_loadouts/<名称>.json。$(br)每个配置文件可定义权重、模型筛选、扫帚模式，以及按召唤等级分层的装备和法术池。$(br)武器和护甲通过物品标签引用，法术通过法术标签引用，均支持权重随机和数量范围控制。$(br)详见默认配置文件 warrior.json、mage.json、support.json。"
 }

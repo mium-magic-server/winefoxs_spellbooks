@@ -1,10 +1,16 @@
 {
-  "name": "新增任务模式",
-  "icon": "irons_spellbooks:hellrazor",
+  "name": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.task.name",
+  "icon": "winefoxs_spellbooks:magic_support_task_icon",
   "category": "touhou_little_maid:winefoxs_spellbooks",
   "pages": [
-    "本模组为女仆添加了两种新任务：法术攻击和法术支援。$(br)在法术攻击任务下，女仆会施法主动攻击敌对生物，如果手中有近战武器且距离敌人比较进，也会使用武器近战攻击。$(br)在法术支援任务下，女仆不会主动攻击敌人，而是尝试治疗附近受伤的主人和同阵营的生物（包括同主人的女仆），或者为队友提供增益效果和对渡人提供负面效果。",
-    "法术被分类为攻击，防御，移动，恢复，正面效果，负面效果，增援共七种类型，可以通过数据包定义，默认只包含铁魔法本体和部分附属的标签分类"
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.task.pages.0.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.task.pages.1.text"
+    }
   ],
   "sortnum": 4
 }

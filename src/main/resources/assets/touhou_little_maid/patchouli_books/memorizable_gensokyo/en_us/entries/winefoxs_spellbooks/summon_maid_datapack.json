@@ -1,0 +1,12 @@
+{
+  "name": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.summon_maid_datapack.name",
+  "icon": "winefoxs_spellbooks:textures/gui/spell_icons/summon_maid.png",
+  "category": "touhou_little_maid:winefoxs_spellbooks",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.summon_maid_datapack.pages.0.text"
+    }
+  ],
+  "sortnum": 7
+}

@@ -1,9 +1,12 @@
 {
-  "name": "魔力值",
+  "name": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.mana.name",
   "icon": "irons_spellbooks:mana_upgrade_orb",
   "category": "touhou_little_maid:winefoxs_spellbooks",
   "pages": [
-    "和玩家一样，魔力值是女仆施法的关键，不同类型和等级的法术需要不同的魔力值才能施放，装备法杖、法师套装可以增大最大魔力值上限。$(br)女仆的法力恢复速度受法力值恢复词条影响（未实装），默认情况下每秒恢复 2%%，此外，如果女仆曾经被闪电击中过，将会升级法力恢复速度至每 0.5s 恢复 100%%"
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.mana.pages.0.text"
+    }
   ],
   "sortnum": 2
 }

@@ -1,9 +1,12 @@
 {
-  "name": "模组介绍",
+  "name": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.start.name",
   "icon": "irons_spellbooks:gold_spell_book",
   "category": "touhou_little_maid:winefoxs_spellbooks",
   "pages": [
-    "这是一个为《车万女仆》和《Iron 的法术与魔法书》设计的联动模组，旨在扩展《车万女仆》模组中女仆的魔法战斗能力。通过与《Iron 的法术与魔法书》模组的结合，女仆可以穿戴魔法书作为饰品，在战斗中使用各种强大的魔法攻击和召唤技能。"
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.start.pages.0.text"
+    }
   ],
   "sortnum": 1
 }

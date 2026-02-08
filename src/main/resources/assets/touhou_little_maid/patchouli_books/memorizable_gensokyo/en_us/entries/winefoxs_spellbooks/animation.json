@@ -1,9 +1,12 @@
 {
-  "name": "咏唱动画",
+  "name": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.animation.name",
   "icon": "irons_spellbooks:artificer_cane",
   "category": "touhou_little_maid:winefoxs_spellbooks",
   "pages": [
-    "本模组为女仆模型添加了咏唱动作，适配大部分 geckolib 模型，模型包作者可以创建 animation/casting.animation.json 文件实现自定义动作，默认的动画键名可参考此文件：$(l:https://github.com/mium-magic-server/winefoxs_spellbooks/blob/master/src/main/resources/assets/winefoxs_spellbooks/animation/casting.animation.json)点击打开$(/l)"
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.animation.pages.0.text"
+    }
   ],
   "sortnum": 5
 }
