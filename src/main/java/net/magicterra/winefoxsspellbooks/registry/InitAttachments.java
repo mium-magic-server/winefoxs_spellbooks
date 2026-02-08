@@ -1,12 +1,15 @@
 package net.magicterra.winefoxsspellbooks.registry;
 
 import com.mojang.serialization.Codec;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -40,6 +43,12 @@ public class InitAttachments {
     public static final Supplier<AttachmentType<Optional<UUID>>> ROOT_SUMMONER_UUID = ATTACHMENT_TYPES.register(
         "root_summoner_uuid", () -> AttachmentType.<Optional<UUID>>builder(Optional::empty)
             .serialize(UUIDUtil.CODEC.optionalFieldOf("uuid").codec())
+            .build()
+    );
+
+    public static final Supplier<AttachmentType<List<CompoundTag>>> SAVED_SUMMONS = ATTACHMENT_TYPES.register(
+        "saved_summons", () -> AttachmentType.<List<CompoundTag>>builder(Collections::emptyList)
+            .serialize(CompoundTag.CODEC.listOf().fieldOf("saved_summons").codec())
             .build()
     );
 

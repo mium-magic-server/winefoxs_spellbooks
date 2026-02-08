@@ -73,9 +73,9 @@ public class SummonMaidSpell extends AbstractSpell {
         .build();
 
     public SummonMaidSpell() {
-        this.manaCostPerLevel = 10;
-        this.baseSpellPower = 10;
-        this.spellPowerPerLevel = 3;
+        this.manaCostPerLevel = 50;
+        this.baseSpellPower = 2;
+        this.spellPowerPerLevel = 1;
         this.castTime = 30;
         this.baseManaCost = 50;
     }
@@ -108,7 +108,7 @@ public class SummonMaidSpell extends AbstractSpell {
      * @return 召唤数量
      */
     public int getSummonCount(int spellLevel, LivingEntity caster) {
-        return spellLevel + 1; // 1 级召唤 2 个，最高 6 级召唤 7 个
+        return Mth.ceil(getSpellPower(spellLevel, caster));
     }
 
     @Override
@@ -137,17 +137,21 @@ public class SummonMaidSpell extends AbstractSpell {
 
     @Override
     public void onCast(Level world, int spellLevel, LivingEntity entity, CastSource castSource, MagicData playerMagicData) {
+        if (!(world instanceof ServerLevel serverWorld)) {
+            super.onCast(world, spellLevel, entity, castSource, playerMagicData);
+            return;
+        }
         PlayerRecasts recasts = playerMagicData.getPlayerRecasts();
 
         // 检查是否已有该法术的重铸记录
         if (!recasts.hasRecastForSpell(this)) {
             SummonedEntitiesCastData summonedEntitiesCastData = new SummonedEntitiesCastData();
             int summonTime = 12000; // 召唤持续时间 600 秒（10 分钟）
-            int count = this.getSummonCount(spellLevel, entity);
+            int count = getSummonCount(spellLevel, entity);
             float radius = 1.5f + 0.185f * count; // 召唤半径随数量增加
 
             // 默认飞行概率（从 Config 获取）
-            float defaultAirForceChance = (float) (Config.getAirForceBaseChance() + Config.getAirForceChancePerLevel() * spellLevel);
+            float defaultAirForceChance = Config.getAirForceBaseChance() + Config.getAirForceChancePerLevel() * spellLevel;
             defaultAirForceChance = Mth.clamp(defaultAirForceChance, 0.0f, 1.0f);
 
             int airForceIndex = 0;
@@ -188,7 +192,7 @@ public class SummonMaidSpell extends AbstractSpell {
 
                 // 初始化实体生成数据（此时 isAirForce 已确定，randomSpells 会根据此状态过滤近战法术）
                 maid.finalizeSpawn(
-                    (ServerLevel) world,
+                    serverWorld,
                     world.getCurrentDifficultyAt(maid.getOnPos()),
                     MobSpawnType.MOB_SUMMONED,
                     null
@@ -200,29 +204,20 @@ public class SummonMaidSpell extends AbstractSpell {
                 maid.setOldPosAndRot();
 
                 // 触发召唤事件
-                Mob summonedMaid = NeoForge.EVENT_BUS.post(
-                    new SpellSummonEvent<>(entity, maid, this.spellId, spellLevel)
-                ).getCreature();
+                Mob summonedMaid = NeoForge.EVENT_BUS.post(new SpellSummonEvent<>(entity, maid, this.spellId, spellLevel)).getCreature();
 
-                // 添加到世界
-                world.addFreshEntity(summonedMaid);
-
-                // 扫帚女仆创建扫帚并骑乘
-                if (summonedMaid instanceof SummonedEntityMaid summonedEntityMaid && summonedEntityMaid.isAirForce()) {
-                    SummonedMaidBroom broom = SummonedMaidBroom.createForMaid(
-                        (ServerLevel) world, summonedEntityMaid, entity
-                    );
-                    world.addFreshEntity(broom);
+                if (summonedMaid instanceof SummonedEntityMaid summonedEntityMaid && isAirForce) {
+                    SummonedMaidBroom broom = SummonedMaidBroom.createForMaid(serverWorld, summonedEntityMaid, entity);
                     summonedEntityMaid.startRiding(broom, true);
-                    // 将扫帚也加入召唤管理器追踪（用于持久化）
+                    serverWorld.addFreshEntityWithPassengers(broom);
                     SummonManager.initSummon(entity, broom, summonTime, summonedEntitiesCastData);
+                } else {
+                    serverWorld.addFreshEntity(summonedMaid);
                 }
 
-                // 初始化召唤管理器追踪
                 SummonManager.initSummon(entity, summonedMaid, summonTime, summonedEntitiesCastData);
             }
 
-            // 创建重铸实例
             RecastInstance recastInstance = new RecastInstance(
                 this.getSpellId(),
                 spellLevel,
@@ -243,8 +238,6 @@ public class SummonMaidSpell extends AbstractSpell {
                 0.9f + Utils.random.nextFloat() * 0.2f
             );
         }
-
-        super.onCast(world, spellLevel, entity, castSource, playerMagicData);
     }
 
     /**
@@ -283,17 +276,17 @@ public class SummonMaidSpell extends AbstractSpell {
         float spellPower = this.getSpellPower(spellLevel, caster);
 
         // 计算最高等级无加成时的基础法术强度作为参考值
-        // baseSpellPower=10, spellPowerPerLevel=3, maxLevel=6
-        // 最高等级基础强度 = 10 + 3 * (6-1) = 25
+        // baseSpellPower=2, spellPowerPerLevel=1, maxLevel=6
+        // 最高等级基础强度 = 2 + 1 * (6-1) = 7
         float maxBasePower = this.baseSpellPower + this.spellPowerPerLevel * (this.getMaxLevel() - 1);
 
         // 归一化法术强度（相对于最高等级基础强度的比例）
         // 施法者属性加成会使 spellPower 超过 maxBasePower
         float normalizedPower = spellPower / maxBasePower;
 
-        // 最大魔力加成：最高时获得 10 倍（即 +900%）
-        // 公式：(normalizedPower * 9) 作为乘法加成
-        double maxManaBonus = normalizedPower * 9.0;
+        // 最大魔力加成：最高时获得 +500% 加成
+        // 公式：(normalizedPower * 5) 作为乘法加成
+        double maxManaBonus = normalizedPower * 5.0;
 
         // 魔力恢复加成：最高时获得 10% 恢复速度
         // 基础恢复速度是 1%，目标是 10%，所以需要 +900%

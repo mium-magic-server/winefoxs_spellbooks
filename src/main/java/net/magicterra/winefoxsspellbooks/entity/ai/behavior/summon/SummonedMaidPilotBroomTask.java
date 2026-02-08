@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.entity.ai.behavior.PositionTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
@@ -68,12 +69,11 @@ public class SummonedMaidPilotBroomTask extends Behavior<SummonedEntityMaid> {
 
     /**
      * 处理战斗飞行（追击和悬停攻击）
+     * <p>
+     * 优先读取 {@link SummonedMaidFlyStrafingTask} 设置的 FLIGHT_TARGET memory 来驱动扫帚，
+     * 仅在 FLIGHT_TARGET 不存在时使用后备追击逻辑（直线飞向目标上方）。
      */
     private void handleCombatFlight(SummonedEntityMaid maid, SummonedMaidBroom broom, LivingEntity target) {
-        Vec3 targetPos = target.position();
-        Vec3 broomPos = broom.position();
-        double distanceSq = broomPos.distanceToSqr(targetPos);
-
         // 让女仆和扫帚看向攻击目标
         lookAtTarget(maid, broom, target.getEyePosition());
 
@@ -83,21 +83,41 @@ public class SummonedMaidPilotBroomTask extends Behavior<SummonedEntityMaid> {
             return;
         }
 
-        float minAttackRange = Config.getMinAirAttackRange();
-        double minAttackRangeSq = minAttackRange * minAttackRange;
+        // 检查 IS_HOVERING（由 FlyStrafingTask 管理）
+        boolean isHovering = maid.getBrain()
+            .getMemory(MaidCastingMemoryModuleTypes.IS_HOVERING.get())
+            .orElse(false);
 
-        if (distanceSq <= minAttackRangeSq) {
-            // 在攻击范围内：悬停攻击
-            broom.setHovering(true);
-            maid.getBrain().setMemory(MaidCastingMemoryModuleTypes.IS_HOVERING.get(), true);
-        } else {
-            // 不在攻击范围：追击
-            broom.setHovering(false);
-            maid.getBrain().setMemory(MaidCastingMemoryModuleTypes.IS_HOVERING.get(), false);
+        // 优先使用 FlyStrafingTask 设置的 FLIGHT_TARGET
+        Optional<PositionTracker> flightTargetMemory = maid.getBrain()
+            .getMemory(MaidCastingMemoryModuleTypes.FLIGHT_TARGET.get());
 
-            // 飞到目标上方进行攻击
-            Vec3 flightTarget = new Vec3(targetPos.x, targetPos.y + 2.0, targetPos.z);
+        if (flightTargetMemory.isPresent()) {
+            // FlyStrafingTask 已计算走位目标，直接使用
+            Vec3 flightTarget = flightTargetMemory.get().currentPosition();
+            broom.setHovering(isHovering);
             broom.setFlightTarget(flightTarget);
+        } else if (isHovering) {
+            // FlyStrafingTask 要求悬停（例如目标在流体中）
+            broom.setHovering(true);
+        } else {
+            // 后备逻辑：FlyStrafingTask 未运行时，直线追击目标
+            Vec3 targetPos = target.position();
+            Vec3 broomPos = broom.position();
+            double distanceSq = broomPos.distanceToSqr(targetPos);
+
+            float minAttackRange = Config.getMinAirAttackRange();
+            double minAttackRangeSq = minAttackRange * minAttackRange;
+
+            if (distanceSq <= minAttackRangeSq) {
+                broom.setHovering(true);
+                maid.getBrain().setMemory(MaidCastingMemoryModuleTypes.IS_HOVERING.get(), true);
+            } else {
+                broom.setHovering(false);
+                maid.getBrain().setMemory(MaidCastingMemoryModuleTypes.IS_HOVERING.get(), false);
+                Vec3 fallbackTarget = new Vec3(targetPos.x, targetPos.y + 2.0, targetPos.z);
+                broom.setFlightTarget(fallbackTarget);
+            }
         }
     }
 

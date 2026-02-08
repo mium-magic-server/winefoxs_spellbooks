@@ -76,6 +76,8 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
     private boolean hasUsedSingleAttack;
 
+    private boolean bypassCastCheck = false;
+
 
     public MagicMaidAdapter(LivingEntity delegatedEntity) {
         this.delegatedEntity = delegatedEntity;
@@ -154,7 +156,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             delegatedEntity.stopUsingItem();
         }
 
-        if (!delegatedEntity.level.isClientSide && !(canCast(spell, spellLevel) && castingSpell.getSpell().checkPreCastConditions(delegatedEntity.level, spellLevel, delegatedEntity, maidMagicData))) {
+        if (!bypassCastCheck && !delegatedEntity.level.isClientSide && !(canCast(spell, spellLevel) && castingSpell.getSpell().checkPreCastConditions(delegatedEntity.level, spellLevel, delegatedEntity, maidMagicData))) {
             if (WinefoxsSpellbooks.DEBUG) {
                 WinefoxsSpellbooks.LOGGER.debug("MagicMaidAdapter.precastfailed: spellType:{} spellLevel:{}, isClient:{}", spell.getSpellId(), spellLevel, delegatedEntity.level.isClientSide);
             }
@@ -365,6 +367,11 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             return;
         }
 
+        if (castingSpell.getSpell() == SpellRegistry.none() && isCasting()) {
+            maidMagicData.resetCastingState();
+            return;
+        }
+
         // 恢复法术状态
         if (recreateSpell) {
             recreateSpell = false;
@@ -492,6 +499,14 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         return recreateSpell;
     }
 
+    public void setBypassCastCheck(boolean bypassCastCheck) {
+        this.bypassCastCheck = bypassCastCheck;
+    }
+
+    public boolean isBypassCastCheck() {
+        return bypassCastCheck;
+    }
+
     protected final LivingEntity getTargetFromBrain() {
         Brain<?> brain = delegatedEntity.getBrain();
         if (brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {
@@ -566,5 +581,10 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
     @Override
     public MaidSpellDataHolder winefoxsSpellbooks$getSpellDataHolder() {
         return delegatedEntity.getData(InitAttachments.MAID_SPELL_DATA);
+    }
+
+    @Override
+    public MagicMaidAdapter winefoxsSpellbooks$getMagicMaidAdapter() {
+        return this;
     }
 }

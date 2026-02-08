@@ -34,13 +34,13 @@ public class SummonedMaidRandomFlight {
     private static final double FRONT_FORBIDDEN_ANGLE = 60.0;
 
     /** 头顶禁区水平半径 - 召唤者头顶这个水平范围内不选择 */
-    private static final double TOP_FORBIDDEN_RADIUS = 3.0;
+    private static final double TOP_FORBIDDEN_RADIUS = 6.0;
 
     /** 头顶禁区最大高度 - 召唤者上方这个高度范围内都是禁区 */
     private static final double TOP_FORBIDDEN_HEIGHT = 5.0;
 
     /** 玩家碰撞禁区半径 - 距离玩家太近不选择 */
-    private static final double COLLISION_FORBIDDEN_RADIUS = 2.0;
+    private static final double COLLISION_FORBIDDEN_RADIUS = 4.0;
 
     /**
      * 创建随机飞行行为
@@ -122,9 +122,9 @@ public class SummonedMaidRandomFlight {
      * 检查位置是否在禁区内
      * <p>
      * 禁区包括：
-     * 1. 玩家碰撞区：距离玩家 2 格内
-     * 2. 头顶禁区：玩家上方 5 格内且水平距离 3 格内
-     * 3. 前方视线禁区：玩家面朝方向左右 60 度内
+     * 1. 玩家碰撞区
+     * 2. 头顶禁区
+     * 3. 前方视线禁区
      *
      * @param targetPos    目标位置
      * @param summonerPos  召唤者位置

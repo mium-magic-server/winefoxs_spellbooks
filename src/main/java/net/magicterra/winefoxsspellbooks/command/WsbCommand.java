@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.LittleMaidSpellbooksCompat;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidLoadoutManager;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.BroomMode;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.MaidLoadout;
@@ -364,7 +365,13 @@ public class WsbCommand {
             }
 
             try {
+                if (entity instanceof MaidMagicEntity maid) {
+                    maid.winefoxsSpellbooks$getMagicMaidAdapter().setBypassCastCheck(true);
+                }
                 magicEntity.initiateCastSpell(spell, level);
+                if (entity instanceof MaidMagicEntity maid) {
+                    maid.winefoxsSpellbooks$getMagicMaidAdapter().setBypassCastCheck(false);
+                }
                 successCount++;
                 WinefoxsSpellbooks.LOGGER.debug("Entity {} cast spell {} (level {})", entity.getUUID(), spellId, level);
             } catch (Exception e) {

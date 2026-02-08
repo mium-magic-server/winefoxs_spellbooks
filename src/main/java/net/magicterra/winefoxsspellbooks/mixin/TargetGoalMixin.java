@@ -30,12 +30,12 @@ public abstract class TargetGoalMixin {
         if (mob == null || potentialTarget == null) {
             return;
         }
+        if (potentialTarget.level.isClientSide) {
+            return;
+        }
         Entity owner = SummonManager.getOwner(mob);
-        if (owner != null) {
-            LivingEntity livingEntity = (LivingEntity) owner;
-            if (!livingEntity.canAttack(potentialTarget)) {
-                cir.setReturnValue(false);
-            }
+        if (owner instanceof LivingEntity livingEntity && !livingEntity.canAttack(potentialTarget)) {
+            cir.setReturnValue(false);
         }
     }
 }

@@ -1,7 +1,7 @@
 package net.magicterra.winefoxsspellbooks.mixin;
 
 import io.redspace.ironsspellbooks.damage.DamageSources;
-import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
+import net.magicterra.winefoxsspellbooks.magic.MaidAllyHelper;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -28,7 +28,7 @@ public class DamageSourcesMixin {
      */
     @Inject(method = "isFriendlyFireBetween", at = @At("HEAD"), cancellable = true)
     private static void checkSummonChain(Entity attacker, Entity target, CallbackInfoReturnable<Boolean> cir) {
-        if (MaidSummonManager.isSameSummonChain(attacker, target)) {
+        if (MaidAllyHelper.isAllied(attacker, target)) {
             cir.setReturnValue(true);
         }
     }

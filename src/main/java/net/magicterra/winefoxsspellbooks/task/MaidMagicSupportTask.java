@@ -1,6 +1,5 @@
 package net.magicterra.winefoxsspellbooks.task;
 
-import com.github.tartaricacid.touhoulittlemaid.api.task.IRangedAttackTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
@@ -104,7 +103,7 @@ public class MaidMagicSupportTask extends MaidCastingTask {
 
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
-        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
+        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, MaidMagicSupportTask::findNearbyFriendsAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
         BehaviorControl<Mob> spellChooseTask = new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
             Set.of(MaidSpellAction.DEFENSE, MaidSpellAction.SUPPORT, MaidSpellAction.POSITIVE, MaidSpellAction.NEGATIVE, MaidSpellAction.SUPPORT_OTHER));

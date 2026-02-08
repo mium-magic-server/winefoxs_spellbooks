@@ -4,7 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.item.EntityBroom;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.Config;
@@ -13,6 +13,7 @@ import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -44,9 +45,6 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
         .sized(1.375f, 0.5625f)
         .clientTrackingRange(10)
         .build("summoned_maid_broom");
-
-    private static final String TAG_SUMMONER_UUID = "SummonerUUID";
-    private static final String TAG_MAID_UUID = "MaidUUID";
 
     /**
      * 空气阻力系数（模仿原版飞行生物）
@@ -127,30 +125,10 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
      */
     private static final int STRAFE_HEIGHT_PERIOD = 80;
 
-    @Nullable
-    private UUID summonerUUID;
-    @Nullable
-    private UUID maidUUID;
-
     /**
      * 标记是否已完成首次骑乘（用于区分新创建和加载后恢复）
      */
     private boolean hasBeenRidden = false;
-
-    /**
-     * 标记是否需要恢复骑乘关系（从存档加载后）
-     */
-    private boolean needsRidingRestore = false;
-
-    /**
-     * 骑乘恢复尝试计数器（超过一定次数后放弃）
-     */
-    private int ridingRestoreAttempts = 0;
-
-    /**
-     * 最大骑乘恢复尝试次数（约5秒）
-     */
-    private static final int MAX_RIDING_RESTORE_ATTEMPTS = 100;
 
     // === 客户端插值相关字段 ===
     /**
@@ -211,8 +189,6 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
         broom.setPos(maid.getX(), maid.getY(), maid.getZ());
         broom.setYRot(maid.getYRot());
         broom.setXRot(maid.getXRot());
-        broom.setSummonerUUID(summoner.getUUID());
-        broom.setMaidUUID(maid.getUUID());
         broom.setOwnerUUID(summoner.getUUID());
         return broom;
     }
@@ -229,11 +205,6 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
         }
 
         // === 服务端逻辑 ===
-
-        // 尝试恢复骑乘关系（从存档加载后）
-        if (needsRidingRestore) {
-            tryRestoreRiding();
-        }
 
         // 标记已有乘客（用于区分是否曾经被骑乘过）
         if (!hasBeenRidden && !this.getPassengers().isEmpty()) {
@@ -272,46 +243,10 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
     }
 
     /**
-     * 尝试恢复骑乘关系（从存档加载后调用）
-     */
-    private void tryRestoreRiding() {
-        ridingRestoreAttempts++;
-
-        // 超过最大尝试次数，放弃恢复并销毁扫帚
-        if (ridingRestoreAttempts > MAX_RIDING_RESTORE_ATTEMPTS) {
-            needsRidingRestore = false;
-            // 女仆可能已经不存在了，销毁扫帚
-            this.onUnSummon();
-            return;
-        }
-
-        if (maidUUID == null || !(this.level() instanceof ServerLevel serverLevel)) {
-            return;
-        }
-
-        Entity entity = serverLevel.getEntity(maidUUID);
-        if (entity instanceof SummonedEntityMaid maid) {
-            // 女仆存在，尝试恢复骑乘
-            if (!maid.isPassenger()) {
-                if (maid.startRiding(this, true)) {
-                    needsRidingRestore = false;
-                    hasBeenRidden = true;
-                }
-            } else if (maid.getVehicle() == this) {
-                // 已经正确骑乘
-                needsRidingRestore = false;
-                hasBeenRidden = true;
-            }
-            // 如果女仆骑乘了其他载具，继续等待（可能是临时状态）
-        }
-        // 如果女仆还没加载，继续等待
-    }
-
-    /**
      * 当乘客被移除时调用（女仆下车）
      */
     @Override
-    protected void removePassenger(Entity passenger) {
+    protected void removePassenger(@Nonnull Entity passenger) {
         super.removePassenger(passenger);
         // 标记已被骑乘过，这样下一个 tick 会检测到乘客为空并销毁
         if (passenger instanceof SummonedEntityMaid) {
@@ -320,41 +255,18 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
-        super.addAdditionalSaveData(tag);
-        if (summonerUUID != null) {
-            tag.putUUID(TAG_SUMMONER_UUID, summonerUUID);
-        }
-        if (maidUUID != null) {
-            tag.putUUID(TAG_MAID_UUID, maidUUID);
-        }
-    }
-
-    /**
-     * 重写保存方法，阻止保存乘客到 Passengers 标签
-     * <p>
-     * 女仆由 SummonManager 单独保存和恢复，如果扫帚也保存女仆到 Passengers 中，
-     * 会导致加载时创建重复的女仆实体。
-     */
-    @Override
-    public CompoundTag saveWithoutId(CompoundTag compound) {
-        CompoundTag result = super.saveWithoutId(compound);
-        // 移除 Passengers 标签，避免重复保存女仆
-        result.remove("Passengers");
-        return result;
-    }
-
-    @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains(TAG_SUMMONER_UUID)) {
-            summonerUUID = tag.getUUID(TAG_SUMMONER_UUID);
-        }
-        if (tag.contains(TAG_MAID_UUID)) {
-            maidUUID = tag.getUUID(TAG_MAID_UUID);
-            // 从存档加载时，需要恢复骑乘关系
-            // SummonManager 会单独恢复女仆，所以我们需要手动重建骑乘关系
-            needsRidingRestore = true;
+
+        if (tag.contains("Passengers", 9)) {
+            ListTag listtag = tag.getList("Passengers", 10);
+
+            for (int i = 0; i < listtag.size(); i++) {
+                Entity entity = EntityType.loadEntityRecursive(listtag.getCompound(i), level, Function.identity());
+                if (entity != null) {
+                    entity.startRiding(this, true);
+                }
+            }
         }
     }
 
@@ -672,20 +584,6 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
     }
 
     /**
-     * 获取绑定的女仆
-     */
-    public Optional<SummonedEntityMaid> getBoundMaid() {
-        if (maidUUID == null || !(this.level() instanceof ServerLevel serverLevel)) {
-            return Optional.empty();
-        }
-        Entity entity = serverLevel.getEntity(maidUUID);
-        if (entity instanceof SummonedEntityMaid maid) {
-            return Optional.of(maid);
-        }
-        return Optional.empty();
-    }
-
-    /**
      * 获取召唤者
      * <p>
      * IMagicSummon 接口的默认实现会调用 SummonManager.getOwner()，
@@ -713,37 +611,9 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
     @Override
     public void onUnSummon() {
         if (!this.level().isClientSide) {
-            this.ejectPassengers();
-            // 生成消散粒子
-            if (this.level() instanceof ServerLevel serverLevel) {
-                serverLevel.sendParticles(
-                    ParticleTypes.POOF,
-                    this.getX(), this.getY(), this.getZ(),
-                    15, 0.3, 0.3, 0.3, 0.02
-                );
-            }
-            this.discard();
+            ejectPassengers();
+            discard();
         }
-    }
-
-    /**
-     * 实体被移除时的处理
-     * <p>
-     * 只有在实体真正被销毁时才调用 onRemovedHelper，
-     * 卸载到区块或随玩家卸载时不应该触发清理逻辑
-     */
-    @Override
-    public void onRemovedFromLevel() {
-        Entity.RemovalReason reason = this.getRemovalReason();
-        // 只有在非卸载情况下才调用 onRemovedHelper
-        // UNLOADED_TO_CHUNK: 区块卸载
-        // UNLOADED_WITH_PLAYER: 玩家下线时实体卸载
-        if (reason != null
-            && reason != Entity.RemovalReason.UNLOADED_TO_CHUNK
-            && reason != Entity.RemovalReason.UNLOADED_WITH_PLAYER) {
-            this.onRemovedHelper(this);
-        }
-        super.onRemovedFromLevel();
     }
 
     /**
@@ -751,6 +621,9 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
      */
     @Override
     public boolean hurt(@Nonnull DamageSource source, float amount) {
+        if (level.isClientSide) {
+            return super.hurt(source, amount);
+        }
         if (this.shouldIgnoreDamage(source)) {
             return false;
         }
@@ -762,6 +635,9 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
      */
     @Override
     public boolean isAlliedTo(@Nonnull Entity entity) {
+        if (level.isClientSide) {
+            return super.isAlliedTo(entity);
+        }
         return super.isAlliedTo(entity) || this.isAlliedHelper(entity);
     }
 
@@ -779,13 +655,5 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
         this.ejectPassengers();
         this.discard();
         return true;
-    }
-
-    private void setSummonerUUID(UUID summonerUUID) {
-        this.summonerUUID = summonerUUID;
-    }
-
-    private void setMaidUUID(UUID maidUUID) {
-        this.maidUUID = maidUUID;
     }
 }

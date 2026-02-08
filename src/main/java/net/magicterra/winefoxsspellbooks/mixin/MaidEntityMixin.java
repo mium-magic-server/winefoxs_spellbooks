@@ -2,8 +2,6 @@ package net.magicterra.winefoxsspellbooks.mixin;
 
 import com.github.tartaricacid.touhoulittlemaid.api.animation.IMagicCastingState;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
-import io.redspace.ironsspellbooks.IronsSpellbooks;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
@@ -13,6 +11,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter;
+import net.magicterra.winefoxsspellbooks.magic.MaidAllyHelper;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
 import net.minecraft.nbt.CompoundTag;
@@ -22,7 +21,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -43,14 +41,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEntity, MaidMagicEntity {
     @Shadow @Nullable public abstract LivingEntity getOwner();
 
-    @Shadow public abstract BaubleItemHandler getMaidBauble();
-
     @Shadow public boolean guiOpening;
 
     @Shadow protected abstract void completeUsingItem();
-
-    @Unique
-    private static final AttributeModifier SPEED_MODIFIER_DRINKING = new AttributeModifier(IronsSpellbooks.id("potion_slowdown"), -0.15D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
     @Unique
     public boolean hasUsedSingleAttack;
@@ -88,6 +81,10 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
 
     @Override
     public boolean isAlliedTo(Entity entity) {
+        if (entity.level.isClientSide) {
+            return super.isAlliedTo(entity);
+        }
+
         if (Objects.equals(getOwner(), entity)) {
             // 女仆和主人是相同的队伍
             return true;
@@ -99,20 +96,9 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
                 return true;
             }
         }
-        if (entity instanceof IMagicSummon magicSummon) {
+        if (entity instanceof IMagicSummon) {
             // 召唤物
-            Entity owner = magicSummon.getSummoner();
-            if (owner instanceof TamableAnimal tamableAnimal) {
-                // 召唤者是女仆
-                LivingEntity ownerOfOwner = tamableAnimal.getOwner(); // 该女仆的主人
-                if (Objects.equals(getOwner(), ownerOfOwner) || getOwner() != null && ownerOfOwner != null && getOwner().isAlliedTo(ownerOfOwner)) {
-                    return true;
-                }
-            }
-            if (Objects.equals(getOwner(), owner) || getOwner() != null && owner != null && getOwner().isAlliedTo(owner)) {
-                // 召唤者相同，或都没有主人，或者召唤者和主人是同一个队伍，认为是相同的队伍
-                return true;
-            }
+            return MaidAllyHelper.isAllied(this, entity) || super.isAlliedTo(entity);
         }
         return super.isAlliedTo(entity);
     }
@@ -128,7 +114,9 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
     public void afterAddAdditionalSaveData(CompoundTag pCompound, CallbackInfo ci) {
-        magicAdapter.getMagicData().saveNBTData(pCompound, level.registryAccess());
+        CompoundTag magicData = new CompoundTag();
+        magicAdapter.getMagicData().saveNBTData(magicData, level.registryAccess());
+        pCompound.put("magicData", magicData);
         pCompound.putBoolean("usedSpecial", hasUsedSingleAttack);
         pCompound.putBoolean("isDrinkingPotion", isDrinkingPotion());
         pCompound.putBoolean("usedItemOffhand", getUsedItemHand() == InteractionHand.OFF_HAND);
@@ -139,7 +127,7 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
     public void afterReadAdditionalSaveData(CompoundTag pCompound, CallbackInfo ci) {
         MagicData magicData = magicAdapter.getMagicData();
         magicData.setSyncedData(new SyncedSpellData(self()));
-        magicData.loadNBTData(pCompound, level.registryAccess());
+        magicData.loadNBTData(pCompound.getCompound("magicData"), level.registryAccess());
         if (magicData.getSyncedData().isCasting()) {
             magicAdapter.setRecreateSpell(true);
         }
@@ -256,5 +244,10 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
     @Override
     public MaidSpellDataHolder winefoxsSpellbooks$getSpellDataHolder() {
         return magicAdapter.winefoxsSpellbooks$getSpellDataHolder();
+    }
+
+    @Override
+    public MagicMaidAdapter winefoxsSpellbooks$getMagicMaidAdapter() {
+        return magicAdapter;
     }
 }

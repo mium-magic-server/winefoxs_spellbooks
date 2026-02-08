@@ -3,6 +3,7 @@ package net.magicterra.winefoxsspellbooks.mixin;
 import io.redspace.ironsspellbooks.capabilities.magic.SummonManager;
 import java.util.HashMap;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
@@ -27,6 +28,9 @@ public interface SummonManagerAccessor {
 
     @Accessor
     HashMap<UUID, Set<UUID>> getOwnerToSummons();
+
+    @Accessor
+    PriorityQueue<Object> getSummonExpirations();
 
     @Invoker("getExpirationTick")
     int invokeGetExpirationTick(UUID uuid);

@@ -35,10 +35,9 @@ import net.magicterra.winefoxsspellbooks.entity.loadout.MaidEquipmentRandomizer.
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidEquipmentRandomizer.SpellWithLevel;
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidLoadoutManager;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.MaidLoadout;
-import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
+import net.magicterra.winefoxsspellbooks.magic.MaidAllyHelper;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -535,13 +534,6 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
     @Override
     public void onUnSummon() {
         if (!this.level().isClientSide) {
-            // 生成消散粒子效果
-            MaidMagicManager.spawnParticles(
-                this.level(),
-                ParticleTypes.POOF,
-                this.getX(), this.getY() + this.getBbHeight() / 2, this.getZ(),
-                25, 0.4, 0.8, 0.4, 0.03, false
-            );
             this.discard();
         }
     }
@@ -569,10 +561,22 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
             this.onRemovedHelper(this);
         }
         super.onRemovedFromLevel();
+
+        MaidSummonManager.onMaidRemoved(this);
+    }
+
+    @Override
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
+
+        MaidSummonManager.onMaidPlaced(this);
     }
 
     @Override
     public boolean hurt(@Nonnull DamageSource source, float amount) {
+        if (level.isClientSide) {
+            return super.hurt(source, amount);
+        }
         if (this.shouldIgnoreDamage(source)) {
             return false;
         }
@@ -581,6 +585,9 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
 
     @Override
     public boolean isAlliedTo(@Nonnull Entity entity) {
+        if (level.isClientSide) {
+            return super.isAlliedTo(entity);
+        }
         // 检查召唤者
         Entity summoner = this.getSummoner();
         if (summoner != null && Objects.equals(summoner, entity)) {
@@ -598,13 +605,13 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
         }
 
         // 检查是否属于同一召唤链（支持嵌套召唤）
-        if (MaidSummonManager.isSameSummonChain(this, entity)) {
+        if (MaidAllyHelper.isAllied(this, entity)) {
             return true;
         }
 
         // 检查顶层召唤者之间的同盟关系（支持其他模组的自定义同盟逻辑）
         if (summoner != null) {
-            Entity entityRoot = MaidSummonManager.getEffectiveRoot(entity);
+            Entity entityRoot = MaidAllyHelper.getEffectiveRoot(entity);
             if (entityRoot != null && entityRoot != entity && summoner.isAlliedTo(entityRoot)) {
                 return true;
             }
@@ -614,6 +621,11 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
     }
 
     // ==================== NBT 序列化 ====================
+
+    @Override
+    public boolean save(@Nonnull CompoundTag compound) {
+        return !this.isPassenger() && !isAirForce() && this.saveAsPassenger(compound);
+    }
 
     @Override
     public void addAdditionalSaveData(@Nonnull CompoundTag tag) {
@@ -687,6 +699,11 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
     @Override
     public MaidSpellDataHolder winefoxsSpellbooks$getSpellDataHolder() {
         return magicAdapter.winefoxsSpellbooks$getSpellDataHolder();
+    }
+
+    @Override
+    public MagicMaidAdapter winefoxsSpellbooks$getMagicMaidAdapter() {
+        return magicAdapter;
     }
 
     // ==================== 其他方法 ====================
@@ -819,7 +836,7 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
         holder.updateSupportEffectSpells(toSpellDataList(spells.supportOther()));
 
         if (WinefoxsSpellbooks.DEBUG) {
-            WinefoxsSpellbooks.LOGGER.debug("SummonedEntityMaid: Applied spells - attack:{}, defense:{}, movement:{}, support:{}, positive:{}, negative:{}, supportOther:{}",
+            WinefoxsSpellbooks.LOGGER.debug("SummonedEntityMaid: Applied spells - attack:{}, defense:{}, movement:{}, support:{}, positiveEffect:{}, negative:{}, supportOther:{}",
                 spells.attack().size(), spells.defense().size(), spells.movement().size(),
                 spells.support().size(), spells.positive().size(), spells.negativeEffect().size(), spells.supportOther().size());
         }
