@@ -313,9 +313,9 @@ public class MaidRecasts extends PlayerRecasts {
                 WallOfFireEntity fireWall = new WallOfFireEntity(level, maid, fireWallData.anchorPoints, spell.getSpellPower(recastInstance.getSpellLevel(), maid));
                 Vec3 origin = fireWallData.anchorPoints.get(0);
                 for (int i = 1; i < fireWallData.anchorPoints.size(); i++) {
-                    origin.add(fireWallData.anchorPoints.get(i));
+                    origin = origin.add(fireWallData.anchorPoints.get(i));
                 }
-                origin.scale(1 / (float) fireWallData.anchorPoints.size());
+                origin = origin.scale(1 / (float) fireWallData.anchorPoints.size());
                 fireWall.setPos(origin);
                 level.addFreshEntity(fireWall);
             }
