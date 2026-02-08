@@ -24,6 +24,7 @@ import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
 import net.magicterra.winefoxsspellbooks.task.MaidCastingTask;
 import net.magicterra.winefoxsspellbooks.task.MaidMagicSupportTask;
 import net.magicterra.winefoxsspellbooks.task.debug.MaidDrinkPotionTask;
+import net.magicterra.winefoxsspellbooks.task.debug.MaidSpellTestTask;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -70,6 +71,7 @@ public class LittleMaidSpellbooksCompat implements ILittleMaid {
         manager.add(new MaidMagicSupportTask());
         if (WinefoxsSpellbooks.DEBUG) {
             manager.add(new MaidDrinkPotionTask());
+            manager.add(new MaidSpellTestTask());
         }
     }
 
