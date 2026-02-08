@@ -509,7 +509,7 @@ public class SpellChooseTask extends Behavior<Mob> {
         int healthWeight = (int) (50 * (-(x * x * x) / (m * m * m) + 1));
 
         float targetHealth = target.getHealth() / target.getMaxHealth();
-        int targetHealthWeight = (int) (1 - targetHealth) * -35;
+        int targetHealthWeight = (int) ((1 - targetHealth) * -35);
 
         //this count be finicky due to the fact that projectiles don't stick around for long, so it might be easy to miss them
         // int threatWeight = projectileCount * 95;
@@ -582,7 +582,7 @@ public class SpellChooseTask extends Behavior<Mob> {
     }
 
     private int getPositiveWeightForSpecifiedEntity(LivingEntity supportTarget) {
-        for (SpellData spellData : usableSupportEffectSpells) {
+        for (SpellData spellData : usablePositiveEffectSpells) {
             Holder<MobEffect> causedEffect = MaidSpellRegistry.getSpellCausedEffect(spellData.getSpell());
             if (causedEffect != null && !supportTarget.hasEffect(causedEffect)) {
                 // 队友还没上 buff

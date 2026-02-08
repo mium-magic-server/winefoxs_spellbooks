@@ -147,7 +147,8 @@ public class MaidMagicManager {
         PlayerRecasts playerRecasts = spellCastingMob.getMagicData().getPlayerRecasts();
         float mana = spellCastingMob.getMagicData().getMana();
         int manaCost = magicMaid.winefoxsSpellbooks$getManaCost(spellData.getSpell(), spellData.getLevel());
-        if (playerRecasts.hasRecastForSpell(spellData.getSpell())) {
+        boolean hasRecastForSpell = playerRecasts.hasRecastForSpell(spellData.getSpell());
+        if (hasRecastForSpell) {
             // 二段咏唱，例如:
             // 炽焰追踪弹幕、火墙术 需要二段咏唱才能施放
             // 而召唤术二段咏唱会收回召唤物
@@ -156,7 +157,7 @@ public class MaidMagicManager {
                 return false;
             }
         }
-        if (mana < manaCost) {
+        if (!hasRecastForSpell && mana < manaCost) {
             // 魔力不足
             return false;
         }
