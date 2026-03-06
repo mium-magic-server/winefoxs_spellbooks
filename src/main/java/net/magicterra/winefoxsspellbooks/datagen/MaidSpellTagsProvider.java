@@ -352,7 +352,8 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
 
         // ========== Winefox's Spellbooks ==========
         // attackTag.addOptional(InitSpells.SUMMON_MAID_SPELL.get().getSpellResource());
-        summonTag.addOptional(InitSpells.SUMMON_MAID_SPELL.get().getSpellResource());
+        summonTag.add(InitSpells.SUMMON_MAID_SPELL.get());
+        positiveEffectTag.add(InitSpells.MANA_TRANSFER_SPELL.get());
 
         // ========== Maid Should Recast Spells (需要多次施放的法术) ==========
         // Iron's Spellbooks

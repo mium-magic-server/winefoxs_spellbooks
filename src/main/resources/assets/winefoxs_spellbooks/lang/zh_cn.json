@@ -65,5 +65,8 @@
   "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.summon_maid.name": "召唤女仆",
   "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.summon_maid.pages.0.text": "召唤女仆是一个末影流派法术，可召唤临时的女仆战斗单位。召唤的女仆会随机获得模型、装备和法术，并自动执行攻击或支援任务。$(br)女仆分为战士、法师、辅助三种配置，各有不同的装备和法术搭配。法术等级越高，召唤数量越多，装备和法术也越强。$(br)女仆有概率骑乘扫帚飞行作战，飞行女仆会在目标周围盘旋并施法。$(br)持续时间为 10 分钟，也可通过 /wsb summon 命令自定义召唤。",
   "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.summon_maid_datapack.name": "自定义召唤配置",
-  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.summon_maid_datapack.pages.0.text": "召唤女仆的配置完全由数据包驱动，路径为 data/<命名空间>/summoned_maid_loadouts/<名称>.json。$(br)每个配置文件可定义权重、模型筛选、扫帚模式，以及按召唤等级分层的装备和法术池。$(br)武器和护甲通过物品标签引用，法术通过法术标签引用，均支持权重随机和数量范围控制。$(br)详见默认配置文件 warrior.json、mage.json、support.json。"
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.summon_maid_datapack.pages.0.text": "召唤女仆的配置完全由数据包驱动，路径为 data/<命名空间>/summoned_maid_loadouts/<名称>.json。$(br)每个配置文件可定义权重、模型筛选、扫帚模式，以及按召唤等级分层的装备和法术池。$(br)武器和护甲通过物品标签引用，法术通过法术标签引用，均支持权重随机和数量范围控制。$(br)详见默认配置文件 warrior.json、mage.json、support.json。",
+  "spell.winefoxs_spellbooks.mana_transfer": "魔力转移",
+  "ui.winefoxs_spellbooks.mana_transfer_rate": "传输: %s 魔力/秒",
+  "ui.winefoxs_spellbooks.mana_transfer_cost": "消耗: %s 魔力/秒"
 }

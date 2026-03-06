@@ -90,10 +90,13 @@ public class SpellCastingTask extends Behavior<Mob> {
             return false;
         }
 
-        // TODO 骑乘模式可能永远无法到达攻击范围，直接 pass
-
-        // 攻击范围
-        return distanceSquared <= spellcastingRangeSqr;
+        boolean canReach = distanceSquared <= spellcastingRangeSqr;
+        if (mob instanceof EntityMaid && mob.isPassenger() && !canReach) {
+            // 女仆无法自主控制扫帚，可能永远无法到达攻击范围，清空目标避免卡住
+            mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+            mob.getBrain().eraseMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get());
+        }
+        return canReach;
     }
 
     @Override

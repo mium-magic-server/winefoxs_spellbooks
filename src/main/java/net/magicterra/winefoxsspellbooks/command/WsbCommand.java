@@ -36,7 +36,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.server.permission.PermissionAPI;
 
 /**
  * wsb 指令
@@ -73,8 +72,8 @@ public class WsbCommand {
         );
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        PermissionAPI.initializePermissionAPI();
         dispatcher.register(Commands.literal("wsb")
+            .requires(source -> source.hasPermission(2))
             // ============ cast 子命令 ============
             .then(Commands.literal("cast")
                 .requires(source -> source.hasPermission(2)) // 需要 OP 权限

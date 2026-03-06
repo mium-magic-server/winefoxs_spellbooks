@@ -24,6 +24,7 @@ import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModul
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
+import net.magicterra.winefoxsspellbooks.magic.spell.ManaTransferSpell;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
@@ -596,6 +597,12 @@ public class SpellChooseTask extends Behavior<Mob> {
                     .anyMatch(effect -> effect.value().getCategory() == MobEffectCategory.HARMFUL && !effect.is(ModTags.CLEANSE_IMMUNE));
                 if (hasHarmfulEffect) {
                     return 1000;
+                }
+            } else if (spellData.getSpell() instanceof ManaTransferSpell spell) {
+                if (spell.isTargetNeedsSupport(supportTarget)) {
+                    return 1000;
+                } else {
+                    return 0;
                 }
             }
             if (causedEffect == null) {
