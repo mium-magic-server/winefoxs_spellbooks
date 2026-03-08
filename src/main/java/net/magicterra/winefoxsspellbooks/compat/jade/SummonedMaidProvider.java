@@ -36,12 +36,15 @@ public enum SummonedMaidProvider implements IEntityComponentProvider {
 
             Collection<SpellData> spells = maidSpellDataHolder.getAllSpells();
             if (!spells.isEmpty()) {
-                if (spells.size() > 4) {
-                    iTooltip.add(Component.translatable("top.winefoxs_spellbooks.summoned_maid.spells_short", spells.size()));
-                } else {
+                // 按住 Shift 显示所有法术详情，否则只显示法术数量
+                if (entityAccessor.showDetails()) {
+                    // 显示所有法术详情
                     for (SpellData spell : spells) {
                         iTooltip.add(Component.translatable("top.winefoxs_spellbooks.summoned_maid.spells", Component.translatable(spell.getSpell().getComponentId())));
                     }
+                } else {
+                    // 只显示法术数量
+                    iTooltip.add(Component.translatable("top.winefoxs_spellbooks.summoned_maid.spells_short", spells.size()));
                 }
             }
         }
