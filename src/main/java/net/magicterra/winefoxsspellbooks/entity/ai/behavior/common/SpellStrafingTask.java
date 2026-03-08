@@ -81,11 +81,16 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
         }
         SpellData spellData = owner.getBrain().getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get()).orElse(null);
 
+        // 如果目标为空，提前返回
+        if (target == null) {
+            return;
+        }
+
         boolean canSee;
         if (owner instanceof EntityMaid maid) {
-            canSee = target != null && maid.canSee(target);
+            canSee = maid.canSee(target);
         } else {
-            canSee = target != null && BehaviorUtils.canSee(owner, target);
+            canSee = BehaviorUtils.canSee(owner, target);
         }
 
         float movementSpeed = (float) (strafeSpeed * owner.getAttributeValue(Attributes.MOVEMENT_SPEED));

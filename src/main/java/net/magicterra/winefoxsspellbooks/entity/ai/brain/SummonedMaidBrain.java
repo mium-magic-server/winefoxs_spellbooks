@@ -17,6 +17,7 @@ import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellCastingT
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellChooseTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellStrafingTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.StartAttacking;
+import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.StartSupporting;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.summon.SummonedMaidDismountTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.summon.SummonedMaidFlyStrafingTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.summon.SummonedMaidFlyToSummoner;
@@ -71,7 +72,9 @@ public class SummonedMaidBrain {
     private static final Set<MaidSpellAction> ALLOWED_ACTIONS = Set.of(
         MaidSpellAction.ATTACK,
         MaidSpellAction.DEFENSE,
-        MaidSpellAction.MOVEMENT
+        MaidSpellAction.MOVEMENT,
+        MaidSpellAction.POSITIVE,
+        MaidSpellAction.SUPPORT_OTHER
     );
 
     /**
@@ -186,6 +189,8 @@ public class SummonedMaidBrain {
                 (mob, target) -> {},
                 true
             ),
+            // 查找需要支援的盟友
+            StartSupporting.create((mob) -> true),
             // 法术选择
             new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid, ALLOWED_ACTIONS),
             // 走向目标
@@ -231,6 +236,8 @@ public class SummonedMaidBrain {
                     (mob) -> true,
                     SummonedMaidBrain::findNearestHostile
                 ),
+                // 查找需要支援的盟友
+                StartSupporting.create((mob) -> true),
                 // 法术选择
                 new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid, ALLOWED_ACTIONS),
                 // 施法
@@ -262,6 +269,8 @@ public class SummonedMaidBrain {
                 (mob) -> true,
                 SummonedMaidBrain::findNearestHostile
             ),
+            // 查找需要支援的盟友
+            StartSupporting.create((mob) -> true),
             // 随机看向和走动
             getLookAndRandomWalk(maid -> true)
         ));
