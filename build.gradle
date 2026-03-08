@@ -195,10 +195,7 @@ dependencies {
     // JEI
     implementation("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
     // Touhou little maid
-    implementation("com.github.tartaricacid:touhoulittlemaid:1.5.0-neoforge+mc1.21.1:all") {
-        exclude group: "maven.modrinth", module: "sodium"
-        exclude group: "maven.modrinth", module: "embeddium"
-    }
+    implementation("curse.maven:touhou-little-maid-355044:${tlm_curse_version}")
     // 铁魔法
     implementation("io.redspace:irons_spellbooks:${minecraft_version}-${irons_spells_version}") {
         exclude group: "top.theillusivec4.curios", module: "curios-neoforge"
