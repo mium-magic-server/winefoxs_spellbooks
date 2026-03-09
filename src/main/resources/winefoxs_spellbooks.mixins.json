@@ -9,7 +9,6 @@
     "IMagicSummonMixin",
     "MaidEntityMixin",
     "SummonManagerAccessor",
-    "SummonManagerMixin",
     "TargetGoalMixin"
   ],
   "injectors": {

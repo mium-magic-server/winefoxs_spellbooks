@@ -201,6 +201,12 @@ public class SpellDataProvider implements DataProvider {
             .add(net.acetheeldritchking.cataclysm_spellbooks.registries.SpellRegistries.ABYSSAL_PREDATOR.get().getSpellResource(),
                 CSPotionEffectRegistry.ABYSSAL_PREDATOR_EFFECT.getId())
 
+            // ========== Cataclysm Spellbooks - Positive Effect ==========
+            .add(net.acetheeldritchking.cataclysm_spellbooks.registries.SpellRegistries.FORGONE_RAGE.get().getSpellResource(),
+                CSPotionEffectRegistry.WRATHFUL.getId())
+            // .add(net.acetheeldritchking.cataclysm_spellbooks.registries.SpellRegistries.PHARAOHS_WRATH.get().getSpellResource(),
+            //     CSPotionEffectRegistry.KINGS_WRATH_EFFECT.getId())
+
             // ========== Discerning the Eldritch - Support ==========
             .add(net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries.MEND_FLESH.get().getSpellResource(),
                 DTEPotionEffectRegistry.MEND_FLESH_EFFECT.getId())
@@ -251,6 +257,14 @@ public class SpellDataProvider implements DataProvider {
             // ETERNAL_BATTLEFIELD 通过 EternalBattlefield 实体给范围内目标施加 CURSED_IMMORTALITY 效果
             .add(GGSpellRegistry.ETERNAL_BATTLEFIELD.get().getSpellResource(),
                 GGEffectRegistry.CURSED_IMMORTALITY.getId())
+
+            // ========== ESS Requiem - Positive Effect (Spellblade) ==========
+            .add(GGSpellRegistry.HONE_EDGE.get().getSpellResource(),
+                GGEffectRegistry.HONED_EDGE.getId())
+            .add(GGSpellRegistry.UNDYING_DREAD.get().getSpellResource(),
+                GGEffectRegistry.SOUL_STRENGTH.getId())
+            .add(GGSpellRegistry.ADRENALINE_RUSH.get().getSpellResource(),
+                GGEffectRegistry.ADRENALINE_RUSH.getId())
 
             // ========== Fires Ender Expansion - Defense ==========
             .add(net.fireofpower.firesenderexpansion.registries.SpellRegistries.ASPECT_OF_THE_SHULKER.get().getSpellResource(),

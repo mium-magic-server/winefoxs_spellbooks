@@ -213,6 +213,9 @@ dependencies {
     // Discerning The Eldritch
     implementation("curse.maven:discerning-the-eldritch-1143065:${discerning_the_eldritch_version}")
     implementation("curse.maven:aces-spell-utils-1299492:${aces_spell_utils_version}")
+    implementation("maven.modrinth:prometheus-api:${prometheus_version}")
+    implementation("maven.modrinth:soul-fire-d:${soul_fire_d_version}")
+    implementation("maven.modrinth:cobweb:${cobweb_version}")
     // Fire's Ender Expansion
     implementation("curse.maven:fires-ender-expansion-1245989:${fires_ender_expansion_version}")
     // Atlas' Additions
@@ -244,8 +247,8 @@ dependencies {
     runtimeOnly("maven.modrinth:lionfish-api:${lionfish_version}-neoforge")
     runtimeOnly("curse.maven:expandability-465066:${expandability_version}")
     runtimeOnly("curse.maven:mowzies-mobs-250498:${mowzies_mobs_version}")
-    runtimeOnly("curse.maven:placebo-283644:6926281")
-    runtimeOnly("curse.maven:apothic-attributes-898963:6751650")
+    runtimeOnly("curse.maven:placebo-283644:${placebo_version}")
+    runtimeOnly("curse.maven:apothic-attributes-898963:${apothic_attributes_version}")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
