@@ -1,5 +1,15 @@
 # Changelog / 变更日志
 
+## 1.0.0-beta.11
+
+1. **依赖版本更新 (Dependency Version Update)**
+
+   更新 Iron's Spells 'n Spellbooks 及其附属模组到最新版本。
+
+   Updated Iron's Spells 'n Spellbooks and its addon mods to the latest versions.
+
+---
+
 ## 1.0.0-beta.10
 
 1. **魔力转移法术 (Mana Transfer Spell)**
