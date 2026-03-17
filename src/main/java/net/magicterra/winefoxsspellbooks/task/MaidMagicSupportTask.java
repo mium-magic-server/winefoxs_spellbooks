@@ -16,7 +16,7 @@ import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellChooseTa
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellStrafingTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.StartAttacking;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
-import net.magicterra.winefoxsspellbooks.registry.InitItems;
+import net.magicterra.winefoxsspellbooks.registry.WsbItems;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -45,7 +45,7 @@ public class MaidMagicSupportTask extends MaidCastingTask {
 
     @Override
     public ItemStack getIcon() {
-        return InitItems.MAGIC_SUPPORT_TASK_ICON.toStack();
+        return WsbItems.MAGIC_SUPPORT_TASK_ICON.toStack();
     }
 
     @Override

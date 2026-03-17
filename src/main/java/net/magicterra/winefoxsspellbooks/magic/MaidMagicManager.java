@@ -17,6 +17,7 @@ import io.redspace.ironsspellbooks.config.ServerConfigs;
 import java.util.Objects;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.particles.ParticleOptions;
@@ -48,6 +49,10 @@ public class MaidMagicManager {
      * @return 是否有恢复
      */
     public static boolean regenMana(LivingEntity entity, MagicData magicData) {
+        // 魔力紊乱效果：禁用魔力恢复
+        if (entity.hasEffect(WsbEffects.MANA_DISRUPTION)) {
+            return false;
+        }
         int maxMana = (int) getMaxMana(entity);
         var mana = magicData.getMana();
         if (mana < maxMana) {

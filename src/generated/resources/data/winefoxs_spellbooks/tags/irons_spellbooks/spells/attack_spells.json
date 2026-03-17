@@ -377,6 +377,18 @@
       "required": false
     },
     {
+      "id": "cataclysm_spellbooks:gravitation_pull",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:thoths_witness",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:pharaohs_wrath",
+      "required": false
+    },
+    {
       "id": "discerning_the_eldritch:vein_ripper",
       "required": false
     },
@@ -466,6 +478,54 @@
     },
     {
       "id": "ess_requiem:summon_skulls",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:slash",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:slam",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:quick_slice",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:uppercut",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:soulmaster_summon",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:overwhelming_force",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:dismantle",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:cleave",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:place_standard",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:switcharoo",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:gild_summon",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:slashing_ability",
       "required": false
     },
     {
@@ -625,11 +685,15 @@
       "required": false
     },
     {
-      "id": "hazennstuff:crystal_volley",
+      "id": "hazennstuff:hailstorm",
       "required": false
     },
     {
       "id": "hazennstuff:energy_burst",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:ionic_slash",
       "required": false
     },
     {
@@ -661,15 +725,15 @@
       "required": false
     },
     {
-      "id": "hazennstuff:stellar_collapse",
-      "required": false
-    },
-    {
       "id": "hazennstuff:terraprismic_barrage",
       "required": false
     },
     {
       "id": "hazennstuff:nights_edge_strike",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:umbrashift_barrage",
       "required": false
     },
     {

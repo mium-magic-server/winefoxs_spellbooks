@@ -17,7 +17,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-11-20 01:44
  */
-public class InitEntities {
+public class WsbEntities {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, WinefoxsSpellbooks.MODID);
 
     public static DeferredHolder<EntityType<?>, EntityType<SummonedEntityMaid>> SUMMONED_MAID = ENTITY_TYPES.register("summoned_maid", () -> SummonedEntityMaid.TYPE);
@@ -40,6 +40,6 @@ public class InitEntities {
 
     public static void register(IEventBus modBus) {
         ENTITY_TYPES.register(modBus);
-        modBus.addListener(InitEntities::addEntityAttributeEvent);
+        modBus.addListener(WsbEntities::addEntityAttributeEvent);
     }
 }

@@ -1,7 +1,7 @@
 package net.magicterra.winefoxsspellbooks.datagen;
 
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
-import net.magicterra.winefoxsspellbooks.registry.InitItems;
+import net.magicterra.winefoxsspellbooks.registry.WsbItems;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
@@ -19,7 +19,8 @@ public class ItemModelGenerator extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        basicItem(InitItems.CASTING_TASK_ICON.get());
-        basicItem(InitItems.MAGIC_SUPPORT_TASK_ICON.get());
+        basicItem(WsbItems.CASTING_TASK_ICON.get());
+        basicItem(WsbItems.MAGIC_SUPPORT_TASK_ICON.get());
+        basicItem(WsbItems.CRESCENT_BLOOD_VINTAGE.get());
     }
 }

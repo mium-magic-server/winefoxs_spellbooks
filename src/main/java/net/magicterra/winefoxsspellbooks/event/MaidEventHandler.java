@@ -3,6 +3,7 @@ package net.magicterra.winefoxsspellbooks.event;
 import com.github.tartaricacid.touhoulittlemaid.api.event.MaidEquipEvent;
 import com.github.tartaricacid.touhoulittlemaid.compat.curios.CuriosCompat;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import io.redspace.ironsspellbooks.api.events.ChangeManaEvent;
 import io.redspace.ironsspellbooks.api.item.ISpellbook;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.ISpellContainer;
@@ -15,7 +16,8 @@ import net.magicterra.winefoxsspellbooks.api.event.MaidSpellBookEvent;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
-import net.magicterra.winefoxsspellbooks.registry.InitAttachments;
+import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
+import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -40,6 +42,16 @@ import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
  */
 @EventBusSubscriber(modid = WinefoxsSpellbooks.MODID)
 public class MaidEventHandler {
+    /**
+     * 魔力紊乱效果：玩家魔力恢复时取消
+     */
+    @SubscribeEvent
+    public static void onChangeMana(ChangeManaEvent event) {
+        if (event.getEntity().hasEffect(WsbEffects.MANA_DISRUPTION) && event.getNewMana() > event.getOldMana()) {
+            event.setCanceled(true);
+        }
+    }
+
     @SubscribeEvent
     public static void onMaidEquipSpellBook(MaidSpellBookEvent.Equipment event) {
         ItemStack stack = event.getStack();
@@ -135,6 +147,6 @@ public class MaidEventHandler {
         spellDataHolder.updatePositiveEffectSpells(positiveEffectSpells);
         spellDataHolder.updateNegativeEffectSpells(negativeEffectSpells);
         spellDataHolder.updateSupportEffectSpells(supportEffectSpells);
-        maid.syncData(InitAttachments.MAID_SPELL_DATA);
+        maid.syncData(WsbAttachments.MAID_SPELL_DATA);
     }
 }

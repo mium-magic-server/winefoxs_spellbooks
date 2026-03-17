@@ -4,11 +4,12 @@ import com.mojang.logging.LogUtils;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidLoadoutManager;
 import net.magicterra.winefoxsspellbooks.magic.data.SpellDataManager;
-import net.magicterra.winefoxsspellbooks.registry.InitAttachments;
-import net.magicterra.winefoxsspellbooks.registry.InitCommands;
-import net.magicterra.winefoxsspellbooks.registry.InitEntities;
-import net.magicterra.winefoxsspellbooks.registry.InitItems;
-import net.magicterra.winefoxsspellbooks.registry.InitSpells;
+import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
+import net.magicterra.winefoxsspellbooks.registry.WsbCommands;
+import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
+import net.magicterra.winefoxsspellbooks.registry.WsbEntities;
+import net.magicterra.winefoxsspellbooks.registry.WsbItems;
+import net.magicterra.winefoxsspellbooks.registry.WsbSpells;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -30,16 +31,17 @@ public class WinefoxsSpellbooks {
 
     public WinefoxsSpellbooks(ModContainer modContainer, IEventBus modBus, Dist dist) {
         MaidCastingMemoryModuleTypes.MAID_CASTING_MEMORY_MODULE_TYPES.register(modBus);
-        InitSpells.register(modBus);
-        InitItems.register(modBus);
-        InitAttachments.register(modBus);
-        InitEntities.register(modBus);
+        WsbSpells.register(modBus);
+        WsbItems.register(modBus);
+        WsbAttachments.register(modBus);
+        WsbEntities.register(modBus);
+        WsbEffects.register(modBus);
         modBus.addListener(LittleMaidSpellbooksCompat::onRegisterItem);
 
         NeoForge.EVENT_BUS.addListener(MaidSpellRegistry::registerSpell);
         NeoForge.EVENT_BUS.addListener(MaidSpellRegistry::onTagsUpdated);
         NeoForge.EVENT_BUS.addListener(WinefoxsSpellbooks::onAddReloadListener);
-        NeoForge.EVENT_BUS.addListener(InitCommands::onRegisterCommands);
+        NeoForge.EVENT_BUS.addListener(WsbCommands::onRegisterCommands);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         if (dist == Dist.CLIENT) {

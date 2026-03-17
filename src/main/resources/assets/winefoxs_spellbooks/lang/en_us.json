@@ -68,5 +68,8 @@
   "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.summon_maid_datapack.pages.0.text": "Summoned maid loadouts are fully datapack-driven, located at data/<namespace>/summoned_maid_loadouts/<name>.json.$(br)Each loadout file can define weight, model filter, broom mode, and tiered equipment and spell pools based on summon level.$(br)Weapons and armor are referenced via item tags, spells via spell tags, all supporting weighted randomization and roll count ranges.$(br)See the default loadout files warrior.json, mage.json, and support.json for reference.",
   "spell.winefoxs_spellbooks.mana_transfer": "Mana Transfer",
   "ui.winefoxs_spellbooks.mana_transfer_rate": "Transfer: %s mana/s",
-  "ui.winefoxs_spellbooks.mana_transfer_cost": "Cost: %s mana/s"
+  "ui.winefoxs_spellbooks.mana_transfer_cost": "Cost: %s mana/s",
+  "item.winefoxs_spellbooks.crescent_blood_vintage": "Crescent Blood Vintage",
+  "effect.winefoxs_spellbooks.mana_disruption": "Mana Disruption",
+  "effect.winefoxs_spellbooks.foxfire_boost": "Foxfire Boost"
 }

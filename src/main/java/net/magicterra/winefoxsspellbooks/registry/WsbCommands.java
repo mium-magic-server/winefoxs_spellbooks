@@ -9,7 +9,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-01-23 01:03
  */
-public class InitCommands {
+public class WsbCommands {
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         WsbCommand.register(event.getDispatcher());
     }

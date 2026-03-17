@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.magicterra.winefoxsspellbooks.registry.InitAttachments;
+import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.OwnableEntity;
@@ -36,7 +36,7 @@ public class MaidAllyHelper {
         }
         Entity root = getRootSummoner(entity);
         UUID rootUUID = root != null ? root.getUUID() : null;
-        entity.setData(InitAttachments.ROOT_SUMMONER_UUID.get(), Optional.ofNullable(rootUUID));
+        entity.setData(WsbAttachments.ROOT_SUMMONER_UUID.get(), Optional.ofNullable(rootUUID));
     }
 
     /**
@@ -54,8 +54,8 @@ public class MaidAllyHelper {
         }
 
         // 检查是否有缓存
-        if (entity.hasData(InitAttachments.ROOT_SUMMONER_UUID.get())) {
-            Optional<UUID> cached = entity.getData(InitAttachments.ROOT_SUMMONER_UUID.get());
+        if (entity.hasData(WsbAttachments.ROOT_SUMMONER_UUID.get())) {
+            Optional<UUID> cached = entity.getData(WsbAttachments.ROOT_SUMMONER_UUID.get());
             // Optional 已存在说明已初始化，直接返回（可能是 null 表示不是召唤物）
             return cached.orElse(null);
         }
@@ -63,7 +63,7 @@ public class MaidAllyHelper {
         // 没有缓存，遍历召唤链并缓存
         Entity root = getRootSummoner(entity);
         UUID rootUUID = root != null ? root.getUUID() : null;
-        entity.setData(InitAttachments.ROOT_SUMMONER_UUID.get(), Optional.ofNullable(rootUUID));
+        entity.setData(WsbAttachments.ROOT_SUMMONER_UUID.get(), Optional.ofNullable(rootUUID));
         return rootUUID;
     }
 

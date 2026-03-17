@@ -37,6 +37,10 @@
       "required": false
     },
     {
+      "id": "ess_requiem:disappearing_act",
+      "required": false
+    },
+    {
       "id": "firesenderexpansion:scintillating_stride",
       "required": false
     },
@@ -53,11 +57,11 @@
       "required": false
     },
     {
-      "id": "hazennstuff:cinderous_step",
+      "id": "hazennstuff:prismatic_shift",
       "required": false
     },
     {
-      "id": "hazennstuff:chaotic_teleport",
+      "id": "hazennstuff:cinderous_step",
       "required": false
     }
   ]

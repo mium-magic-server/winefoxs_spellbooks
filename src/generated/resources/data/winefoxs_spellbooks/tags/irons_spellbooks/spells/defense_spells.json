@@ -101,6 +101,10 @@
       "required": false
     },
     {
+      "id": "ess_requiem:sword_stance",
+      "required": false
+    },
+    {
       "id": "firesenderexpansion:dimensional_adaptation",
       "required": false
     },
@@ -114,6 +118,10 @@
     },
     {
       "id": "iss_magicfromtheeast:drapes_of_reflection",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:parry",
       "required": false
     }
   ]

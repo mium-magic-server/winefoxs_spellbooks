@@ -97,6 +97,10 @@
       "spell": "cataclysm_spellbooks:abyssal_predator"
     },
     {
+      "effect": "cataclysm_spellbooks:wrathful_effect",
+      "spell": "cataclysm_spellbooks:forgone_rage"
+    },
+    {
       "effect": "discerning_the_eldritch:mend_flesh_potion_effect",
       "spell": "discerning_the_eldritch:mend_flesh"
     },
@@ -163,6 +167,18 @@
     {
       "effect": "ess_requiem:cursed_immortality",
       "spell": "ess_requiem:eternal_battlefield"
+    },
+    {
+      "effect": "ess_requiem:honed_edge",
+      "spell": "ess_requiem:hone_edge"
+    },
+    {
+      "effect": "ess_requiem:soul_strength",
+      "spell": "ess_requiem:undying_dread"
+    },
+    {
+      "effect": "ess_requiem:adrenaline_rush",
+      "spell": "ess_requiem:adrenaline_rush"
     },
     {
       "effect": "firesenderexpansion:aspect_of_the_shulker_effect",

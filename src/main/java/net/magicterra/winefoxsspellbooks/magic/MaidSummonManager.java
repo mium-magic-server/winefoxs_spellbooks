@@ -9,7 +9,7 @@ import java.util.UUID;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
 import net.magicterra.winefoxsspellbooks.mixin.SummonManagerAccessor;
-import net.magicterra.winefoxsspellbooks.registry.InitAttachments;
+import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -28,7 +28,7 @@ public class MaidSummonManager {
     public static void onMaidPlaced(LivingEntity maid) {
         if (maid.level instanceof ServerLevel serverLevel) {
             SummonManagerAccessor manager = (SummonManagerAccessor) SummonManager.INSTANCE;
-            var savedSummons = maid.getExistingDataOrNull(InitAttachments.SAVED_SUMMONS);
+            var savedSummons = maid.getExistingDataOrNull(WsbAttachments.SAVED_SUMMONS);
             if (savedSummons != null) {
                 Set<UUID> summonsSet = new HashSet<>();
                 UUID ownerUUID = maid.getUUID();
@@ -85,7 +85,7 @@ public class MaidSummonManager {
                 }
             }
         }
-        maid.setData(InitAttachments.SAVED_SUMMONS, savedSummons);
+        maid.setData(WsbAttachments.SAVED_SUMMONS, savedSummons);
         manager.invokeStopTrackingSummonerAndSummons(maid);
     }
 

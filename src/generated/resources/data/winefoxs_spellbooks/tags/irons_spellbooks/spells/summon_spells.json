@@ -45,6 +45,14 @@
       "required": false
     },
     {
+      "id": "ess_requiem:soulmaster_summon",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:gild_summon",
+      "required": false
+    },
+    {
       "id": "iss_magicfromtheeast:punishing_heaven",
       "required": false
     },
@@ -72,9 +80,6 @@
       "id": "hazennstuff:call_forth_terraprisma",
       "required": false
     },
-    {
-      "id": "winefoxs_spellbooks:summon_maid",
-      "required": false
-    }
+    "winefoxs_spellbooks:summon_maid"
   ]
 }

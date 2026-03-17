@@ -56,6 +56,9 @@ public class DataGenerateMod {
         // Spell data provider (casting range and caused effects)
         generator.addProvider(event.includeServer(), new SpellDataProvider(output));
 
+        // Entity tags provider (maid tag)
+        generator.addProvider(event.includeServer(), new MaidEntityTagsProvider(output, lookupProvider, WinefoxsSpellbooks.MODID, existingFileHelper));
+
         // Client providers
         generator.addProvider(event.includeClient(), new ItemModelGenerator(output, existingFileHelper));
     }

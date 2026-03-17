@@ -37,6 +37,10 @@
       "required": false
     },
     {
+      "id": "dreamless_spells:doorway_effect",
+      "required": false
+    },
+    {
       "id": "ess_requiem:finality_of_decay",
       "required": false
     },

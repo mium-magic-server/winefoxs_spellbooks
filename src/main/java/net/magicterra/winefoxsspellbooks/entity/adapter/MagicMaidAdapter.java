@@ -21,7 +21,7 @@ import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicData;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
-import net.magicterra.winefoxsspellbooks.registry.InitAttachments;
+import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -347,7 +347,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         boolean doManaRegen = serverTickCount % MaidMagicManager.MANA_REGEN_TICKS == 0;
         if (doManaRegen) {
             MaidMagicManager.regenMana(delegatedEntity, maidMagicData);
-            delegatedEntity.setData(InitAttachments.MAID_MANA, maidMagicData.getMana());
+            delegatedEntity.setData(WsbAttachments.MAID_MANA, maidMagicData.getMana());
         }
 
         // 冷却更新
@@ -564,13 +564,13 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
     @Override
     public float winefoxsSpellbooks$getMana() {
-        return delegatedEntity.getData(InitAttachments.MAID_MANA);
+        return delegatedEntity.getData(WsbAttachments.MAID_MANA);
     }
 
     @Override
     public void winefoxsSpellbooks$setMana(float mana) {
         maidMagicData.setMana(mana);
-        delegatedEntity.setData(InitAttachments.MAID_MANA, maidMagicData.getMana());
+        delegatedEntity.setData(WsbAttachments.MAID_MANA, maidMagicData.getMana());
     }
 
     @Override
@@ -580,7 +580,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
     @Override
     public MaidSpellDataHolder winefoxsSpellbooks$getSpellDataHolder() {
-        return delegatedEntity.getData(InitAttachments.MAID_SPELL_DATA);
+        return delegatedEntity.getData(WsbAttachments.MAID_SPELL_DATA);
     }
 
     @Override

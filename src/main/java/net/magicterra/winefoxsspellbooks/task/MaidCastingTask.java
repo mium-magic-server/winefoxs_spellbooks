@@ -24,7 +24,7 @@ import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.StartAttackin
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
-import net.magicterra.winefoxsspellbooks.registry.InitItems;
+import net.magicterra.winefoxsspellbooks.registry.WsbItems;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -54,7 +54,7 @@ public class MaidCastingTask implements IRangedAttackTask {
 
     @Override
     public ItemStack getIcon() {
-        return InitItems.CASTING_TASK_ICON.toStack();
+        return WsbItems.CASTING_TASK_ICON.toStack();
     }
 
     @Override

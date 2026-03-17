@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import net.Iceforkkk.DreamlessAditions.registries.SpellRegistries;
 import net.ender.ess_requiem.registries.GGSpellRegistry;
 import net.hazen.hazennstuff.Spells.HnSSpellRegistries;
-import net.magicterra.winefoxsspellbooks.registry.InitSpells;
+import net.magicterra.winefoxsspellbooks.registry.WsbSpells;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -378,9 +378,9 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         summonTag.addOptional(HnSSpellRegistries.CALL_FORTH_TERRAPRISMA.get().getSpellResource());
 
         // ========== Winefox's Spellbooks ==========
-        // attackTag.addOptional(InitSpells.SUMMON_MAID_SPELL.get().getSpellResource());
-        summonTag.add(InitSpells.SUMMON_MAID_SPELL.get());
-        positiveEffectTag.add(InitSpells.MANA_TRANSFER_SPELL.get());
+        // attackTag.addOptional(WsbSpells.SUMMON_MAID_SPELL.get().getSpellResource());
+        summonTag.add(WsbSpells.SUMMON_MAID_SPELL.get());
+        positiveEffectTag.add(WsbSpells.MANA_TRANSFER_SPELL.get());
 
         // ========== Maid Should Recast Spells (需要多次施放的法术) ==========
         // Iron's Spellbooks

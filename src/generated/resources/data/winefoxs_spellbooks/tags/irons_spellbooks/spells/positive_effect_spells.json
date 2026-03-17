@@ -21,8 +21,25 @@
       "required": false
     },
     {
+      "id": "cataclysm_spellbooks:forgone_rage",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:hone_edge",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:undying_dread",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:adrenaline_rush",
+      "required": false
+    },
+    {
       "id": "firesenderexpansion:aspect_of_the_shulker",
       "required": false
-    }
+    },
+    "winefoxs_spellbooks:mana_transfer"
   ]
 }

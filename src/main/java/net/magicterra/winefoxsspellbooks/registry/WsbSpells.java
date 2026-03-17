@@ -10,12 +10,12 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
- * InitSpells
+ * WsbSpells
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-01-02 22:17
  */
-public class InitSpells {
+public class WsbSpells {
     public static final DeferredRegister<AbstractSpell> SPELLS = DeferredRegister.create(SpellRegistry.SPELL_REGISTRY_KEY, WinefoxsSpellbooks.MODID);
 
     public static void register(IEventBus eventBus) {

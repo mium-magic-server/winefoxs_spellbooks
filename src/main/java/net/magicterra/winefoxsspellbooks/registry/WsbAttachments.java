@@ -22,7 +22,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-01-23 02:34
  */
-public class InitAttachments {
+public class WsbAttachments {
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, WinefoxsSpellbooks.MODID);
 
 
