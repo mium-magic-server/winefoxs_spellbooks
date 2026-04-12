@@ -6,6 +6,7 @@
   "mixins": [
     "BaubleContainerMixin",
     "DamageSourcesMixin",
+    "EntityAllyMixin",
     "IMagicSummonMixin",
     "MaidEntityMixin",
     "SummonManagerAccessor",
