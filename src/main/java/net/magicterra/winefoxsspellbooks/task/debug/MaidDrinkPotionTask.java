@@ -17,6 +17,7 @@ import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellAttackWa
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellChooseTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellStrafingTask;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
+import net.magicterra.winefoxsspellbooks.util.LineOfSightGuard;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -86,7 +87,7 @@ public class MaidDrinkPotionTask implements IRangedAttackTask {
     public boolean canSee(EntityMaid maid, LivingEntity target) {
         TargetingConditions targetingConditions = TargetingConditions.forCombat();
         targetingConditions.range(Config.getMaxSpellRange());
-        return targetingConditions.test(maid, target);
+        return LineOfSightGuard.test(targetingConditions, maid, target);
     }
 
     @Override

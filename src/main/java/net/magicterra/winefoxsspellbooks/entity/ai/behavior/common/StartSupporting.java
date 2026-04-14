@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
+import net.magicterra.winefoxsspellbooks.util.LineOfSightGuard;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
@@ -96,7 +97,7 @@ public class StartSupporting {
         LivingEntity owner = mob instanceof net.minecraft.world.entity.TamableAnimal tamable ? tamable.getOwner() : null;
         if (owner != null) {
             LivingEntity ownerTarget = owner.getLastHurtByMob();
-            if (ownerTarget != null && ownerTarget.isAlive() && mob.canAttack(ownerTarget) && mob.hasLineOfSight(ownerTarget)) {
+            if (ownerTarget != null && ownerTarget.isAlive() && mob.canAttack(ownerTarget) && LineOfSightGuard.hasLineOfSight(mob, ownerTarget)) {
                 return Optional.of(ownerTarget);
             }
         }
@@ -128,7 +129,7 @@ public class StartSupporting {
             }
 
             LivingEntity allyTarget = entity.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
-            if (allyTarget != null && allyTarget.isAlive() && mob.canAttack(allyTarget) && mob.hasLineOfSight(allyTarget)) {
+            if (allyTarget != null && allyTarget.isAlive() && mob.canAttack(allyTarget) && LineOfSightGuard.hasLineOfSight(mob, allyTarget)) {
                 return Optional.of(allyTarget);
             }
         }
@@ -145,7 +146,7 @@ public class StartSupporting {
     private static Optional<? extends LivingEntity> findCriticalAlly(Mob mob) {
         // 检查主人是否生命危急
         LivingEntity owner = mob instanceof net.minecraft.world.entity.TamableAnimal tamable ? tamable.getOwner() : null;
-        if (owner != null && isCritical(owner, OWNER_CRITICAL_HEALTH_THRESHOLD) && mob.hasLineOfSight(owner)) {
+        if (owner != null && isCritical(owner, OWNER_CRITICAL_HEALTH_THRESHOLD) && LineOfSightGuard.hasLineOfSight(mob, owner)) {
             return Optional.of(owner);
         }
 
@@ -171,7 +172,7 @@ public class StartSupporting {
             }
 
             // 必须可见
-            if (!mob.hasLineOfSight(entity)) {
+            if (!LineOfSightGuard.hasLineOfSight(mob, entity)) {
                 continue;
             }
 

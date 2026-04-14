@@ -17,6 +17,7 @@ import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellStrafing
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.StartAttacking;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.registry.WsbItems;
+import net.magicterra.winefoxsspellbooks.util.LineOfSightGuard;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -52,7 +53,7 @@ public class MaidMagicSupportTask extends MaidCastingTask {
     public boolean canSee(EntityMaid maid, LivingEntity target) {
         TargetingConditions targetingConditions = TargetingConditions.forNonCombat();
         targetingConditions.range(Config.getMaxSpellRange());
-        return targetingConditions.test(maid, target);
+        return LineOfSightGuard.test(targetingConditions, maid, target);
     }
 
     static Optional<? extends LivingEntity> findNearbyFriendsAttackTarget(EntityMaid maid) {

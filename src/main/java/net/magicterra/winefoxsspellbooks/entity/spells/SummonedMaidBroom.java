@@ -32,6 +32,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -174,6 +175,15 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
     public SummonedMaidBroom(EntityType<? extends SummonedMaidBroom> entityType, Level level) {
         // EntityBroom 构造函数要求其自身的 EntityType 类型
         super((EntityType) entityType, level);
+    }
+
+    @Override
+    public AABB getPhysicalBoundingBox() {
+        AABB aabb = super.getPhysicalBoundingBox();
+        if (!this.getPassengers().isEmpty()) {
+            return new AABB(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY + 1.0, aabb.maxZ);
+        }
+        return aabb;
     }
 
     /**

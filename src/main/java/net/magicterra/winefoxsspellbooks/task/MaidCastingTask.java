@@ -25,6 +25,7 @@ import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModul
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.magicterra.winefoxsspellbooks.registry.WsbItems;
+import net.magicterra.winefoxsspellbooks.util.LineOfSightGuard;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -126,7 +127,7 @@ public class MaidCastingTask implements IRangedAttackTask {
     public boolean canSee(EntityMaid maid, LivingEntity target) {
         TargetingConditions targetingConditions = TargetingConditions.forCombat();
         targetingConditions.range(Config.getMaxSpellRange());
-        return targetingConditions.test(maid, target);
+        return LineOfSightGuard.test(targetingConditions, maid, target);
     }
 
     @Override
