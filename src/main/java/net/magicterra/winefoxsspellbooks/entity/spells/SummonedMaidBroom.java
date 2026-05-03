@@ -3,11 +3,14 @@ package net.magicterra.winefoxsspellbooks.entity.spells;
 import com.github.tartaricacid.touhoulittlemaid.entity.item.EntityBroom;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
+import java.util.HashSet;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.Set;
+import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.Config;
+import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
@@ -264,19 +267,35 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
         }
     }
 
+    /**
+     * 旧版保存重复了，这里加个去重尝试修复数据
+     */
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
 
-        if (tag.contains("Passengers", 9)) {
-            ListTag listtag = tag.getList("Passengers", 10);
-
-            for (int i = 0; i < listtag.size(); i++) {
-                Entity entity = EntityType.loadEntityRecursive(listtag.getCompound(i), level, Function.identity());
-                if (entity != null) {
-                    entity.startRiding(this, true);
-                }
+        if (!tag.contains("Passengers", 9)) {
+            return;
+        }
+        ListTag passengers = tag.getList("Passengers", 10);
+        if (passengers.size() <= 1) {
+            return;
+        }
+        ListTag deduped = new ListTag();
+        Set<UUID> seen = new HashSet<>();
+        for (int i = 0; i < passengers.size(); i++) {
+            CompoundTag entry = passengers.getCompound(i);
+            if (entry.hasUUID("UUID") && !seen.add(entry.getUUID("UUID"))) {
+                continue;
             }
+            deduped.add(entry);
+        }
+        if (deduped.size() != passengers.size()) {
+            WinefoxsSpellbooks.LOGGER.warn(
+                "Deduped {} duplicate passengers on broom at {} (was {}, now {}); legacy serialize bug, chunk will be clean after next save",
+                passengers.size() - deduped.size(), this.blockPosition(), passengers.size(), deduped.size()
+            );
+            tag.put("Passengers", deduped);
         }
     }
 
