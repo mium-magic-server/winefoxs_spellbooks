@@ -352,7 +352,6 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         summonTag.addOptional(ModSpellRegistry.SUMMON_SNOW_QUEEN_SPELL.get().getSpellResource());
 
         // ========== Hazen N Stuff ==========
-        attackTag.addOptional(HnSSpellRegistries.BRIMSTONE_HELLBLAST.get().getSpellResource());
         attackTag.addOptional(HnSSpellRegistries.SCORCHING_SLASH.get().getSpellResource());
         attackTag.addOptional(HnSSpellRegistries.FIERY_DAGGER.get().getSpellResource());
         attackTag.addOptional(HnSSpellRegistries.ICE_ARROW.get().getSpellResource());
