@@ -20,7 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * 女仆晨赠交付行为
+ * 女仆晨间礼物交付行为
  * <p>
  * 仿原版猫的 {@code CatRelaxOnOwnerGoal#giveMorningGift}，
  * 但改为 Brain 驱动：监听到 {@link MaidCastingMemoryModuleTypes#GIFT_DELIVERY} 记忆后，
@@ -141,7 +141,7 @@ public class MaidDeliverGiftBehavior extends Behavior<EntityMaid> {
             item.setDefaultPickUpDelay();
             // setThrower：让 vanilla 的 10-tick 投手自身拾取延迟生效，避免投出去立刻又被自己捡回
             item.setThrower(maid);
-            // 给 ItemEntity 打上"晨赠"标记；MaidGiftPickupBlocker 据此拦截女仆拾取（仅限本模组礼物，
+            // 给 ItemEntity 打上"晨间礼物"标记；MaidGiftPickupBlocker 据此拦截女仆拾取（仅限本模组礼物，
             // 避免误伤其他模组里由女仆投出但允许女仆拾取的物品）
             item.addTag(MaidGiftPickupBlocker.MAID_GIFT_TAG);
             level.addFreshEntity(item);

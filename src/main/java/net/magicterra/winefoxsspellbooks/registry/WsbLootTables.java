@@ -17,7 +17,7 @@ public final class WsbLootTables {
     }
 
     /**
-     * 满好感度女仆晨赠战利品表。
+     * 满好感度女仆的晨间礼物战利品表。
      * <p>
      * 调用方在 {@code PlayerWakeUpEvent} 中完成"挑选女仆 + 写冷却"，把"具体掉什么"交给本表。
      * 仿 vanilla {@code minecraft:gameplay/cat_morning_gift} 的范式。

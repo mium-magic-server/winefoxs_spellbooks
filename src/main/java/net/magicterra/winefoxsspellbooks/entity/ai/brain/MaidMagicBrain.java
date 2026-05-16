@@ -17,7 +17,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
  */
 public class MaidMagicBrain implements IExtraMaidBrain {
     /**
-     * 晨赠交付优先级
+     * 晨间礼物交付优先级
      * <p>
      * 高于普通 idle 行为（看向、随机走），保证拿到 GIFT_DELIVERY 后能优先送达。
      */

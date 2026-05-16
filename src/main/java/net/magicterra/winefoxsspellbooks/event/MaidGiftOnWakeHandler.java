@@ -23,9 +23,9 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
 
 /**
- * 满好感度女仆晨赠灵狐精魂
+ * 满好感度女仆的晨间礼物：灵狐精魂
  * <p>
- * 仿 vanilla 猫晨赠 ({@code Cat$CatRelaxOnOwnerGoal#giveMorningGift}) 但更"主动"：
+ * 仿 vanilla 猫的晨间礼物 ({@code Cat$CatRelaxOnOwnerGoal#giveMorningGift}) 但更"主动"：
  * 这里只负责 "选女仆 + 抽战利品 + 写入 Brain 记忆 + 写冷却"，
  * 真正的"走过去、挥手、抛出"由 {@code MaidDeliverGiftBehavior} 在 Brain tick 中完成。
  * <p>
