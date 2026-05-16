@@ -1,5 +1,67 @@
 # Changelog / 变更日志
 
+## 1.0.0-beta.12
+
+1. **残月血酿 (Crescent Blood Vintage)**
+
+   新增可饮用物品「残月血酿」。女仆饮用必定触发「狐火增幅」效果，将冷却缩减提升到约 90%（即冷却时间为原本的 10%），并立即同步缩减已有冷却；其他生物饮用有 60% 概率触发「魔力紊乱」减益。同时附带新增的「狐火增幅」与「魔力紊乱」两种状态效果。
+
+   Added drinkable item "Crescent Blood Vintage". Maids drinking it always trigger the "Foxfire Boost" effect, raising cooldown reduction to about 90% (cooldowns shrink to 10% of normal) and immediately syncing existing cooldowns; other creatures have a 60% chance to be afflicted by "Mana Disruption". Two new mob effects ("Foxfire Boost" and "Mana Disruption") are introduced alongside.
+
+2. **FTB Teams 友伤兼容 (FTB Teams Friendly Fire Compatibility)**
+
+   通过 Mixin 增强 `Entity.isAlliedTo()`：在原始检查返回 false 时，将双方实体沿召唤链（`IMagicSummon` / `OwnableEntity`）解析到顶层召唤者后再次检查，使 FTB Teams Friendly Fire 等基于队伍的友伤判定能够正确覆盖召唤的女仆和其他召唤物。
+
+   Enhanced `Entity.isAlliedTo()` via mixin: when the original check returns false, both entities are resolved up the summon chain (`IMagicSummon` / `OwnableEntity`) to their root summoners and re-checked, so team-based friendly-fire mods such as FTB Teams Friendly Fire correctly recognize summoned maids and other summons as allies.
+
+3. **修复扫帚保存重复 (Fix Broom Save Duplication)**
+
+   修复召唤女仆扫帚在卸载/保存时被重复持久化导致重新加载后出现多个扫帚实体的问题。
+
+   Fixed an issue where the summoned maid broom was persisted multiple times on save/unload, causing duplicate broom entities to appear after reload.
+
+4. **修复死锁与扫帚碰撞箱 (Fix Deadlock and Broom Bounding Box)**
+
+   引入 `LineOfSightGuard` 工具修复女仆 AI 任务（施法、辅助施法、调试饮药）在 LOS 检查时的死锁问题；同时修正召唤女仆扫帚的碰撞箱尺寸。
+
+   Introduced a `LineOfSightGuard` utility to fix a deadlock in maid AI tasks (casting, support casting, debug potion drinking) caused during line-of-sight checks; also corrected the bounding box size of the summoned maid broom.
+
+5. **依赖版本更新 (Dependency Version Update)**
+
+   更新 NeoForge、Iron's Spells 'n Spellbooks、车万女仆 (1.5.0 → 1.5.2)、Ars Nouveau 及多个法术附属模组到最新兼容版本。
+
+   Updated NeoForge, Iron's Spells 'n Spellbooks, Touhou Little Maid (1.5.0 → 1.5.2), Ars Nouveau and various spell addon mods to the latest compatible versions.
+
+6. **内部重构 (Internal Refactor)**
+
+   将注册表类从 `Init*` 命名重命名为 `Wsb*`（`WsbAttachments` / `WsbCommands` / `WsbEntities` / `WsbItems` / `WsbSpells`），新增 `WsbEffects`，统一项目命名风格。
+
+   Renamed registry classes from `Init*` to `Wsb*` (`WsbAttachments` / `WsbCommands` / `WsbEntities` / `WsbItems` / `WsbSpells`), added `WsbEffects`, unifying the project's naming convention.
+
+7. **酒狐巫法学派 (Winefox Hex Spell School)**
+
+   新增独立的「酒狐巫法」学派，注册到 Iron's `SchoolRegistry`，配套两个百分比属性（法术强度 / 抗性）、自有伤害类型 `winefox_hex_magic` 与紫粉 #C846FF 主题色。`召唤女仆`、`魔力传输` 两个法术从 Ender 学派切换到本学派。
+
+   Added the standalone "Winefox Hex" spell school registered into Iron's `SchoolRegistry`, with paired percent attributes (spell power / resist), its own `winefox_hex_magic` damage type, and a violet-pink #C846FF theme color. The existing `Summon Maid` and `Mana Transfer` spells were moved from the Ender school to this new one.
+
+8. **灵狐精魂学派焦点 (Vulpine Anima Focus)**
+
+   新增 `灵狐精魂` 物品作为酒狐巫法学派的 focus；通过 additive datagen 写入 `irons_spellbooks:school_focus` tag，使 Iron's 卷轴锻造 (Scroll Forge) 能识别本学派。
+
+   Added the `Vulpine Anima` item as the focus for the Winefox Hex school; injected into `irons_spellbooks:school_focus` via additive datagen so Iron's Scroll Forge recognizes this school.
+
+9. **满好感度女仆晨赠 (Max-Favorability Maid Morning Gift)**
+
+   仿原版猫晨赠机制：玩家正常睡满一晚醒来后，若身边半径内有已驯化且达到满好感度的女仆，该女仆会赠予一件 `灵狐精魂`（每游戏日上限一次，具体掉落由数据驱动战利品表 `gameplay/maid_morning_gift` 决定，数据包可整张覆盖）。新增 3 项配置：总开关、搜索半径（默认 8 格）、是否强制睡满。
+
+   Modeled after vanilla's cat morning gift: when a player wakes from a normal full sleep with a tamed, max-favorability maid nearby, that maid gifts one `Vulpine Anima` (once per game day, governed by the data-driven loot table `gameplay/maid_morning_gift`; datapacks may replace it wholesale). Three new config options: master toggle, search radius (default 8 blocks), and whether a full sleep is required.
+
+10. **灵狐精魂掉落注入 (Vulpine Anima Loot Drops)**
+
+    通过 Global Loot Modifier 向若干战利品表追加 `灵狐精魂`：女仆击杀车万女仆模组的妖精时按概率掉落（驯化女仆 25%、召唤女仆 35%，每级抢夺附魔 +5%）；同时按概率追加到原版林地府邸、要塞图书馆、下界要塞，以及 Iron's Spells 的火焰法师塔、地下墓室、城堡藏书库等宝箱。
+
+    Added Global Loot Modifiers that inject `Vulpine Anima` into several loot tables: maids killing Touhou Little Maid fairies drop them by chance (25% for tamed maids, 35% for summoned maids, +5% per Looting level); and they're also added at various rates to vanilla Woodland Mansion, Stronghold Library, and Nether Fortress chests, plus Iron's Spells' Pyromancer Tower, Catacombs, and Citadel chests.
+
 ## 1.0.0-beta.11
 
 1. **依赖版本更新 (Dependency Version Update)**
