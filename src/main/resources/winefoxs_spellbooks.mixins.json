@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "net.magicterra.winefoxsspellbooks.mixin",
   "compatibilityLevel": "JAVA_21",
+  "plugin": "net.magicterra.winefoxsspellbooks.mixin.WsbMixinPlugin",
   "mixins": [
     "BaubleContainerMixin",
     "DamageSourcesMixin",
@@ -10,7 +11,8 @@
     "IMagicSummonMixin",
     "MaidEntityMixin",
     "SummonManagerAccessor",
-    "TargetGoalMixin"
+    "TargetGoalMixin",
+    "ali.ConfigUtilsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

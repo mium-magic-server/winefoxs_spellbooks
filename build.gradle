@@ -240,6 +240,8 @@ dependencies {
     implementation("com.hollingsworth.ars_nouveau:ars_nouveau-${minecraft_version}:${ars_nouveau_version}")
 
     // 工具和前置
+    // Advanced Loot Info：JEI/EMI/REI 战利品页插件。
+    implementation("maven.modrinth:advanced-loot-info:${advanced_loot_info_version}")
     // 灾变
     implementation("maven.modrinth:l_enders-cataclysm:${l_enders_cataclysm_version}-${minecraft_version}")
     implementation("maven.modrinth:azurelib:${azurelib_version}")
@@ -251,9 +253,6 @@ dependencies {
     runtimeOnly("curse.maven:mowzies-mobs-250498:${mowzies_mobs_version}")
     runtimeOnly("curse.maven:placebo-283644:${placebo_version}")
     runtimeOnly("curse.maven:apothic-attributes-898963:${apothic_attributes_version}")
-
-    // 调试工具：在 JEI/EMI/REI 中显示战利品表与村民交易细节，仅开发期使用
-    runtimeOnly("maven.modrinth:advanced-loot-info:${advanced_loot_info_version}")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

@@ -82,5 +82,7 @@
   "attribute.winefoxs_spellbooks.winefox_hex_spell_power": "酒狐巫法法术强度",
   "attribute.winefoxs_spellbooks.winefox_hex_magic_resist": "酒狐巫法抗性",
   "death.attack.winefox_hex_magic": "%1$s 被酒狐巫法击溃",
-  "death.attack.winefox_hex_magic.player": "%1$s 在 %2$s 的酒狐巫法下倾覆"
+  "death.attack.winefox_hex_magic.player": "%1$s 在 %2$s 的酒狐巫法下倾覆",
+  "emi.category.winefoxs_spellbooks.maid_morning_gift": "女仆的晨间礼物",
+  "ali/loot_table/gameplay/maid_morning_gift": "女仆的晨间礼物"
 }
