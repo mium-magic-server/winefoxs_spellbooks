@@ -71,6 +71,9 @@ public class DataGenerateMod {
                 provider -> new WsbGiftLootSubProvider(), LootContextParamSets.GIFT)),
             lookupProvider));
 
+        // Global loot modifiers
+        generator.addProvider(event.includeServer(), new WsbGlobalLootModifierProvider(output, lookupProvider));
+
         // Client providers
         generator.addProvider(event.includeClient(), new ItemModelGenerator(output, existingFileHelper));
     }

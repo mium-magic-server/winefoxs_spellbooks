@@ -1,0 +1,15 @@
+{
+  "type": "winefoxs_spellbooks:add_item",
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "irons_spellbooks:chests/pyromancer_tower/pyromancer_supplies"
+    },
+    {
+      "chance": 0.3,
+      "condition": "minecraft:random_chance"
+    }
+  ],
+  "count": 1,
+  "item": "winefoxs_spellbooks:vulpine_anima"
+}

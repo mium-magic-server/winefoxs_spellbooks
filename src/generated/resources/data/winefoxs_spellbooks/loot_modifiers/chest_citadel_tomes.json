@@ -1,0 +1,19 @@
+{
+  "type": "winefoxs_spellbooks:add_item",
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "irons_spellbooks:chests/citadel/citadel_tomes"
+    },
+    {
+      "chance": 0.35,
+      "condition": "minecraft:random_chance"
+    }
+  ],
+  "count": {
+    "type": "minecraft:uniform",
+    "max_inclusive": 2,
+    "min_inclusive": 1
+  },
+  "item": "winefoxs_spellbooks:vulpine_anima"
+}

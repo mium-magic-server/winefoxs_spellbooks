@@ -1,0 +1,28 @@
+{
+  "type": "winefoxs_spellbooks:add_item",
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "touhou_little_maid:entities/fairy"
+    },
+    {
+      "condition": "minecraft:entity_properties",
+      "entity": "attacker",
+      "predicate": {
+        "type": "touhou_little_maid:maid"
+      }
+    },
+    {
+      "condition": "minecraft:random_chance_with_enchanted_bonus",
+      "enchanted_chance": {
+        "type": "minecraft:linear",
+        "base": 0.3,
+        "per_level_above_first": 0.05
+      },
+      "enchantment": "minecraft:looting",
+      "unenchanted_chance": 0.25
+    }
+  ],
+  "count": 1,
+  "item": "winefoxs_spellbooks:vulpine_anima"
+}

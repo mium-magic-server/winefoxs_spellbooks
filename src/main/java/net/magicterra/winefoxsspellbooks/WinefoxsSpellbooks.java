@@ -10,6 +10,7 @@ import net.magicterra.winefoxsspellbooks.registry.WsbCommands;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
 import net.magicterra.winefoxsspellbooks.registry.WsbEntities;
 import net.magicterra.winefoxsspellbooks.registry.WsbItems;
+import net.magicterra.winefoxsspellbooks.registry.WsbLootModifiers;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.magicterra.winefoxsspellbooks.registry.WsbSpells;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
@@ -40,6 +41,7 @@ public class WinefoxsSpellbooks {
         WsbEffects.register(modBus);
         WsbAttributes.register(modBus);
         WsbSchools.register(modBus);
+        WsbLootModifiers.register(modBus);
         modBus.addListener(LittleMaidSpellbooksCompat::onRegisterItem);
 
         NeoForge.EVENT_BUS.addListener(MaidSpellRegistry::registerSpell);

@@ -1,0 +1,14 @@
+{
+  "entries": [
+    "winefoxs_spellbooks:fairy_drop_tamed_maid",
+    "winefoxs_spellbooks:fairy_drop_summoned_maid",
+    "winefoxs_spellbooks:chest_woodland_mansion",
+    "winefoxs_spellbooks:chest_stronghold_library",
+    "winefoxs_spellbooks:chest_nether_bridge",
+    "winefoxs_spellbooks:chest_pyromancer_old_cask",
+    "winefoxs_spellbooks:chest_pyromancer_supplies",
+    "winefoxs_spellbooks:chest_catacombs_coffin",
+    "winefoxs_spellbooks:chest_citadel_tomes"
+  ],
+  "replace": false
+}
