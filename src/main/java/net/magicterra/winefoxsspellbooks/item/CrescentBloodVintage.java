@@ -25,8 +25,6 @@ public class CrescentBloodVintage extends Item {
             .nutrition(3)
             .saturationModifier(0.3f)
             .alwaysEdible()
-            .effect(() -> new MobEffectInstance(MobEffects.CONFUSION, 200), 0.6f)
-            .effect(() -> new MobEffectInstance(MobEffects.POISON, 60), 0.6f)
             .build();
 
     public CrescentBloodVintage() {
@@ -46,7 +44,13 @@ public class CrescentBloodVintage extends Item {
                 // 女仆：100%触发狐火增幅
                 entity.addEffect(new MobEffectInstance(WsbEffects.FOXFIRE_BOOST, 200));
             } else {
-                // 其他生物：60%概率触发魔力紊乱
+                // 其他生物：60%概率分别触发混乱、中毒、魔力紊乱
+                if (entity.getRandom().nextFloat() < 0.6f) {
+                    entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200));
+                }
+                if (entity.getRandom().nextFloat() < 0.6f) {
+                    entity.addEffect(new MobEffectInstance(MobEffects.POISON, 60));
+                }
                 if (entity.getRandom().nextFloat() < 0.6f) {
                     entity.addEffect(new MobEffectInstance(WsbEffects.MANA_DISRUPTION, 200));
                 }
