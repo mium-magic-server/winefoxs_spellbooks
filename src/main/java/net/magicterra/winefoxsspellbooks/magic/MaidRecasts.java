@@ -1,11 +1,9 @@
 package net.magicterra.winefoxsspellbooks.magic;
 
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
-import io.redspace.ironsspellbooks.api.registry.SchoolRegistry;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.ICastDataSerializable;
-import io.redspace.ironsspellbooks.api.spells.SchoolType;
 import io.redspace.ironsspellbooks.api.util.Utils;
 import io.redspace.ironsspellbooks.capabilities.magic.MagicManager;
 import io.redspace.ironsspellbooks.capabilities.magic.MultiTargetEntityCastData;
@@ -34,6 +32,7 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
+import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -370,7 +369,7 @@ public class MaidRecasts extends PlayerRecasts {
         // 生成冲击波粒子
         MagicManager.spawnParticles(
             level,
-            new BlastwaveParticleOptions(((SchoolType) SchoolRegistry.ENDER.get()).getTargetingColor(), radius),
+            new BlastwaveParticleOptions(WsbSchools.WINEFOX_HEX.get().getTargetingColor(), radius),
             maid.position().x, maid.position().y, maid.position().z,
             1, 0.0, 0.0, 0.0, 0.0, true
         );

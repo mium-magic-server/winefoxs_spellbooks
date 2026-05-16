@@ -4,7 +4,6 @@ import io.redspace.ironsspellbooks.api.config.DefaultConfig;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
-import io.redspace.ironsspellbooks.api.registry.SchoolRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastSource;
 import io.redspace.ironsspellbooks.api.spells.CastType;
@@ -15,6 +14,7 @@ import io.redspace.ironsspellbooks.registries.SoundRegistry;
 import java.util.List;
 import java.util.Optional;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -49,7 +49,7 @@ public class ManaTransferSpell extends AbstractSpell {
 
     private final DefaultConfig defaultConfig = new DefaultConfig()
         .setMinRarity(SpellRarity.COMMON)
-        .setSchoolResource(SchoolRegistry.ENDER_RESOURCE)
+        .setSchoolResource(WsbSchools.WINEFOX_HEX_RESOURCE)
         .setMaxLevel(10)
         .setCooldownSeconds(15.0)
         .build();

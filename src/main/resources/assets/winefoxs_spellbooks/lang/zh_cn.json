@@ -70,6 +70,13 @@
   "ui.winefoxs_spellbooks.mana_transfer_rate": "传输: %s 魔力/秒",
   "ui.winefoxs_spellbooks.mana_transfer_cost": "消耗: %s 魔力/秒",
   "item.winefoxs_spellbooks.crescent_blood_vintage": "残月血酿",
+  "item.winefoxs_spellbooks.vulpine_anima": "灵狐精魂",
+  "item.winefoxs_spellbooks.vulpine_anima.desc": "酒狐巫法学派的灵媒，玻璃球内盘踞着一团灵动的狐火\n获取：女仆击杀妖精掉落、相关宝箱战利品，或满好感度的女仆晨赠",
   "effect.winefoxs_spellbooks.mana_disruption": "魔力紊乱",
-  "effect.winefoxs_spellbooks.foxfire_boost": "狐火增幅"
+  "effect.winefoxs_spellbooks.foxfire_boost": "狐火增幅",
+  "school.winefoxs_spellbooks.winefox_hex": "酒狐巫法",
+  "attribute.winefoxs_spellbooks.winefox_hex_spell_power": "酒狐巫法法术强度",
+  "attribute.winefoxs_spellbooks.winefox_hex_magic_resist": "酒狐巫法抗性",
+  "death.attack.winefox_hex_magic": "%1$s 被酒狐巫法击溃",
+  "death.attack.winefox_hex_magic.player": "%1$s 在 %2$s 的酒狐巫法下倾覆"
 }

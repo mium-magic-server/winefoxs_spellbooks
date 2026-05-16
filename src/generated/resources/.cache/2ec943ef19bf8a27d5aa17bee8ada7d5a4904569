@@ -1,4 +1,5 @@
-// 1.21.1	2026-01-20T03:56:29.445851	Tags for minecraft:item mod id winefoxs_spellbooks
+// 1.21.1	2026-05-11T14:42:00.58250609	Tags for minecraft:item mod id winefoxs_spellbooks
+b36e987095118fb652cabe4b666ec065eca06727 data/irons_spellbooks/tags/item/school_focus.json
 aa56bd126138c5817ad857571e79c247e67a57ce data/winefoxs_spellbooks/tags/item/maid_loadout/armor/boots/tier1.json
 c0e9ce28e8e1a78a4599f2bb958b456ceb7703c6 data/winefoxs_spellbooks/tags/item/maid_loadout/armor/boots/tier2.json
 f0167d38fe2d64ff03e498d8eec83f7f850d511d data/winefoxs_spellbooks/tags/item/maid_loadout/armor/boots/tier3.json
@@ -14,3 +15,4 @@ f2f6cc6919475a31cad09235766270a762674781 data/winefoxs_spellbooks/tags/item/maid
 bf3a5954ecee56b1fdf83cb04d0602a4bb44041c data/winefoxs_spellbooks/tags/item/maid_loadout/weapons/tier1.json
 c68ca9e59a1231d107ce777ab05dd98228af9328 data/winefoxs_spellbooks/tags/item/maid_loadout/weapons/tier2.json
 8010d36aab7b4b8c30e8627450630149181620a4 data/winefoxs_spellbooks/tags/item/maid_loadout/weapons/tier3.json
+7886404ef3a7a71bd36674db0f1fb33a6317bdc9 data/winefoxs_spellbooks/tags/item/winefox_hex_focus.json

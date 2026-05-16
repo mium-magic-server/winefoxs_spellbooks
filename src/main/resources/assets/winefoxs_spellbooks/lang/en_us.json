@@ -70,6 +70,13 @@
   "ui.winefoxs_spellbooks.mana_transfer_rate": "Transfer: %s mana/s",
   "ui.winefoxs_spellbooks.mana_transfer_cost": "Cost: %s mana/s",
   "item.winefoxs_spellbooks.crescent_blood_vintage": "Crescent Blood Vintage",
+  "item.winefoxs_spellbooks.vulpine_anima": "Vulpine Anima",
+  "item.winefoxs_spellbooks.vulpine_anima.desc": "Focus for the Winefox Hex school. A lively wisp of foxfire coils within the glass orb.\nObtained from: fairies killed by maids, themed chest loot, or a morning gift from a maid at max favorability.",
   "effect.winefoxs_spellbooks.mana_disruption": "Mana Disruption",
-  "effect.winefoxs_spellbooks.foxfire_boost": "Foxfire Boost"
+  "effect.winefoxs_spellbooks.foxfire_boost": "Foxfire Boost",
+  "school.winefoxs_spellbooks.winefox_hex": "Winefox Hex",
+  "attribute.winefoxs_spellbooks.winefox_hex_spell_power": "Winefox Hex Spell Power",
+  "attribute.winefoxs_spellbooks.winefox_hex_magic_resist": "Winefox Hex Magic Resist",
+  "death.attack.winefox_hex_magic": "%1$s was overwhelmed by winefox hex",
+  "death.attack.winefox_hex_magic.player": "%1$s succumbed to %2$s's winefox hex"
 }

@@ -4,7 +4,6 @@ import io.redspace.ironsspellbooks.api.config.DefaultConfig;
 import io.redspace.ironsspellbooks.api.events.SpellSummonEvent;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
-import io.redspace.ironsspellbooks.api.registry.SchoolRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastSource;
 import io.redspace.ironsspellbooks.api.spells.CastType;
@@ -27,6 +26,7 @@ import net.magicterra.winefoxsspellbooks.entity.loadout.data.BroomMode;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.MaidLoadout;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
+import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -67,7 +67,7 @@ public class SummonMaidSpell extends AbstractSpell {
 
     private final DefaultConfig defaultConfig = new DefaultConfig()
         .setMinRarity(SpellRarity.UNCOMMON)
-        .setSchoolResource(SchoolRegistry.ENDER_RESOURCE)
+        .setSchoolResource(WsbSchools.WINEFOX_HEX_RESOURCE)
         .setMaxLevel(6)
         .setCooldownSeconds(150.0)
         .build();

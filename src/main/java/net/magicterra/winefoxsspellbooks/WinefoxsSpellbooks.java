@@ -5,10 +5,12 @@ import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModul
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidLoadoutManager;
 import net.magicterra.winefoxsspellbooks.magic.data.SpellDataManager;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
+import net.magicterra.winefoxsspellbooks.registry.WsbAttributes;
 import net.magicterra.winefoxsspellbooks.registry.WsbCommands;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
 import net.magicterra.winefoxsspellbooks.registry.WsbEntities;
 import net.magicterra.winefoxsspellbooks.registry.WsbItems;
+import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.magicterra.winefoxsspellbooks.registry.WsbSpells;
 import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.neoforged.api.distmarker.Dist;
@@ -36,6 +38,8 @@ public class WinefoxsSpellbooks {
         WsbAttachments.register(modBus);
         WsbEntities.register(modBus);
         WsbEffects.register(modBus);
+        WsbAttributes.register(modBus);
+        WsbSchools.register(modBus);
         modBus.addListener(LittleMaidSpellbooksCompat::onRegisterItem);
 
         NeoForge.EVENT_BUS.addListener(MaidSpellRegistry::registerSpell);

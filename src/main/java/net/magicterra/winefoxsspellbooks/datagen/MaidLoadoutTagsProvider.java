@@ -3,6 +3,8 @@ package net.magicterra.winefoxsspellbooks.datagen;
 import io.redspace.ironsspellbooks.registries.ItemRegistry;
 import java.util.concurrent.CompletableFuture;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.registry.WsbItemTags;
+import net.magicterra.winefoxsspellbooks.registry.WsbItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
@@ -66,6 +68,18 @@ public class MaidLoadoutTagsProvider extends ItemTagsProvider {
         addChestplateTags();
         addLeggingsTags();
         addBootsTags();
+        addFocusTags();
+    }
+
+    /**
+     * 把灵狐精魂装进 winefox_hex_focus，并 additive 写入 irons_spellbooks:school_focus，
+     * 让 Iron's Scroll Forge GUI 识别本学派 focus。
+     */
+    private void addFocusTags() {
+        tag(WsbItemTags.WINEFOX_HEX_FOCUS)
+            .add(WsbItems.VULPINE_ANIMA.get());
+        tag(WsbItemTags.IRONS_SCHOOL_FOCUS)
+            .addOptionalTag(WsbItemTags.WINEFOX_HEX_FOCUS);
     }
 
     private void addWeaponTags() {
