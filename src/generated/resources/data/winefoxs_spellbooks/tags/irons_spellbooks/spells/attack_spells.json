@@ -669,10 +669,6 @@
       "required": false
     },
     {
-      "id": "hazennstuff:brimstone_hellblast",
-      "required": false
-    },
-    {
       "id": "hazennstuff:scorching_slash",
       "required": false
     },
