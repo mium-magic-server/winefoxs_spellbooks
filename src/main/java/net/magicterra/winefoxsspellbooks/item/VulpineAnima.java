@@ -8,6 +8,9 @@ import net.minecraft.world.item.Rarity;
  * <p>
  * 三重身份：学派图鉴 icon、Scroll Forge 卷轴锻造材料、高阶法术媒介。
  * 获取方式三路并行：女仆击杀妖精、宝箱战利品、满好感度女仆晨赠。
+ * <p>
+ * hover tooltip 与 JEI 信息页由 {@code WsbItemDescTooltipHandler} 与 {@code WsbJeiPlugin}
+ * 通过 {@code item.winefoxs_spellbooks.vulpine_anima.desc} 翻译键自动注入。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-05-11
