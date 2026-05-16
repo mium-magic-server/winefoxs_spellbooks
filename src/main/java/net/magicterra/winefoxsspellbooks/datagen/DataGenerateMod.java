@@ -1,10 +1,14 @@
 package net.magicterra.winefoxsspellbooks.datagen;
 
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
+import net.minecraft.data.loot.LootTableProvider;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ConfigTracker;
@@ -46,7 +50,7 @@ public class DataGenerateMod {
         };
         generator.addProvider(event.includeServer(), blockTagsProvider);
 
-        // Item tags provider for maid loadout
+        // Item tags provider
         generator.addProvider(event.includeServer(), new MaidLoadoutTagsProvider(
             output, lookupProvider, blockTagsProvider.contentsGetter(), WinefoxsSpellbooks.MODID, existingFileHelper));
 
@@ -58,6 +62,14 @@ public class DataGenerateMod {
 
         // Entity tags provider (maid tag)
         generator.addProvider(event.includeServer(), new MaidEntityTagsProvider(output, lookupProvider, WinefoxsSpellbooks.MODID, existingFileHelper));
+
+        // Loot tables
+        generator.addProvider(event.includeServer(), new LootTableProvider(
+            output,
+            Set.of(),
+            List.of(new LootTableProvider.SubProviderEntry(
+                provider -> new WsbGiftLootSubProvider(), LootContextParamSets.GIFT)),
+            lookupProvider));
 
         // Client providers
         generator.addProvider(event.includeClient(), new ItemModelGenerator(output, existingFileHelper));

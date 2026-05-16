@@ -71,6 +71,12 @@ public class Config {
 
     private static ModConfigSpec.ConfigValue<com.electronwill.nightconfig.core.Config> EXTRA_SPELL_CAUSED_EFFECTS;
 
+    private static ModConfigSpec.BooleanValue VULPINE_GIFT_ENABLED;
+
+    private static ModConfigSpec.DoubleValue VULPINE_GIFT_RADIUS;
+
+    private static ModConfigSpec.BooleanValue VULPINE_GIFT_REQUIRE_FULL_SLEEP;
+
     private final static String SPELL_ID_PLACEHOLDER = "irons_spellbooks:fireball";
 
     /** 空的配置对象，用于配置默认值 */
@@ -200,6 +206,22 @@ public class Config {
             .define("extra_spell_caused_effects", EMPTY_CONFIG, Config::checkSpellCausedEffectsMap);
 
         builder.pop();
+
+        builder.translation(translateKey("vulpine_gift")).push("vulpine_gift");
+
+        VULPINE_GIFT_ENABLED = builder.comment("Enable max-favorability maid morning gift on player wakeup (Default: true)")
+            .translation(translateKey("vulpine_gift.enabled"))
+            .define("vulpineGiftEnabled", true);
+
+        VULPINE_GIFT_RADIUS = builder.comment("Radius (in blocks) around the bed to search for an eligible maid gifter (Default: 8.0)")
+            .translation(translateKey("vulpine_gift.radius"))
+            .defineInRange("vulpineGiftRadius", 8.0D, 1.0D, 32.0D);
+
+        VULPINE_GIFT_REQUIRE_FULL_SLEEP = builder.comment("Require a normal full sleep cycle. If false, gifts can also be given when waking immediately due to monsters/thunder (Default: true)")
+            .translation(translateKey("vulpine_gift.require_full_sleep"))
+            .define("vulpineGiftRequireFullSleep", true);
+
+        builder.pop();
     }
 
     static final ModConfigSpec SPEC = BUILDER.build();
@@ -302,6 +324,18 @@ public class Config {
             map.put(entry.getKey(), entry.getValue());
         }
         return map;
+    }
+
+    public static boolean isVulpineGiftEnabled() {
+        return VULPINE_GIFT_ENABLED.getAsBoolean();
+    }
+
+    public static double getVulpineGiftRadius() {
+        return VULPINE_GIFT_RADIUS.getAsDouble();
+    }
+
+    public static boolean isVulpineGiftRequireFullSleep() {
+        return VULPINE_GIFT_REQUIRE_FULL_SLEEP.getAsBoolean();
     }
 
     public static Map<String, String> getExtraSpellCausedEffects() {

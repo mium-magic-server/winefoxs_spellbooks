@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:gift",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "winefoxs_spellbooks:vulpine_anima",
+          "weight": 95
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 5
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "winefoxs_spellbooks:gameplay/maid_morning_gift"
+}

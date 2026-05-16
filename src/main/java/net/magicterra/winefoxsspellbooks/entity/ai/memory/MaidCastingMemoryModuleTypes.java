@@ -35,4 +35,7 @@ public class MaidCastingMemoryModuleTypes {
 
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Boolean>> IS_HOVERING =
         MAID_CASTING_MEMORY_MODULE_TYPES.register("is_hovering", (key) -> new MemoryModuleType<>(Optional.empty()));
+
+    public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<MaidGiftDelivery>> GIFT_DELIVERY =
+        MAID_CASTING_MEMORY_MODULE_TYPES.register("gift_delivery", (key) -> new MemoryModuleType<>(Optional.empty()));
 }

@@ -52,6 +52,19 @@ public class WsbAttachments {
             .build()
     );
 
+    /**
+     * 女仆晨赠灵狐精魂的"上次赠送游戏时间"
+     * <p>
+     * 跨女仆共享：哪只满好感度女仆送过都会写到玩家身上，防多女仆刷魂。
+     * <p>
+     * 单位：tick（{@link net.minecraft.world.level.Level#getGameTime()}）。0L 表示从未触发。
+     * 选 gameTime 而不是 dayTime，是因为 dayTime 可被 {@code /time set} 随意拨动，
+     * 而 gameTime 单调递增、不受玩家命令影响。
+     */
+    public static final Supplier<AttachmentType<Long>> LAST_VULPINE_GIFT_TIME = ATTACHMENT_TYPES.register(
+        "last_vulpine_gift_time", () -> AttachmentType.builder(() -> 0L).serialize(Codec.LONG).build()
+    );
+
     public static void register(IEventBus modBus) {
         ATTACHMENT_TYPES.register(modBus);
     }
