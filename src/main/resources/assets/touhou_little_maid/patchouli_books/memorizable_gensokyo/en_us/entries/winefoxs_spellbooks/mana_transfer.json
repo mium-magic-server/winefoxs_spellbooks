@@ -1,0 +1,12 @@
+{
+  "name": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.mana_transfer.name",
+  "icon": "winefoxs_spellbooks:textures/gui/spell_icons/mana_transfer.png",
+  "category": "touhou_little_maid:winefoxs_spellbooks",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.mana_transfer.pages.0.text"
+    }
+  ],
+  "sortnum": 8
+}

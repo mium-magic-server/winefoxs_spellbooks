@@ -1,0 +1,22 @@
+{
+  "name": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.winefox_hex_school.name",
+  "icon": "winefoxs_spellbooks:vulpine_anima",
+  "category": "touhou_little_maid:winefoxs_spellbooks",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.winefox_hex_school.pages.0.text"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "winefoxs_spellbooks:vulpine_anima",
+      "title": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.winefox_hex_school.pages.1.title",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.winefox_hex_school.pages.1.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.winefox_hex_school.pages.2.text"
+    }
+  ],
+  "sortnum": 6
+}
