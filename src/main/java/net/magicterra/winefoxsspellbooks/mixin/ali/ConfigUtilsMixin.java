@@ -2,6 +2,7 @@ package net.magicterra.winefoxsspellbooks.mixin.ali;
 
 import com.yanny.ali.configuration.AliConfig;
 import com.yanny.ali.configuration.GameplayLootCategory;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
@@ -69,8 +70,12 @@ public abstract class ConfigUtilsMixin {
             List.of(LOOT_TABLE_PATTERN)
         );
 
+        // AliConfig.CODEC 反序列化出来的 list 是不可变的（仅 disabledEntities 被 ALI 自己 wrap 进 ArrayList），
+        // 直接 .add 会抛 UnsupportedOperationException。先 copy 成可变副本再写回字段。
+        List<GameplayLootCategory> mutable = new ArrayList<>(config.gameplayCategories);
         // 必须插在末尾的 `.*` 兜底之前 —— ALI 用 findFirst 取第一个 validate 通过的类别。
         // 放最前最稳：我们的正则极窄，不会误伤别人。
-        config.gameplayCategories.add(0, category);
+        mutable.add(0, category);
+        config.gameplayCategories = mutable;
     }
 }
