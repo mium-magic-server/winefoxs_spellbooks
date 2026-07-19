@@ -6,6 +6,8 @@ import io.redspace.ironsspellbooks.IronsSpellbooks;
 import java.util.concurrent.CompletableFuture;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.loot.AddItemLootModifier;
+import net.magicterra.winefoxsspellbooks.loot.AddSchoolScrollLootModifier;
+import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.registry.WsbEntities;
 import net.magicterra.winefoxsspellbooks.registry.WsbItems;
 import net.minecraft.advancements.critereon.EntityPredicate;
@@ -25,13 +27,15 @@ import net.neoforged.neoforge.common.data.GlobalLootModifierProvider;
 import net.neoforged.neoforge.common.loot.LootTableIdCondition;
 
 /**
- * 灵狐精魂掉落注入
+ * 灵狐精魂掉落注入 + Winefox Hex 卷轴地牢注入
  * <p>
  * 路 1：女仆击杀妖精时按概率掉落（驯化 25%、召唤 35%，Looting 每级 +5%）。<br>
- * 路 2：在原版 / Iron's Spells 的若干宝箱表里按概率追加。
+ * 路 2：在原版 / Iron's Spells 的若干宝箱表里按概率追加灵狐精魂。<br>
+ * 路 3：在原版 / Iron's Spells 的若干宝箱表里按概率追加 Winefox Hex 学派卷轴。
  * <p>
  * 全部通过 vanilla {@code entity_properties} / {@code random_chance(_with_enchanted_bonus)} + NeoForge
- * {@code loot_table_id} 条件组合实现，{@link AddItemLootModifier} 只负责在条件全通过后塞 ItemStack。
+ * {@code loot_table_id} 条件组合实现，{@link AddItemLootModifier} / {@link AddSchoolScrollLootModifier}
+ * 只负责在条件全通过后塞 ItemStack。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-05-11
@@ -77,6 +81,18 @@ public class WsbGlobalLootModifierProvider extends GlobalLootModifierProvider {
             ironsId("chests/catacombs/coffin_loot"), 0.25f, ConstantInt.of(1));
         addChest("chest_citadel_tomes",
             ironsId("chests/citadel/citadel_tomes"), 0.35f, UniformInt.of(1, 2));
+
+        // ---- 路 3：Winefox Hex 卷轴 ----
+        addScroll("scroll_pyromancer_old_cask",
+            ironsId("chests/pyromancer_tower/old_cask"), 0.30f, 0.0f, 0.4f);
+        addScroll("scroll_citadel_tomes",
+            ironsId("chests/citadel/citadel_tomes"), 0.30f, 0.2f, 0.7f);
+        addScroll("scroll_catacombs_coffin",
+            ironsId("chests/catacombs/coffin_loot"), 0.25f, 0.1f, 0.6f);
+        addScroll("scroll_stronghold_library",
+            ResourceLocation.withDefaultNamespace("chests/stronghold_library"), 0.20f, 0.1f, 0.5f);
+        addScroll("scroll_nether_bridge",
+            ResourceLocation.withDefaultNamespace("chests/nether_bridge"), 0.15f, 0.0f, 0.4f);
     }
 
     private static ResourceLocation ironsId(String path) {
@@ -92,6 +108,15 @@ public class WsbGlobalLootModifierProvider extends GlobalLootModifierProvider {
 
     private void addDrop(String name, IntProvider count, LootItemCondition... conditions) {
         this.add(name, new AddItemLootModifier(conditions, WsbItems.VULPINE_ANIMA.get(), count));
+    }
+
+    private void addScroll(String name, ResourceLocation tableId, float chance, float minQuality, float maxQuality) {
+        LootItemCondition[] conditions = {
+            LootTableIdCondition.builder(tableId).build(),
+            LootItemRandomChanceCondition.randomChance(chance).build()
+        };
+        this.add(name, new AddSchoolScrollLootModifier(conditions,
+            WinefoxHexHelper.WINEFOX_HEX_ID, minQuality, maxQuality));
     }
 
     private static LootItemCondition killerOfType(EntityType<?> type) {

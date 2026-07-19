@@ -8,7 +8,12 @@
     "winefoxs_spellbooks:chest_pyromancer_old_cask",
     "winefoxs_spellbooks:chest_pyromancer_supplies",
     "winefoxs_spellbooks:chest_catacombs_coffin",
-    "winefoxs_spellbooks:chest_citadel_tomes"
+    "winefoxs_spellbooks:chest_citadel_tomes",
+    "winefoxs_spellbooks:scroll_pyromancer_old_cask",
+    "winefoxs_spellbooks:scroll_citadel_tomes",
+    "winefoxs_spellbooks:scroll_catacombs_coffin",
+    "winefoxs_spellbooks:scroll_stronghold_library",
+    "winefoxs_spellbooks:scroll_nether_bridge"
   ],
   "replace": false
 }

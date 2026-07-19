@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import java.util.function.Supplier;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.loot.AddItemLootModifier;
+import net.magicterra.winefoxsspellbooks.loot.AddSchoolScrollLootModifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -21,6 +22,9 @@ public class WsbLootModifiers {
 
     public static final Supplier<MapCodec<AddItemLootModifier>> ADD_ITEM =
         SERIALIZERS.register("add_item", () -> AddItemLootModifier.CODEC);
+
+    public static final Supplier<MapCodec<AddSchoolScrollLootModifier>> ADD_SCHOOL_SCROLL =
+        SERIALIZERS.register("add_school_scroll", () -> AddSchoolScrollLootModifier.CODEC);
 
     public static void register(IEventBus modBus) {
         SERIALIZERS.register(modBus);

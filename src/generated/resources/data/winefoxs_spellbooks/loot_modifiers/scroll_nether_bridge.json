@@ -1,0 +1,16 @@
+{
+  "type": "winefoxs_spellbooks:add_school_scroll",
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:chests/nether_bridge"
+    },
+    {
+      "chance": 0.15,
+      "condition": "minecraft:random_chance"
+    }
+  ],
+  "max_quality": 0.4,
+  "min_quality": 0.0,
+  "school": "winefoxs_spellbooks:winefox_hex"
+}
