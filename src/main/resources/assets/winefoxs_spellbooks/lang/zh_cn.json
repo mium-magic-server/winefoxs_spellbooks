@@ -43,6 +43,8 @@
   "entity.winefoxs_spellbooks.summoned_maid.with_model": "召唤出的%s",
   "entity.winefoxs_spellbooks.summoned_maid_broom": "召唤出的扫帚",
   "spell.winefoxs_spellbooks.summon_maid": "召唤女仆",
+  "spell.winefoxs_spellbooks.crescent_brand": "残月烙印",
+  "spell.winefoxs_spellbooks.crescent_brand.desc": "对单个目标施加残月烙印标记，令其在后续酒狐巫法效果的联动中处于易伤状态。",
   "commands.winefoxs_spellbooks.wsb.summon.player_only": "此命令必须由玩家执行，或使用 /wsb summon <target> 指定目标玩家",
   "commands.winefoxs_spellbooks.wsb.summon.loadout_not_found": "未找到装备配置: %s",
   "commands.winefoxs_spellbooks.wsb.summon.loadout_random": "随机",

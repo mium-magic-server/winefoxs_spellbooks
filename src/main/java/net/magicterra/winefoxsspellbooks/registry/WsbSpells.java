@@ -4,6 +4,7 @@ import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import java.util.function.Supplier;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.magic.spell.CrescentBrandSpell;
 import net.magicterra.winefoxsspellbooks.magic.spell.ManaTransferSpell;
 import net.magicterra.winefoxsspellbooks.magic.spell.SummonMaidSpell;
 import net.neoforged.bus.api.IEventBus;
@@ -28,4 +29,5 @@ public class WsbSpells {
 
     public static final Supplier<AbstractSpell> SUMMON_MAID_SPELL = registerSpell(new SummonMaidSpell());
     public static final Supplier<AbstractSpell> MANA_TRANSFER_SPELL = registerSpell(new ManaTransferSpell());
+    public static final Supplier<AbstractSpell> CRESCENT_BRAND_SPELL = registerSpell(new CrescentBrandSpell());
 }

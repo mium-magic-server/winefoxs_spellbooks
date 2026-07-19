@@ -43,6 +43,8 @@
   "entity.winefoxs_spellbooks.summoned_maid.with_model": "Summoned %s",
   "entity.winefoxs_spellbooks.summoned_maid_broom": "Summoned Broom",
   "spell.winefoxs_spellbooks.summon_maid": "Summon Maid",
+  "spell.winefoxs_spellbooks.crescent_brand": "Crescent Brand",
+  "spell.winefoxs_spellbooks.crescent_brand.desc": "Brands a single enemy with a crescent mark, leaving them vulnerable to further Winefox Hex interactions.",
   "commands.winefoxs_spellbooks.wsb.summon.player_only": "This command must be executed by a player or use /wsb summon <target>",
   "commands.winefoxs_spellbooks.wsb.summon.loadout_not_found": "Loadout not found: %s",
   "commands.winefoxs_spellbooks.wsb.summon.loadout_random": "Random",
