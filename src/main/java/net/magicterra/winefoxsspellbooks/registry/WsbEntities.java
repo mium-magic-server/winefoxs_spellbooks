@@ -5,6 +5,8 @@ import net.magicterra.winefoxsspellbooks.entity.spells.FoxshadeWispProjectile;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
 import net.magicterra.winefoxsspellbooks.entity.spells.TipsyMistCloud;
+import net.magicterra.winefoxsspellbooks.entity.spells.WineBombProjectile;
+import net.magicterra.winefoxsspellbooks.entity.spells.WinePoolCloud;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -31,6 +33,12 @@ public class WsbEntities {
 
     /** 醉狐之雾的紫粉雾团。AoeEntity 子类,无 LivingEntity 属性,不进 addEntityAttributeEvent。 */
     public static final DeferredHolder<EntityType<?>, EntityType<TipsyMistCloud>> TIPSY_MIST_CLOUD = ENTITY_TYPES.register("tipsy_mist_cloud", () -> TipsyMistCloud.TYPE);
+
+    /** 狐酿炸弹的投掷弹体。AbstractMagicProjectile 子类,无 LivingEntity 属性,不进 addEntityAttributeEvent。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<WineBombProjectile>> WINE_BOMB = ENTITY_TYPES.register("wine_bomb", () -> WineBombProjectile.TYPE);
+
+    /** 狐酿炸弹落点铺开的酒池。AoeEntity 子类,无 LivingEntity 属性,不进 addEntityAttributeEvent。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<WinePoolCloud>> WINE_POOL = ENTITY_TYPES.register("wine_pool", () -> WinePoolCloud.TYPE);
 
     /**
      * 注册实体属性

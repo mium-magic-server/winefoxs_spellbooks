@@ -11,6 +11,7 @@ import net.magicterra.winefoxsspellbooks.magic.spell.FoxshadeWispsSpell;
 import net.magicterra.winefoxsspellbooks.magic.spell.ManaTransferSpell;
 import net.magicterra.winefoxsspellbooks.magic.spell.SummonMaidSpell;
 import net.magicterra.winefoxsspellbooks.magic.spell.TipsyMistSpell;
+import net.magicterra.winefoxsspellbooks.magic.spell.VintnersBombSpell;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -38,4 +39,5 @@ public class WsbSpells {
     public static final Supplier<AbstractSpell> CRESCENT_MANTLE_SPELL = registerSpell(new CrescentMantleSpell());
     public static final Supplier<AbstractSpell> DECANT_THE_BIND_SPELL = registerSpell(new DecantTheBindSpell());
     public static final Supplier<AbstractSpell> TIPSY_MIST_SPELL = registerSpell(new TipsyMistSpell());
+    public static final Supplier<AbstractSpell> VINTNERS_BOMB_SPELL = registerSpell(new VintnersBombSpell());
 }

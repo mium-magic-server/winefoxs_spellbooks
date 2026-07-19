@@ -7,7 +7,10 @@ import net.magicterra.winefoxsspellbooks.entity.spells.FoxshadeWispProjectile;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
 import net.magicterra.winefoxsspellbooks.entity.spells.TipsyMistCloud;
+import net.magicterra.winefoxsspellbooks.entity.spells.WineBombProjectile;
+import net.magicterra.winefoxsspellbooks.entity.spells.WinePoolCloud;
 import net.minecraft.client.renderer.entity.NoopRenderer;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -40,5 +43,11 @@ public class ClientSetup {
 
         // 醉狐之雾的雾团：本体不绘模型，视觉完全走 AoeEntity 自带的粒子（ambientParticles）
         evt.registerEntityRenderer(TipsyMistCloud.TYPE, NoopRenderer::new);
+
+        // 狐酿炸弹：渲染成紫粉染色的喷溅药水瓶（ItemSupplier）
+        evt.registerEntityRenderer(WineBombProjectile.TYPE, ThrownItemRenderer::new);
+
+        // 酒池：本体不绘模型，视觉完全走 AoeEntity 自带的粒子（ambientParticles）
+        evt.registerEntityRenderer(WinePoolCloud.TYPE, NoopRenderer::new);
     }
 }
