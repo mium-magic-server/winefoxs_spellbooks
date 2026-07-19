@@ -50,9 +50,19 @@ public class WsbCommand {
     private static final int DEFAULT_SUMMON_DURATION = 600;
 
     /**
-     * 永久召唤的持续时间（tick）- 约 68 年
+     * 永久召唤的目标过期 tick。Iron's {@code SummonManager} 全程用 int tick 运算且无钳制，两处会溢出：
+     * <ul>
+     *   <li>召唤时 {@code expirationServerTick = getTickCount() + duration}——直接传
+     *       {@code Integer.MAX_VALUE} 当时长立即溢出为负，despawn 判定 {@code expirationServerTick < tick}
+     *       瞬间成立，召唤物秒消；</li>
+     *   <li>主人登出时保存 {@code remaining = expirationTick - 当前 tick}，重新登入按
+     *       {@code 当前 tick + remaining} 还原——若过期 tick 定在 {@code MAX_VALUE}，同一服务器会话内
+     *       重登必然再次溢出，「永久」召唤在重登后约 1 秒被解除。</li>
+     * </ul>
+     * 取 {@code MAX_VALUE / 2}（约 1.7 年连续运行）：只要服务器单次运行不超此数，
+     * 「召唤时长 = 目标 tick - 当前 tick」与「重登还原 = 当前 tick + remaining」均不会越过 int 上限。
      */
-    private static final int PERMANENT_DURATION_TICKS = Integer.MAX_VALUE;
+    private static final int PERMANENT_EXPIRATION_TICK = Integer.MAX_VALUE / 2;
 
     /**
      * 法术 ID 自动补全提供器
@@ -197,9 +207,9 @@ public class WsbCommand {
             }
         }
 
-        // 2. 计算持续时间（tick）
+        // 2. 计算持续时间（tick）。-1=永久：持续 = 目标过期 tick - 当前 tick（溢出考量见常量注释）。
         int ticks = duration == -1
-            ? PERMANENT_DURATION_TICKS
+            ? PERMANENT_EXPIRATION_TICK - level.getServer().getTickCount()
             : duration * 20;
 
         // 3. 计算默认飞行概率
