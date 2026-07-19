@@ -1,22 +1,6 @@
 {
   "values": [
     {
-      "id": "irons_spellbooks:blood_step",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:teleport",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:frost_step",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:ascension",
-      "required": false
-    },
-    {
       "id": "aero_additions:dash",
       "required": false
     },
@@ -53,15 +37,31 @@
       "required": false
     },
     {
-      "id": "iss_magicfromtheeast:cloud_ride",
-      "required": false
-    },
-    {
       "id": "hazennstuff:prismatic_shift",
       "required": false
     },
     {
       "id": "hazennstuff:cinderous_step",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:blood_step",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:teleport",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:frost_step",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:ascension",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:cloud_ride",
       "required": false
     }
   ]

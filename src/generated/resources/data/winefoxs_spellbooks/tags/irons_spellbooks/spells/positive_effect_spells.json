@@ -1,27 +1,19 @@
 {
   "values": [
     {
-      "id": "irons_spellbooks:fortify",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:haste",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:cleanse",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:frostbite",
-      "required": false
-    },
-    {
       "id": "aero_additions:feather_fall",
       "required": false
     },
     {
       "id": "cataclysm_spellbooks:forgone_rage",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:pharaohs_wrath",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:ravenous_revenant",
       "required": false
     },
     {
@@ -37,7 +29,35 @@
       "required": false
     },
     {
+      "id": "ess_requiem:nights_cover",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:overwhelming_light",
+      "required": false
+    },
+    {
       "id": "firesenderexpansion:aspect_of_the_shulker",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:moonkissed",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:fortify",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:haste",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:cleanse",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:frostbite",
       "required": false
     },
     "winefoxs_spellbooks:mana_transfer"

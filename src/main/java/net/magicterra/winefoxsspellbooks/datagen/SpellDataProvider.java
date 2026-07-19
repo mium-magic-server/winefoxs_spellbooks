@@ -16,6 +16,7 @@ import net.magicterra.winefoxsspellbooks.datagen.spelldata.HazenNStuffData;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.IronsSpellbooksData;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.MagicFromTheEastData;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.SpellDataContext;
+import net.magicterra.winefoxsspellbooks.datagen.spelldata.WinefoxsSpellbooksData;
 import net.magicterra.winefoxsspellbooks.magic.data.SpellCastingRangeData;
 import net.magicterra.winefoxsspellbooks.magic.data.SpellCausedEffectData;
 import net.minecraft.data.CachedOutput;
@@ -54,6 +55,7 @@ public class SpellDataProvider implements DataProvider {
         HazenNStuffData.contribute(ctx);
         IronsSpellbooksData.contribute(ctx);
         MagicFromTheEastData.contribute(ctx);
+        WinefoxsSpellbooksData.contribute(ctx);
 
         return CompletableFuture.allOf(
             saveJson(cache, SpellCastingRangeData.CODEC, rangeBuilder.build(), "default_casting_range.json", "spell casting range data"),

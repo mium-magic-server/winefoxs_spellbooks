@@ -2,6 +2,30 @@
   "values": [
     {
       "range": 2.0,
+      "spell": "cataclysm_spellbooks:abyssal_slash"
+    },
+    {
+      "range": 2.0,
+      "spell": "discerning_the_eldritch:esoteric_strike"
+    },
+    {
+      "range": 2.0,
+      "spell": "discerning_the_eldritch:soul_slice"
+    },
+    {
+      "range": 2.0,
+      "spell": "ess_requiem:rip_and_tear"
+    },
+    {
+      "range": 2.0,
+      "spell": "hazennstuff:scorching_slash"
+    },
+    {
+      "range": 2.0,
+      "spell": "hazennstuff:nights_edge_strike"
+    },
+    {
+      "range": 2.0,
       "spell": "irons_spellbooks:divine_smite"
     },
     {
@@ -17,40 +41,32 @@
       "spell": "irons_spellbooks:healing_circle"
     },
     {
-      "range": 2.0,
-      "spell": "discerning_the_eldritch:esoteric_strike"
-    },
-    {
-      "range": 2.0,
-      "spell": "discerning_the_eldritch:soul_slice"
-    },
-    {
-      "range": 2.0,
-      "spell": "cataclysm_spellbooks:abyssal_slash"
-    },
-    {
-      "range": 2.0,
-      "spell": "ess_requiem:rip_and_tear"
-    },
-    {
-      "range": 2.0,
-      "spell": "ess_requiem:cataphract_slam"
-    },
-    {
-      "range": 2.0,
-      "spell": "ess_requiem:cataphract_tackle"
-    },
-    {
-      "range": 2.0,
-      "spell": "hazennstuff:scorching_slash"
-    },
-    {
-      "range": 2.0,
-      "spell": "hazennstuff:nights_edge_strike"
-    },
-    {
       "range": 15.0,
       "spell": "irons_spellbooks:none"
+    },
+    {
+      "range": 16.0,
+      "spell": "winefoxs_spellbooks:crescent_brand"
+    },
+    {
+      "range": 12.0,
+      "spell": "winefoxs_spellbooks:foxshade_wisps"
+    },
+    {
+      "range": 6.0,
+      "spell": "winefoxs_spellbooks:crescent_mantle"
+    },
+    {
+      "range": 16.0,
+      "spell": "winefoxs_spellbooks:decant_the_bind"
+    },
+    {
+      "range": 24.0,
+      "spell": "winefoxs_spellbooks:tipsy_mist"
+    },
+    {
+      "range": 20.0,
+      "spell": "winefoxs_spellbooks:vintners_bomb"
     }
   ]
 }

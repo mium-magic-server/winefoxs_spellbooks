@@ -1,42 +1,6 @@
 {
   "values": [
     {
-      "id": "irons_spellbooks:heartstop",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:abyssal_shroud",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:echoing_strikes",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:evasion",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:invisibility",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:shield",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:charge",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:oakskin",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:spider_aspect",
-      "required": false
-    },
-    {
       "id": "aero_additions:airstep",
       "required": false
     },
@@ -113,6 +77,46 @@
       "required": false
     },
     {
+      "id": "hazennstuff:parry",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:heartstop",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:abyssal_shroud",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:echoing_strikes",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:evasion",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:invisibility",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:shield",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:charge",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:oakskin",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:spider_aspect",
+      "required": false
+    },
+    {
       "id": "iss_magicfromtheeast:bagua_array_circle",
       "required": false
     },
@@ -120,9 +124,6 @@
       "id": "iss_magicfromtheeast:drapes_of_reflection",
       "required": false
     },
-    {
-      "id": "hazennstuff:parry",
-      "required": false
-    }
+    "winefoxs_spellbooks:crescent_mantle"
   ]
 }

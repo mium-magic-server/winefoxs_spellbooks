@@ -1,6 +1,10 @@
 {
   "values": [
     {
+      "id": "discerning_the_eldritch:mend_flesh",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:greater_heal",
       "required": false
     },
@@ -16,9 +20,6 @@
       "id": "irons_spellbooks:gluttony",
       "required": false
     },
-    {
-      "id": "discerning_the_eldritch:mend_flesh",
-      "required": false
-    }
+    "winefoxs_spellbooks:decant_the_bind"
   ]
 }

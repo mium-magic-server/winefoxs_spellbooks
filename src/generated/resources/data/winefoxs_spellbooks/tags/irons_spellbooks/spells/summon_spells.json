@@ -1,22 +1,6 @@
 {
   "values": [
     {
-      "id": "irons_spellbooks:raise_dead",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:summon_swords",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:summon_vex",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:summon_polar_bear",
-      "required": false
-    },
-    {
       "id": "cataclysm_spellbooks:conjure_koboldiator",
       "required": false
     },
@@ -53,6 +37,38 @@
       "required": false
     },
     {
+      "id": "ess_requiem:arm_of_decay_insta_raise",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:field_of_mourning",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:maggot_burst",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:call_forth_terraprisma",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:raise_dead",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:summon_swords",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:summon_vex",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:summon_polar_bear",
+      "required": false
+    },
+    {
       "id": "iss_magicfromtheeast:punishing_heaven",
       "required": false
     },
@@ -74,10 +90,6 @@
     },
     {
       "id": "snowwaifuspell:summon_snow_queen",
-      "required": false
-    },
-    {
-      "id": "hazennstuff:call_forth_terraprisma",
       "required": false
     },
     "winefoxs_spellbooks:summon_maid"

@@ -1,6 +1,62 @@
 {
   "values": [
     {
+      "id": "aero_additions:updraft",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:gravity_storm",
+      "required": false
+    },
+    {
+      "id": "cataclysm_spellbooks:pilfer",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:ravenous_revenant",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:boogie_woogie",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:silence",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:crystalline_carver",
+      "required": false
+    },
+    {
+      "id": "dreamless_spells:doorway_effect",
+      "required": false
+    },
+    {
+      "id": "dreamless_spells:drained",
+      "required": false
+    },
+    {
+      "id": "dreamless_spells:dullard",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:finality_of_decay",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:eternal_battlefield",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:displacement_cage",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:golden_shower",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:slow",
       "required": false
     },
@@ -25,36 +81,10 @@
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:gravity_storm",
+      "id": "iss_magicfromtheeast:soul_burst",
       "required": false
     },
-    {
-      "id": "cataclysm_spellbooks:pilfer",
-      "required": false
-    },
-    {
-      "id": "discerning_the_eldritch:silence",
-      "required": false
-    },
-    {
-      "id": "dreamless_spells:doorway_effect",
-      "required": false
-    },
-    {
-      "id": "ess_requiem:finality_of_decay",
-      "required": false
-    },
-    {
-      "id": "ess_requiem:eternal_battlefield",
-      "required": false
-    },
-    {
-      "id": "firesenderexpansion:displacement_cage",
-      "required": false
-    },
-    {
-      "id": "hazennstuff:golden_shower",
-      "required": false
-    }
+    "winefoxs_spellbooks:crescent_brand",
+    "winefoxs_spellbooks:tipsy_mist"
   ]
 }

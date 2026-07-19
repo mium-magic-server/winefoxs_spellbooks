@@ -1,71 +1,7 @@
 {
   "values": [
     {
-      "id": "irons_spellbooks:eldritch_blast",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:flaming_barrage",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:wall_of_fire",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:raise_hell",
-      "required": false
-    },
-    {
-      "id": "gtbcs_geomancy_plus:geo_conductor",
-      "required": false
-    },
-    {
-      "id": "gtbcs_geomancy_plus:tremor_spike",
-      "required": false
-    },
-    {
-      "id": "ess_requiem:rip_and_tear",
-      "required": false
-    },
-    {
-      "id": "ess_requiem:boiling_blood",
-      "required": false
-    },
-    {
-      "id": "ess_requiem:twilight_assault",
-      "required": false
-    },
-    {
-      "id": "firesenderexpansion:hollow_crystal",
-      "required": false
-    },
-    {
-      "id": "firesenderexpansion:binary_stars",
-      "required": false
-    },
-    {
-      "id": "firesenderexpansion:scintillating_stride",
-      "required": false
-    },
-    {
-      "id": "discerning_the_eldritch:rift_walker",
-      "required": false
-    },
-    {
-      "id": "discerning_the_eldritch:boogie_woogie",
-      "required": false
-    },
-    {
-      "id": "discerning_the_eldritch:blades_of_rancor",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:anchoring_kunai",
-      "required": false
-    },
-    {
-      "id": "iss_magicfromtheeast:bone_hands",
+      "id": "aero_additions:updraft",
       "required": false
     },
     {
@@ -83,6 +19,119 @@
     {
       "id": "cataclysm_spellbooks:abyss_fireball",
       "required": false
-    }
+    },
+    {
+      "id": "discerning_the_eldritch:rift_walker",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:boogie_woogie",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:blades_of_rancor",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:crystalline_carver",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:conjure_forsaken_aid",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:rip_and_tear",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:boiling_blood",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:twilight_assault",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:nights_cover",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:overwhelming_light",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:hollow_crystal",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:binary_stars",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:scintillating_stride",
+      "required": false
+    },
+    {
+      "id": "gtbcs_geomancy_plus:geo_conductor",
+      "required": false
+    },
+    {
+      "id": "gtbcs_geomancy_plus:tremor_spike",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:dazzling_obliteration",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:evercomet_barrage",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:trident_jetstream",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:golden_shower",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:hailstorm",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:call_forth_terraprisma",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:eldritch_blast",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:flaming_barrage",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:wall_of_fire",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:raise_hell",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:anchoring_kunai",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:bone_hands",
+      "required": false
+    },
+    {
+      "id": "snowwaifuspell:summon_snow_queen",
+      "required": false
+    },
+    "winefoxs_spellbooks:foxshade_wisps"
   ]
 }
