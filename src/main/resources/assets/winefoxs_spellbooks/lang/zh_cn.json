@@ -49,6 +49,8 @@
   "spell.winefoxs_spellbooks.foxshade_wisps.desc": "逐发施法：每按一次放出一发追踪狐影，最多 6 发；各发侧翼包抄打出酒狐巫法伤害，第 6 发触发残月爆发。",
   "spell.winefoxs_spellbooks.crescent_mantle": "残月披风",
   "spell.winefoxs_spellbooks.crescent_mantle.desc": "为自己与附近自家女仆披上残月纱幕：获得伤害吸收与短暂隐身，危局脱身。",
+  "spell.winefoxs_spellbooks.decant_the_bind": "醒酒之礼",
+  "spell.winefoxs_spellbooks.decant_the_bind.desc": "斟去沉渣：自身或视线所指女仆的负面效果时长减半；高酒龄时直接尽数解除。",
   "entity.winefoxs_spellbooks.foxshade_wisp": "酒杯狐影",
   "commands.winefoxs_spellbooks.wsb.summon.player_only": "此命令必须由玩家执行，或使用 /wsb summon <target> 指定目标玩家",
   "commands.winefoxs_spellbooks.wsb.summon.loadout_not_found": "未找到装备配置: %s",
