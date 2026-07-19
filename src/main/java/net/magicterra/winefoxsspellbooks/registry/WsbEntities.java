@@ -1,6 +1,7 @@
 package net.magicterra.winefoxsspellbooks.registry;
 
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.entity.spells.FoxshadeWispProjectile;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
 import net.minecraft.core.registries.Registries;
@@ -23,6 +24,9 @@ public class WsbEntities {
     public static DeferredHolder<EntityType<?>, EntityType<SummonedEntityMaid>> SUMMONED_MAID = ENTITY_TYPES.register("summoned_maid", () -> SummonedEntityMaid.TYPE);
 
     public static final DeferredHolder<EntityType<?>, EntityType<SummonedMaidBroom>> SUMMONED_MAID_BROOM = ENTITY_TYPES.register("summoned_maid_broom", () -> SummonedMaidBroom.TYPE);
+
+    /** 酒杯狐影弹。投射物实体，无 LivingEntity 属性，故不进 addEntityAttributeEvent。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<FoxshadeWispProjectile>> FOXSHADE_WISP = ENTITY_TYPES.register("foxshade_wisp", () -> FoxshadeWispProjectile.TYPE);
 
     /**
      * 注册实体属性

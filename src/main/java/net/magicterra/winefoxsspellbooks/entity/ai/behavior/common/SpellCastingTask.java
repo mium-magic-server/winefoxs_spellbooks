@@ -164,8 +164,9 @@ public class SpellCastingTask extends Behavior<Mob> {
         PlayerRecasts playerRecasts = magicEntity.getMagicData().getPlayerRecasts();
         boolean hasRecastForSpell = playerRecasts.hasRecastForSpell(spell);
 
-        //Make sure cast is valid. if not, try again shortly
-        if (currentSpell != SpellData.EMPTY && !hasRecastForSpell) {
+        // 存在未完成的二段咏唱时，只对允许女仆逐发的法术继续施放；
+        // 其余法术（如召唤类）重复施放会触发收回等副作用，等待 recast 超时即可
+        if (currentSpell != SpellData.EMPTY && (!hasRecastForSpell || MaidSpellRegistry.maidShouldRecast(spell))) {
             LivingEntity target = mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
                 .or(() -> mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
                 .orElse(null);
