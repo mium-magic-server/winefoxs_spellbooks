@@ -91,5 +91,6 @@
   "death.attack.winefox_hex_magic": "%1$s was overwhelmed by winefox hex",
   "death.attack.winefox_hex_magic.player": "%1$s succumbed to %2$s's winefox hex",
   "emi.category.winefoxs_spellbooks.maid_morning_gift": "Maid Morning Gift",
-  "ali/loot_table/gameplay/maid_morning_gift": "Maid Morning Gift"
+  "ali/loot_table/gameplay/maid_morning_gift": "Maid Morning Gift",
+  "subtitle.winefoxs_spellbooks.cast.winefox_hex": "Winefox incantation"
 }

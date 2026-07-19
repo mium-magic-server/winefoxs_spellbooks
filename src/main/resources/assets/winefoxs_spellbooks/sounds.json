@@ -1,0 +1,8 @@
+{
+  "cast.winefox_hex": {
+    "subtitle": "subtitle.winefoxs_spellbooks.cast.winefox_hex",
+    "sounds": [
+      "winefoxs_spellbooks:cast/winefox_hex1"
+    ]
+  }
+}
