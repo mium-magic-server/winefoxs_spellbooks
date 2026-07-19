@@ -5,6 +5,7 @@ import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import java.util.function.Supplier;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.spell.CrescentBrandSpell;
+import net.magicterra.winefoxsspellbooks.magic.spell.CrescentMantleSpell;
 import net.magicterra.winefoxsspellbooks.magic.spell.FoxshadeWispsSpell;
 import net.magicterra.winefoxsspellbooks.magic.spell.ManaTransferSpell;
 import net.magicterra.winefoxsspellbooks.magic.spell.SummonMaidSpell;
@@ -32,4 +33,5 @@ public class WsbSpells {
     public static final Supplier<AbstractSpell> MANA_TRANSFER_SPELL = registerSpell(new ManaTransferSpell());
     public static final Supplier<AbstractSpell> CRESCENT_BRAND_SPELL = registerSpell(new CrescentBrandSpell());
     public static final Supplier<AbstractSpell> FOXSHADE_WISPS_SPELL = registerSpell(new FoxshadeWispsSpell());
+    public static final Supplier<AbstractSpell> CRESCENT_MANTLE_SPELL = registerSpell(new CrescentMantleSpell());
 }

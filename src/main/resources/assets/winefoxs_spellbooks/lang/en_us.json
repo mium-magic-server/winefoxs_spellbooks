@@ -47,6 +47,8 @@
   "spell.winefoxs_spellbooks.crescent_brand.desc": "Brands a single enemy with a crescent mark, leaving them vulnerable to further Winefox Hex interactions.",
   "spell.winefoxs_spellbooks.foxshade_wisps": "Foxshade Wisps",
   "spell.winefoxs_spellbooks.foxshade_wisps.desc": "Recast to loose one homing foxfire wisp per cast, up to 6. Each wisp flanks in and deals Winefox Hex damage; the 6th detonates a Crescent Brand burst.",
+  "spell.winefoxs_spellbooks.crescent_mantle": "Crescent Mantle",
+  "spell.winefoxs_spellbooks.crescent_mantle.desc": "Veil yourself and nearby owned maids in a crescent shroud: absorption hearts and brief invisibility to slip out of danger.",
   "entity.winefoxs_spellbooks.foxshade_wisp": "Foxshade Wisp",
   "commands.winefoxs_spellbooks.wsb.summon.player_only": "This command must be executed by a player or use /wsb summon <target>",
   "commands.winefoxs_spellbooks.wsb.summon.loadout_not_found": "Loadout not found: %s",
