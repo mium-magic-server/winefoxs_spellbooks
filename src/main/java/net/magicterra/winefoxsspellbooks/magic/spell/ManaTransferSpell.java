@@ -14,6 +14,7 @@ import io.redspace.ironsspellbooks.registries.SoundRegistry;
 import java.util.List;
 import java.util.Optional;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -154,7 +155,13 @@ public class ManaTransferSpell extends AbstractSpell {
             return;
         }
 
-        // 使用射线检测获取目标实体（用于粒子效果）
+        // 施法环绕粒子每 5 tick 一批（每批 5-6 次 sendParticles 逐玩家发包，节流网络开销），
+        // 与是否命中有效目标无关；传输光束则仅在命中需补魔目标时生成
+        if (playerMagicData.getCastDurationRemaining() % 5 == 0) {
+            WinefoxHexHelper.spawnCastParticles(serverLevel, entity);
+        }
+
+        // 使用射线检测获取目标实体（用于传输光束粒子）
         var raycast = Utils.raycastForEntity(level, entity, 32.0F, true, 0.35F);
         if (raycast.getType() != EntityHitResult.Type.ENTITY) {
             return;

@@ -26,6 +26,7 @@ import net.magicterra.winefoxsspellbooks.entity.loadout.data.BroomMode;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.MaidLoadout;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
+import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -227,6 +228,8 @@ public class SummonMaidSpell extends AbstractSpell {
                 summonedEntitiesCastData
             );
             recasts.addRecast(recastInstance, playerMagicData);
+
+            WinefoxHexHelper.spawnCastBurst(serverWorld, entity);
 
             // 播放完成音效
             world.playSound(
