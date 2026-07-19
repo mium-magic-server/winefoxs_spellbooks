@@ -1,0 +1,12 @@
+{
+  "name": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.vintners_bomb.name",
+  "icon": "winefoxs_spellbooks:textures/gui/spell_icons/vintners_bomb.png",
+  "category": "touhou_little_maid:winefoxs_spellbooks",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.vintners_bomb.pages.0.text"
+    }
+  ],
+  "sortnum": 15
+}

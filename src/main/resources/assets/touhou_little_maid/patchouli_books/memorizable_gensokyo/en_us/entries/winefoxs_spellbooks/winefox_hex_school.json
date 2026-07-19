@@ -16,6 +16,10 @@
     {
       "type": "patchouli:text",
       "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.winefox_hex_school.pages.2.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.winefox_hex_school.pages.3.text"
     }
   ],
   "sortnum": 6
