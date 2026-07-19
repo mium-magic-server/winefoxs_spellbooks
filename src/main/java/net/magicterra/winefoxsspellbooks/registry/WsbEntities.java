@@ -4,6 +4,7 @@ import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.entity.spells.FoxshadeWispProjectile;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
+import net.magicterra.winefoxsspellbooks.entity.spells.TipsyMistCloud;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -27,6 +28,9 @@ public class WsbEntities {
 
     /** 酒杯狐影弹。投射物实体，无 LivingEntity 属性，故不进 addEntityAttributeEvent。 */
     public static final DeferredHolder<EntityType<?>, EntityType<FoxshadeWispProjectile>> FOXSHADE_WISP = ENTITY_TYPES.register("foxshade_wisp", () -> FoxshadeWispProjectile.TYPE);
+
+    /** 醉狐之雾的紫粉雾团。AoeEntity 子类,无 LivingEntity 属性,不进 addEntityAttributeEvent。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<TipsyMistCloud>> TIPSY_MIST_CLOUD = ENTITY_TYPES.register("tipsy_mist_cloud", () -> TipsyMistCloud.TYPE);
 
     /**
      * 注册实体属性

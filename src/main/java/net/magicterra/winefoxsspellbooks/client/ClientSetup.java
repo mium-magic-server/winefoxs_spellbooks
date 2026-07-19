@@ -6,6 +6,8 @@ import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.entity.spells.FoxshadeWispProjectile;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
 import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
+import net.magicterra.winefoxsspellbooks.entity.spells.TipsyMistCloud;
+import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -35,5 +37,8 @@ public class ClientSetup {
 
         // 酒杯狐影弹：GeckoLib 狐头模型 + 拖尾粒子
         evt.registerEntityRenderer(FoxshadeWispProjectile.TYPE, FoxshadeWispRenderer::new);
+
+        // 醉狐之雾的雾团：本体不绘模型，视觉完全走 AoeEntity 自带的粒子（ambientParticles）
+        evt.registerEntityRenderer(TipsyMistCloud.TYPE, NoopRenderer::new);
     }
 }
