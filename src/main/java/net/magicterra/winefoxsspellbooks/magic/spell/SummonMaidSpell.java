@@ -24,10 +24,11 @@ import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidLoadoutManager;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.BroomMode;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.MaidLoadout;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedMaidBroom;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
+import net.magicterra.winefoxsspellbooks.registry.WsbSounds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -47,8 +48,7 @@ import net.neoforged.neoforge.common.NeoForge;
 /**
  * 召唤女仆法术
  * <p>
- * 参照 {@link io.redspace.ironsspellbooks.spells.blood.RaiseDeadSpell} 实现，
- * 召唤 {@link SummonedEntityMaid} 实体来协助施法者战斗。
+ * 参照 {@link io.redspace.ironsspellbooks.spells.blood.RaiseDeadSpell} 实现， 召唤 {@link SummonedEntityMaid} 实体来协助施法者战斗。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-01-02 23:00
@@ -96,16 +96,27 @@ public class SummonMaidSpell extends AbstractSpell {
         return this.spellId;
     }
 
+    /**
+     * 咏唱音：Iron's 治愈之环的 {@code loop.cloud_of_regen}。
+     */
+    @Override
+    public Optional<SoundEvent> getCastStartSound() {
+        return Optional.of(SoundRegistry.CLOUD_OF_REGEN_LOOP.get());
+    }
+
+    /**
+     * 到场音：衣袍翻动在先，0.55 s 后落一记单击钟。
+     */
     @Override
     public Optional<SoundEvent> getCastFinishSound() {
-        return Optional.empty();
+        return Optional.of(WsbSounds.SUMMON_MAID_ARRIVE.get());
     }
 
     /**
      * 获取召唤女仆数量
      *
      * @param spellLevel 法术等级
-     * @param caster 施法者
+     * @param caster     施法者
      * @return 召唤数量
      */
     public int getSummonCount(int spellLevel, LivingEntity caster) {
@@ -144,7 +155,6 @@ public class SummonMaidSpell extends AbstractSpell {
         }
         PlayerRecasts recasts = playerMagicData.getPlayerRecasts();
 
-        // 检查是否已有该法术的重铸记录
         if (!recasts.hasRecastForSpell(this)) {
             SummonedEntitiesCastData summonedEntitiesCastData = new SummonedEntitiesCastData();
             int summonTime = 12000; // 召唤持续时间 600 秒（10 分钟）
@@ -158,7 +168,6 @@ public class SummonMaidSpell extends AbstractSpell {
             int airForceIndex = 0;
 
             for (int i = 0; i < count; ++i) {
-                // 创建召唤女仆实体
                 SummonedEntityMaid maid = new SummonedEntityMaid(SummonedEntityMaid.TYPE, world);
                 maid.setSummonLevel(spellLevel);
 
@@ -166,10 +175,9 @@ public class SummonMaidSpell extends AbstractSpell {
                 MaidLoadout loadout = MaidLoadoutManager.getInstance().selectLoadout(world.random);
                 maid.setPreSelectedLoadout(loadout);
 
-                // 根据 broomMode 决定是否飞行
                 boolean isAirForce = determineAirForce(loadout, defaultAirForceChance, world);
 
-                // 计算生成位置（围绕施法者圆形分布）
+                // 围绕施法者圆形分布
                 float yrot = (float) (2 * Math.PI) / count * i + entity.getYRot() * ((float) Math.PI / 180);
                 Vec3 spawn = Utils.moveToRelativeGroundLevel(
                     world,
@@ -181,7 +189,6 @@ public class SummonMaidSpell extends AbstractSpell {
                     10
                 );
 
-                // 设置位置和朝向
                 maid.setPos(spawn.x, spawn.y, spawn.z);
                 maid.setYRot(entity.getYRot());
 
@@ -191,7 +198,6 @@ public class SummonMaidSpell extends AbstractSpell {
                     maid.setSummonIndex(airForceIndex++);
                 }
 
-                // 初始化实体生成数据（此时 isAirForce 已确定，randomSpells 会根据此状态过滤近战法术）
                 maid.finalizeSpawn(
                     serverWorld,
                     world.getCurrentDifficultyAt(maid.getOnPos()),
@@ -199,12 +205,10 @@ public class SummonMaidSpell extends AbstractSpell {
                     null
                 );
 
-                // 根据法术强度修改女仆的魔力属性
                 applySpellPowerAttributes(maid, spellLevel, entity);
 
                 maid.setOldPosAndRot();
 
-                // 触发召唤事件
                 Mob summonedMaid = NeoForge.EVENT_BUS.post(new SpellSummonEvent<>(entity, maid, this.spellId, spellLevel)).getCreature();
 
                 if (summonedMaid instanceof SummonedEntityMaid summonedEntityMaid && isAirForce) {
@@ -230,25 +234,16 @@ public class SummonMaidSpell extends AbstractSpell {
             recasts.addRecast(recastInstance, playerMagicData);
 
             WinefoxHexHelper.spawnCastBurst(serverWorld, entity);
-
-            // 播放完成音效
-            world.playSound(
-                null,
-                entity.getX(), entity.getY(), entity.getZ(),
-                SoundRegistry.HOLY_CAST.get(),
-                entity.getSoundSource(),
-                2.0f,
-                0.9f + Utils.random.nextFloat() * 0.2f
-            );
+            // 到场音由 getCastFinishSound() 统一播放，不在此手写
         }
     }
 
     /**
      * 根据 loadout 的 broomMode 决定女仆是否飞行
      *
-     * @param loadout 装备配置（可能为 null）
+     * @param loadout       装备配置（可能为 null）
      * @param defaultChance 默认飞行概率（从 Config 计算）
-     * @param world 世界实例（用于随机数）
+     * @param world         世界实例（用于随机数）
      * @return 是否飞行
      */
     private boolean determineAirForce(@Nullable MaidLoadout loadout, float defaultChance, Level world) {
@@ -266,36 +261,26 @@ public class SummonMaidSpell extends AbstractSpell {
     }
 
     /**
-     * 根据法术强度修改女仆的魔力属性
-     * <p>
-     * 最大魔力和魔力恢复速度基于召唤法术的强度进行加成。
+     * 按法术强度给女仆的最大魔力与魔力恢复加成。
      *
-     * @param maid 召唤的女仆
+     * @param maid       召唤的女仆
      * @param spellLevel 法术等级
-     * @param caster 施法者
+     * @param caster     施法者
      */
     private void applySpellPowerAttributes(SummonedEntityMaid maid, int spellLevel, LivingEntity caster) {
-        // 获取法术强度（基于施法者属性和法术等级）
         float spellPower = this.getSpellPower(spellLevel, caster);
 
-        // 计算最高等级无加成时的基础法术强度作为参考值
-        // baseSpellPower=2, spellPowerPerLevel=1, maxLevel=6
-        // 最高等级基础强度 = 2 + 1 * (6-1) = 7
+        // 最高等级无加成时的基础法术强度，作为归一化参考值
         float maxBasePower = this.baseSpellPower + this.spellPowerPerLevel * (this.getMaxLevel() - 1);
 
-        // 归一化法术强度（相对于最高等级基础强度的比例）
-        // 施法者属性加成会使 spellPower 超过 maxBasePower
         float normalizedPower = spellPower / maxBasePower;
 
-        // 最大魔力加成：最高时获得 +500% 加成
-        // 公式：(normalizedPower * 5) 作为乘法加成
+        // 最大魔力：最高 +500%
         double maxManaBonus = normalizedPower * 5.0;
 
-        // 魔力恢复加成：最高时获得 10% 恢复速度
-        // 基础恢复速度是 1%，目标是 10%，所以需要 +900%
+        // 魔力恢复：基础 1% → 最高 10%
         double manaRegenBonus = normalizedPower * 9.0;
 
-        // 应用最大魔力加成（乘法修改器）
         AttributeInstance maxManaAttr = maid.getAttribute(AttributeRegistry.MAX_MANA);
         if (maxManaAttr != null) {
             maxManaAttr.addPermanentModifier(new AttributeModifier(
@@ -305,7 +290,6 @@ public class SummonMaidSpell extends AbstractSpell {
             ));
         }
 
-        // 应用魔力恢复加成（乘法修改器）
         AttributeInstance manaRegenAttr = maid.getAttribute(AttributeRegistry.MANA_REGEN);
         if (manaRegenAttr != null) {
             manaRegenAttr.addPermanentModifier(new AttributeModifier(

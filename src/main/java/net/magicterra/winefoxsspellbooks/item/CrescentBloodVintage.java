@@ -2,6 +2,8 @@ package net.magicterra.winefoxsspellbooks.item;
 
 import net.magicterra.winefoxsspellbooks.datagen.MaidEntityTagsProvider;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
+import net.minecraft.core.Holder;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,11 +23,16 @@ import net.minecraft.world.level.Level;
  */
 public class CrescentBloodVintage extends Item {
 
+    /**
+     * 非女仆饮用时每种副作用的触发概率。
+     */
+    private static final float SIDE_EFFECT_CHANCE = 0.6f;
+
     private static final FoodProperties FOOD = new FoodProperties.Builder()
-            .nutrition(3)
-            .saturationModifier(0.3f)
-            .alwaysEdible()
-            .build();
+        .nutrition(3)
+        .saturationModifier(0.3f)
+        .alwaysEdible()
+        .build();
 
     public CrescentBloodVintage() {
         super(new Properties().food(FOOD).stacksTo(16));
@@ -41,21 +48,19 @@ public class CrescentBloodVintage extends Item {
         ItemStack result = super.finishUsingItem(stack, level, entity);
         if (!level.isClientSide) {
             if (entity.getType().is(MaidEntityTagsProvider.MAID_TAG)) {
-                // 女仆：100%触发狐火增幅
                 entity.addEffect(new MobEffectInstance(WsbEffects.FOXFIRE_BOOST, 200));
             } else {
-                // 其他生物：60%概率分别触发混乱、中毒、魔力紊乱
-                if (entity.getRandom().nextFloat() < 0.6f) {
-                    entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200));
-                }
-                if (entity.getRandom().nextFloat() < 0.6f) {
-                    entity.addEffect(new MobEffectInstance(MobEffects.POISON, 60));
-                }
-                if (entity.getRandom().nextFloat() < 0.6f) {
-                    entity.addEffect(new MobEffectInstance(WsbEffects.MANA_DISRUPTION, 200));
-                }
+                maybeApply(entity, MobEffects.CONFUSION, 200);
+                maybeApply(entity, MobEffects.POISON, 60);
+                maybeApply(entity, WsbEffects.MANA_DISRUPTION, 200);
             }
         }
         return result;
+    }
+
+    private static void maybeApply(LivingEntity entity, Holder<MobEffect> effect, int duration) {
+        if (entity.getRandom().nextFloat() < SIDE_EFFECT_CHANCE) {
+            entity.addEffect(new MobEffectInstance(effect, duration));
+        }
     }
 }

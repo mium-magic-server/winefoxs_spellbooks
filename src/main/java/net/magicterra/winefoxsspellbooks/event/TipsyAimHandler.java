@@ -14,12 +14,9 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 
 /**
- * 微醺 Tipsy 的弹道偏转——真·打偏而非视觉抖动。当「持有 Tipsy 者」发射的弹射物加入世界时,
- * 按高斯随机角旋转其速度向量(模长守恒),让攻击/法术弹射物打偏。
+ * 微醺 Tipsy 的弹道偏转——真·打偏而非视觉抖动。当「持有 Tipsy 者」发射的弹射物加入世界时, 按高斯随机角旋转其速度向量(模长守恒),让攻击/法术弹射物打偏。
  *
- * <p>说明:朝向打偏无法靠 MobEffect 的 setYRot 实现(原版怪物弹道按目标坐标直接计算、
- * 玩家朝向客户端权威),故此处在弹射物生成时直接扰动其 deltaMovement。覆盖原版箭、三叉戟、
- * Iron's Spellbooks 法术弹射物及投掷物。Tipsy 不区分敌我,本处不做玩家/女仆豁免。</p>
+ * <p>覆盖原版箭、三叉戟、Iron's Spellbooks 法术弹射物及投掷物；不区分敌我。</p>
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-06-21
@@ -27,7 +24,9 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 @EventBusSubscriber(modid = WinefoxsSpellbooks.MODID)
 public class TipsyAimHandler {
 
-    /** 初速过小(放置/追踪类)不偏转的阈值。 */
+    /**
+     * 初速过小(放置/追踪类)不偏转的阈值。
+     */
     private static final double MIN_SPEED_SQR = 1.0E-4;
 
     @SubscribeEvent

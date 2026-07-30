@@ -9,14 +9,16 @@ import io.redspace.ironsspellbooks.api.spells.CastSource;
 import io.redspace.ironsspellbooks.api.spells.CastType;
 import io.redspace.ironsspellbooks.api.spells.ICastDataSerializable;
 import io.redspace.ironsspellbooks.api.spells.SpellRarity;
-import io.redspace.ironsspellbooks.api.util.Utils;
+import io.redspace.ironsspellbooks.api.util.RaycastBuilder;
 import io.redspace.ironsspellbooks.registries.SoundRegistry;
 import java.util.List;
+import javax.annotation.Nullable;
 import java.util.Optional;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
+import net.magicterra.winefoxsspellbooks.magic.particle.TransferStreamOption;
+import net.magicterra.winefoxsspellbooks.registry.WsbParticles;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -33,20 +35,26 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 魔力转移法术
  * <p>
- * 持续施法，将施法者的魔力转移到目标生物（玩家或 IMagicEntity）。 使用射线检测目标，命中后执行魔力转移逻辑。 施法者消耗的魔力略大于目标获得的魔力（20% 损耗），最大持续时间 5 秒（100 ticks）。
+ * 持续施法，用射线锁定目标（玩家或 IMagicEntity）并向其转移魔力，最大持续 5 秒。
  * <p>
- * 持续施法的魔力消耗由系统自动处理：每 10 tick 调用一次 {@link #onCast}， 系统在调用前会扣除 {@link #getManaCost} 的魔力。 卷轴显示的每秒消耗 = {@link #getManaCost} * 2。
+ * 系统每 10 tick 调一次 {@link #onCast}，调用前已扣除 {@link #getManaCost} 的魔力。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-02-18 11:46
  */
 public class ManaTransferSpell extends AbstractSpell {
-    private final ResourceLocation spellId = ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "mana_transfer");
+    private final ResourceLocation spellId = ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID,
+        "mana_transfer");
 
     /**
      * 传输效率：目标获得的魔力 = 系统扣除的魔力 / 此系数 1.2 表示 20% 损耗
      */
     private static final double TRANSFER_EFFICIENCY_DIVISOR = 1.2;
+
+    /**
+     * 目标锁定射线的最大距离。
+     */
+    private static final float RAYCAST_RANGE = 32.0f;
 
     private final DefaultConfig defaultConfig = new DefaultConfig()
         .setMinRarity(SpellRarity.COMMON)
@@ -78,20 +86,25 @@ public class ManaTransferSpell extends AbstractSpell {
         return this.spellId;
     }
 
+    /**
+     * 咏唱音：Iron's 治愈之环的 {@code loop.cloud_of_regen}。
+     */
     @Override
     public Optional<SoundEvent> getCastStartSound() {
-        return Optional.of(SoundRegistry.HOLY_CAST.get());
+        return Optional.of(SoundRegistry.CLOUD_OF_REGEN_LOOP.get());
     }
 
+    /**
+     * 本法术是 CONTINUOUS，{@code onCast} 每 10 tick 触发一次，故这条音在 5 秒里播 10 遍，
+     * 听感是持续层而非收尾音——刻意保留。
+     */
     @Override
     public Optional<SoundEvent> getCastFinishSound() {
         return Optional.of(SoundRegistry.HOLY_CAST.get());
     }
 
     /**
-     * 获取每次 onCast 调用时目标获得的魔力量
-     * <p>
-     * 系统每 10 tick 扣除 getManaCost(level) 魔力后调用 onCast， 目标获得的魔力 = getManaCost(level) / 1.2（有 20% 损耗）。
+     * 每次 {@link #onCast} 目标获得的魔力量。
      */
     public double getTransferAmount(int spellLevel) {
         return getManaCost(spellLevel) / TRANSFER_EFFICIENCY_DIVISOR;
@@ -99,7 +112,6 @@ public class ManaTransferSpell extends AbstractSpell {
 
     @Override
     public List<MutableComponent> getUniqueInfo(int spellLevel, LivingEntity caster) {
-        // 每秒消耗 = getManaCost * 2（系统对持续施法每秒调用2次）
         int manaCostPerSecond = getManaCost(spellLevel) * 2;
         double transferPerSecond = getTransferAmount(spellLevel) * 2;
         return List.of(
@@ -116,30 +128,18 @@ public class ManaTransferSpell extends AbstractSpell {
     }
 
     @Override
-    public void onCast(Level level, int spellLevel, LivingEntity entity, CastSource castSource, MagicData playerMagicData) {
-        // 系统已经在调用 onCast 前扣除了 getManaCost(level) 的魔力
-        // 这里只需要给目标加魔力
+    public void onCast(Level level, int spellLevel, LivingEntity entity, CastSource castSource,
+                       MagicData playerMagicData) {
+        // 系统已在调用前扣除 getManaCost(level)，这里只给目标加魔力
         if (level.isClientSide || !(level instanceof ServerLevel)) {
             return;
         }
 
-        // 使用射线检测获取目标实体
-        var raycast = Utils.raycastForEntity(level, entity, 32.0F, true, 0.35F);
-        if (raycast.getType() != EntityHitResult.Type.ENTITY) {
+        LivingEntity targetEntity = raycastLivingTarget(level, entity);
+        if (targetEntity == null || !isValidTarget(targetEntity)) {
             return;
         }
 
-        var hitEntity = ((EntityHitResult) raycast).getEntity();
-        if (!(hitEntity instanceof LivingEntity targetEntity)) {
-            return;
-        }
-
-        // 验证目标：必须是玩家或 IMagicEntity
-        if (!isValidTarget(targetEntity)) {
-            return;
-        }
-
-        // 给予目标魔力（扣除 20% 损耗后的量）
         double transferAmount = getTransferAmount(spellLevel);
         MagicData targetMagicData = MagicData.getPlayerMagicData(targetEntity);
         double targetMaxMana = getMaxMana(targetEntity);
@@ -155,53 +155,46 @@ public class ManaTransferSpell extends AbstractSpell {
             return;
         }
 
-        // 施法环绕粒子每 5 tick 一批（每批 5-6 次 sendParticles 逐玩家发包，节流网络开销），
-        // 与是否命中有效目标无关；传输光束则仅在命中需补魔目标时生成
-        if (playerMagicData.getCastDurationRemaining() % 5 == 0) {
-            WinefoxHexHelper.spawnCastParticles(serverLevel, entity);
+        // 施法环绕粒子与传输流同频:5 tick 一批,节流网络开销
+        if (playerMagicData.getCastDurationRemaining() % 5 != 0) {
+            return;
         }
+        WinefoxHexHelper.spawnCastParticles(serverLevel, entity);
 
-        // 使用射线检测获取目标实体（用于传输光束粒子）
-        var raycast = Utils.raycastForEntity(level, entity, 32.0F, true, 0.35F);
-        if (raycast.getType() != EntityHitResult.Type.ENTITY) {
+        LivingEntity targetEntity = raycastLivingTarget(level, entity);
+        if (targetEntity == null || !isTargetNeedsSupport(targetEntity)) {
             return;
         }
 
-        var hitEntity = ((EntityHitResult) raycast).getEntity();
-        if (!(hitEntity instanceof LivingEntity targetEntity)) {
+        // 传输流 5 tick 一个粒子包:包内带施法者/目标实体 ID 与动画时基,
+        // 客户端逐帧从本地实体实时重算光束端点并铺设弹幕与螺旋,转头/移动不滞后
+        Vec3 start = entity.getEyePosition().add(entity.getForward().scale(0.4)).subtract(0, 0.2, 0);
+        Vec3 end = targetEntity.getEyePosition().subtract(0, 0.35, 0);
+        if (end.subtract(start).length() < 0.5) {
             return;
         }
-
-        if (!isTargetNeedsSupport(targetEntity)) {
-            return;
-        }
-
-        // 每 tick 都生成粒子效果
-        Vec3 start = entity.getEyePosition();
-        Vec3 end = targetEntity.getEyePosition();
-        Vec3 particleDirection = end.subtract(start).normalize();
-        double distance = start.distanceTo(end);
-
-        // 沿射线生成紫色星形粒子
-        for (int i = 0; i < 8; i++) {
-            Vec3 particlePos = start.add(particleDirection.scale(distance * i / 8.0));
-            serverLevel.sendParticles(
-                ParticleTypes.WITCH,
-                particlePos.x, particlePos.y, particlePos.z,
-                2,
-                0.05, 0.05, 0.05,
-                0.02
-            );
-        }
-
-        // 在目标位置生成额外粒子
+        // castDurationRemaining 递减,取负得单调递增的动画时基
+        int time = -playerMagicData.getCastDurationRemaining();
         serverLevel.sendParticles(
-            ParticleTypes.ENCHANT,
-            end.x, end.y, end.z,
-            10,
-            0.3, 0.3, 0.3,
-            0.1
-        );
+            new TransferStreamOption(WsbParticles.TRANSFER_STREAM.get(),
+                entity.getId(), targetEntity.getId(), time, 0),
+            start.x, start.y, start.z, 1, 0, 0, 0, 0);
+    }
+
+    /**
+     * 沿施法者视线锁定一个生物；未命中生物时返回 {@code null}。
+     */
+    @Nullable
+    private LivingEntity raycastLivingTarget(Level level, LivingEntity caster) {
+        var raycast = RaycastBuilder.begin(level, caster)
+            .range(RAYCAST_RANGE)
+            .checkForBlocks(true)
+            .bbInflation(0.35f)
+            .build();
+        if (raycast.getType() != EntityHitResult.Type.ENTITY) {
+            return null;
+        }
+        return ((EntityHitResult) raycast).getEntity() instanceof LivingEntity living ? living : null;
     }
 
     @Override

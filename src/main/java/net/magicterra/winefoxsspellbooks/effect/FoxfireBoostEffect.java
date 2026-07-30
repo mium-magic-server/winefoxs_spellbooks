@@ -26,16 +26,14 @@ public class FoxfireBoostEffect extends MobEffect {
     private static final ResourceLocation MODIFIER_ID = ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "foxfire_boost");
 
     /**
-     * COOLDOWN_REDUCTION 默认值为 1.0，加上 2.5 后为 3.5
-     * softCapFormula(3.5) = -0.25/(3.5-1)+2 = 1.9
-     * 冷却乘数 = 2 - 1.9 = 0.1（即10%冷却）
+     * COOLDOWN_REDUCTION 默认值为 1.0，加上 2.5 后为 3.5 softCapFormula(3.5) = -0.25/(3.5-1)+2 = 1.9 冷却乘数 = 2 - 1.9 = 0.1（即10%冷却）
      */
     private static final double COOLDOWN_REDUCTION_BONUS = 2.5;
 
     public FoxfireBoostEffect() {
         super(MobEffectCategory.BENEFICIAL, 0xFF6600);
         addAttributeModifier(AttributeRegistry.COOLDOWN_REDUCTION, MODIFIER_ID,
-                COOLDOWN_REDUCTION_BONUS, AttributeModifier.Operation.ADD_VALUE);
+            COOLDOWN_REDUCTION_BONUS, AttributeModifier.Operation.ADD_VALUE);
     }
 
     @Override
@@ -44,13 +42,9 @@ public class FoxfireBoostEffect extends MobEffect {
         if (entity.level().isClientSide) {
             return;
         }
-        // 缩减已有冷却到10%
         shrinkExistingCooldowns(entity);
     }
 
-    /**
-     * 将已有冷却的剩余时间缩减到10%
-     */
     private void shrinkExistingCooldowns(LivingEntity entity) {
         PlayerCooldowns cooldowns = null;
         if (entity instanceof MaidMagicEntity maidMagicEntity) {
@@ -63,7 +57,6 @@ public class FoxfireBoostEffect extends MobEffect {
         }
         for (CooldownInstance instance : cooldowns.getSpellCooldowns().values()) {
             int remaining = instance.getCooldownRemaining();
-            // 缩减90%的剩余时间
             int toRemove = (int) (remaining * 0.9);
             if (toRemove > 0) {
                 instance.decrementBy(toRemove);

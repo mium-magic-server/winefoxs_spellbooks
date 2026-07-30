@@ -12,13 +12,16 @@ import io.redspace.ironsspellbooks.capabilities.magic.MultiTargetEntityCastData;
 import io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts;
 import io.redspace.ironsspellbooks.capabilities.magic.RecastInstance;
 import java.util.Comparator;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
-import net.magicterra.winefoxsspellbooks.entity.spells.FoxshadeWispProjectile;
+import net.magicterra.winefoxsspellbooks.entity.projectile.FoxshadeWispProjectile;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
+import net.magicterra.winefoxsspellbooks.registry.WsbSounds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -29,8 +32,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 酒杯狐影 Foxshade Wisps 法术（recast 逐发版）。
  * <p>
- * 玩家/女仆每按一次施法键放出 1 发追踪狐影弹（{@link FoxshadeWispProjectile}），最多 6 发（1 初始 + 5 recast）。
- * 各发侧翼包抄打出酒狐巫法伤害；第 6 发为 finisher，弹体命中时触发残月爆发。
+ * 玩家/女仆每按一次施法键放出 1 发追踪狐影弹（{@link FoxshadeWispProjectile}），最多 3 发（1 初始 + 2 recast）。 各发侧翼包抄打出酒狐巫法伤害，<b>三发完全等价</b>——命中即引爆目标身上的残月烙印。
  * <p>
  * 首发扣法力，后续 recast 由 Iron's {@code castSpell} 自动跳过扣费；超时未续发则自动进入冷却。
  *
@@ -39,16 +41,29 @@ import net.minecraft.world.phys.Vec3;
  */
 public class FoxshadeWispsSpell extends AbstractSpell {
 
-    /** 额外重铸次数：1 次初始 + 5 次 recast = 6 发。 */
-    private static final int RECAST_COUNT = 5;
-    /** recast 窗口（ticks）：超时未续发则进冷却、不触发爆发。 */
+    /**
+     * 额外重铸次数：1 次初始 + 2 次 recast = 3 发。
+     */
+    private static final int RECAST_COUNT = 2;
+
+    /**
+     * recast 窗口（ticks）：超时未续发则进冷却。
+     */
     private static final int RECAST_TTL = 80;
-    /** 伤害系数：每发伤害 = getSpellPower(level, caster) * 此系数。 */
-    private static final float DAMAGE_MULTIPLIER = 3.5f;
-    /** 目标搜索半径（格）。 */
+
+    /**
+     * 伤害系数：每发伤害 = getSpellPower(level, caster) * 此系数。
+     */
+    private static final float DAMAGE_MULTIPLIER = 2.0f;
+
+    /**
+     * 目标搜索半径（格）。
+     */
     private static final double SEARCH_RADIUS = 16.0;
-    /** 女仆 AI 施法距离（格）：取比 {@link #SEARCH_RADIUS} 小的值，保证进入施法点后必能锁到目标；
-     * 数据生成引用同一常量。 */
+
+    /**
+     * 女仆 AI 施法距离（格）：取比 {@link #SEARCH_RADIUS} 小的值，保证进入施法点后必能锁到目标； 数据生成引用同一常量。
+     */
     public static final float MAID_CAST_RANGE = (float) SEARCH_RADIUS - 4.0f;
 
     private final ResourceLocation spellId = ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "foxshade_wisps");
@@ -82,6 +97,16 @@ public class FoxshadeWispsSpell extends AbstractSpell {
         return this.spellId;
     }
 
+    /**
+     * 发射音：0.4-0.5 s 短「咻」，三变体随机 + 引擎 ±10% 音高抖动。
+     * <p>
+     * 本法术逐发 recast，此钩子每发触发一次，所以素材必须短——长了连发会糊成一片。
+     */
+    @Override
+    public Optional<SoundEvent> getCastFinishSound() {
+        return Optional.of(WsbSounds.FOXSHADE_WISPS_FIRE.get());
+    }
+
     @Override
     public int getMinLevel() {
         // 本法术从 3 级起步，1-2 级不存在（DefaultConfig 无 setMinLevel，须覆写）
@@ -110,19 +135,18 @@ public class FoxshadeWispsSpell extends AbstractSpell {
         boolean alreadyHasRecast = recasts.hasRecastForSpell(this);
 
         // 首发：注册 recast 实例（之后每按一次施法键由 castSpell 自动 decrement）。
-        // totalRecasts 传 RECAST_COUNT+1=6，令 RecastInstance 内 remainingRecasts=5(剩余数从 5 递减到 1)。
+        // totalRecasts 传 RECAST_COUNT+1=3，令 RecastInstance 内 remainingRecasts=2(剩余数从 2 递减到 1)。
         if (!alreadyHasRecast) {
             recasts.addRecast(new RecastInstance(this.getSpellId(), spellLevel,
-                RECAST_COUNT + 1, RECAST_TTL, castSource, this.getEmptyCastData()),
+                    RECAST_COUNT + 1, RECAST_TTL, castSource, this.getEmptyCastData()),
                 playerMagicData);
         }
 
         float power = this.getSpellPower(spellLevel, entity);
-        // 剩余 recast 数：首发视作 6；之后 R∈[5..1]。序号=6-R∈[0..5]，最后一发（R==1）为 finisher
+        // 剩余 recast 数：首发视作 3；之后 R∈[2..1]。序号=3-R∈[0..2]，只用来定左右交替方向
         int remaining = alreadyHasRecast ? recasts.getRemainingRecastsForSpell(this) : RECAST_COUNT + 1;
         int shotIndex = RECAST_COUNT + 1 - remaining;
 
-        // 目标选取：玩家沿视线锁定准星指向的敌人（LOS）；女仆/无锁定时退回半径内最近敌对生物
         LivingEntity homingTarget = acquireTarget(serverLevel, entity);
 
         Vec3 eye = entity.getEyePosition();
@@ -132,12 +156,8 @@ public class FoxshadeWispsSpell extends AbstractSpell {
         if (homingTarget != null) {
             wisp.setHomingTarget(homingTarget);
         }
-        // 左右交替包抄：偶数发（0,2,4）→ +1（右），奇数发（1,3,5）→ -1（左）
+        // 左右交替包抄：偶数发（0,2）→ +1（右），奇数发（1）→ -1（左）
         wisp.setFlankSign((shotIndex % 2 == 0) ? 1 : -1);
-        // 第 6 发（最后一发）为 finisher：命中触发残月爆发
-        if (remaining == 1) {
-            wisp.setFinisher(power * 5.0f);
-        }
         // 出膛即带侧翼初速：有目标时沿侧翼期望朝向射出，弧线出膛即张开；无目标退回直线前射
         if (homingTarget == null || !wisp.shootFlanking(homingTarget)) {
             wisp.shoot(entity.getLookAngle());
@@ -151,21 +171,12 @@ public class FoxshadeWispsSpell extends AbstractSpell {
     }
 
     /**
-     * 选取追踪目标。
-     * <p>
-     * 玩家施法：沿准星视线 {@link RaycastBuilder 射线}（含方块遮挡判定、对实体 0.5 包围盒膨胀辅助瞄准、
-     * 半径 {@link #SEARCH_RADIUS}）锁定指向的敌对生物——即「视线自动锁定」。
-     * 女仆施法或视线未锁中时，退回半径 {@link #SEARCH_RADIUS} 内最近的敌对生物（{@link WinefoxHexHelper#isHexEnemy}）。
+     * 选取追踪目标：玩家沿准星视线锁定；女仆或未锁中时退回半径内敌对生物，挂印优先、其次最近。
      *
-     * @param level  服务端世界
-     * @param caster 施法者
-     * @return 追踪目标；附近无可锁敌人时返回 {@code null}（弹体直线前射）
-     * @author Gardel &lt;gardel741@outlook.com&gt;
-     * @since 2026-06-22
+     * @return 无可锁目标时 {@code null}（弹体直线前射）
      */
     @Nullable
     private LivingEntity acquireTarget(ServerLevel level, LivingEntity caster) {
-        // 玩家：视线锁定（遇方块阻断；对敌人 0.5 膨胀辅助瞄准）
         if (caster instanceof Player) {
             HitResult hit = RaycastBuilder.begin(level, caster)
                 .range((float) SEARCH_RADIUS)
@@ -177,12 +188,13 @@ public class FoxshadeWispsSpell extends AbstractSpell {
                 return locked;
             }
         }
-        // 退回：半径内最近敌对生物
+        // 比较器写成「未挂印(true) 排在挂印(false) 之后」再比距离，一趟 min 取完，不做二次扫描
         return level.getEntitiesOfClass(LivingEntity.class,
                 caster.getBoundingBox().inflate(SEARCH_RADIUS),
                 e -> WinefoxHexHelper.isHostileTo(e, caster))
             .stream()
-            .min(Comparator.comparingDouble(caster::distanceToSqr))
+            .min(Comparator.comparing((LivingEntity e) -> !WinefoxHexHelper.isBranded(e))
+                .thenComparingDouble(caster::distanceToSqr))
             .orElse(null);
     }
 }

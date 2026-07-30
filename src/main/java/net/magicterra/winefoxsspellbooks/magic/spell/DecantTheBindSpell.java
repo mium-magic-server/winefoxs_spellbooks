@@ -5,11 +5,15 @@ import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastSource;
 import io.redspace.ironsspellbooks.api.spells.CastType;
+import io.redspace.ironsspellbooks.api.spells.SpellAnimations;
 import io.redspace.ironsspellbooks.api.spells.SpellRarity;
+import io.redspace.ironsspellbooks.api.util.AnimationHolder;
 import io.redspace.ironsspellbooks.api.util.RaycastBuilder;
 import java.util.List;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
+import net.magicterra.winefoxsspellbooks.magic.particle.TransferStreamOption;
+import net.magicterra.winefoxsspellbooks.registry.WsbParticles;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -28,9 +32,14 @@ import net.minecraft.world.phys.HitResult;
  */
 public class DecantTheBindSpell extends AbstractSpell {
 
-    /** 高酒龄门槛:达到该等级改为整列净除。 */
+    /**
+     * 高酒龄门槛:达到该等级(即满级)改为整列净除;满级即毕业,不设无成长的溢出等级。
+     */
     private static final int PURGE_LEVEL = 5;
-    /** 视线选取女仆的距离(格);数据生成的女仆 AI 施法距离引用同一常量。 */
+
+    /**
+     * 视线选取女仆的距离(格);数据生成的女仆 AI 施法距离引用同一常量。
+     */
     public static final float TARGET_RANGE = 16.0f;
 
     private final ResourceLocation spellId = ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "decant_the_bind");
@@ -38,7 +47,7 @@ public class DecantTheBindSpell extends AbstractSpell {
     private final DefaultConfig defaultConfig = new DefaultConfig()
         .setMinRarity(SpellRarity.COMMON)
         .setSchoolResource(WsbSchools.WINEFOX_HEX_RESOURCE)
-        .setMaxLevel(7)
+        .setMaxLevel(PURGE_LEVEL)
         .setCooldownSeconds(20.0)
         .build();
 
@@ -52,6 +61,14 @@ public class DecantTheBindSpell extends AbstractSpell {
     @Override
     public CastType getCastType() {
         return CastType.INSTANT;
+    }
+
+    /**
+     * 施法动画与 Iron's 橡肤(oakskin)一致:瞬发自体施法。
+     */
+    @Override
+    public AnimationHolder getCastStartAnimation() {
+        return SpellAnimations.SELF_CAST_ANIMATION;
     }
 
     @Override
@@ -90,9 +107,11 @@ public class DecantTheBindSpell extends AbstractSpell {
         List<MobEffectInstance> harmful = target.getActiveEffects().stream()
             .filter(inst -> inst.getEffect().value().getCategory() == MobEffectCategory.HARMFUL)
             .toList();
+        int cleansed = 0;
         if (spellLevel >= PURGE_LEVEL) {
             for (MobEffectInstance inst : harmful) {
                 target.removeEffect(inst.getEffect());
+                cleansed++;
             }
         } else {
             // 低酒龄:减半 = 移除后按剩余时长一半重挂(MobEffectInstance 无公开时长 setter);无限时长跳过,防止 -1 被除成负数
@@ -101,6 +120,7 @@ public class DecantTheBindSpell extends AbstractSpell {
                     continue;
                 }
                 target.removeEffect(inst.getEffect());
+                cleansed++;
                 int half = inst.getDuration() / 2;
                 if (half > 0) {
                     target.addEffect(new MobEffectInstance(inst.getEffect(), half, inst.getAmplifier(),
@@ -108,7 +128,12 @@ public class DecantTheBindSpell extends AbstractSpell {
                 }
             }
         }
-        WinefoxHexHelper.spawnCastBurst(serverLevel, target);
+        // 施法者侧保留学派施法爆发作反馈;净化全套视觉(浊滴/清醒环/金星/酒泡)由发射器在目标身上铺设
+        WinefoxHexHelper.spawnCastBurst(serverLevel, entity);
+        serverLevel.sendParticles(
+            new TransferStreamOption(WsbParticles.DECANT_CLEANSE.get(),
+                0, target.getId(), cleansed, spellLevel >= PURGE_LEVEL ? 2 : 1),
+            target.getX(), target.getY(), target.getZ(), 1, 0, 0, 0, 0);
         super.onCast(level, spellLevel, entity, castSource, playerMagicData);
     }
 }

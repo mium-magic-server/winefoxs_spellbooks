@@ -6,7 +6,7 @@ import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastSource;
 import io.redspace.ironsspellbooks.api.spells.CastType;
 import io.redspace.ironsspellbooks.api.spells.SpellRarity;
-import io.redspace.ironsspellbooks.api.util.Utils;
+import io.redspace.ironsspellbooks.api.util.RaycastBuilder;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
@@ -21,17 +21,16 @@ import net.minecraft.world.phys.EntityHitResult;
 /**
  * 残月烙印法术
  * <p>
- * 单目标烙印法术：对准星前方的生物施加 {@link WsbEffects#CRESCENT_BRAND} 效果。
- * 烙印本身是纯标记效果，由引爆系统
- * （{@link net.magicterra.winefoxsspellbooks.event.WinefoxDetonationHandler}）识别并触发爆炸/联动。
- * 使用射线检测（{@link Utils#raycastForEntity}）获取单个目标，射程约 16 格。
+ * 单目标烙印法术：对准星前方的生物施加 {@link WsbEffects#CRESCENT_BRAND} 效果。 烙印本身是纯标记效果，由引爆系统 （{@link net.magicterra.winefoxsspellbooks.event.WinefoxDetonationHandler}）识别并触发爆炸/联动。 使用{@link RaycastBuilder 射线检测}获取单个目标，射程约 16 格。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-06-04
  */
 public class CrescentBrandSpell extends AbstractSpell {
 
-    /** 射线施法射程(格);数据生成的女仆 AI 施法距离引用同一常量。 */
+    /**
+     * 射线施法射程(格);数据生成的女仆 AI 施法距离引用同一常量。
+     */
     public static final float CAST_RANGE = 16.0f;
 
     private final ResourceLocation spellId = ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "crescent_brand");
@@ -46,6 +45,9 @@ public class CrescentBrandSpell extends AbstractSpell {
     public CrescentBrandSpell() {
         this.baseManaCost = 15;
         this.manaCostPerLevel = 5;
+        // 法术强度即引爆加成：引爆伤害 = 基础值 + 挂印时的法术强度（经 amplifier 传递）
+        this.baseSpellPower = 1;
+        this.spellPowerPerLevel = 1;
     }
 
     @Override
@@ -70,17 +72,20 @@ public class CrescentBrandSpell extends AbstractSpell {
             return;
         }
         WinefoxHexHelper.spawnCastBurst(serverLevel, entity);
-        var raycast = Utils.raycastForEntity(level, entity, CAST_RANGE, true, 0.35F);
+        var raycast = RaycastBuilder.begin(level, entity)
+            .range(CAST_RANGE)
+            .checkForBlocks(true)
+            .bbInflation(0.35f)
+            .build();
         if (raycast.getType() == EntityHitResult.Type.ENTITY
-                && ((EntityHitResult) raycast).getEntity() instanceof LivingEntity target) {
+            && ((EntityHitResult) raycast).getEntity() instanceof LivingEntity target) {
+            // 时长每级 +1s，高等级烙印留出更长的引爆窗口
             target.addEffect(new MobEffectInstance(
                 WsbEffects.CRESCENT_BRAND,
-                WinefoxHexHelper.BRAND_DURATION,
-                0
+                WinefoxHexHelper.BRAND_DURATION + 20 * (spellLevel - 1),
+                Math.max(0, Math.round(getSpellPower(spellLevel, entity)))
             ));
         }
-        // onCast 只在服务端被调用（Iron's castSpell/女仆 AI 均为服务端），super 负责播放施法完成音效；
-        // 漏调会让女仆/生物施放本法术完全无声
         super.onCast(level, spellLevel, entity, castSource, playerMagicData);
     }
 }
