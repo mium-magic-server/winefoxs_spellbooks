@@ -9,11 +9,11 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Set;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
-import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
-import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
+import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -24,7 +24,7 @@ import net.minecraft.world.phys.AABB;
 /**
  * 测试用法术选择任务
  * <p>
- * 使用所有 {@link MaidSpellRegistry} 注册的法术（最高等级）， 并以轮流（round-robin）方式依次选择下一个动作类型和法术， 而非使用权重随机选择。
+ * 使用所有 {@link MaidSpellCatalog} 注册的法术（最高等级）， 并以轮流（round-robin）方式依次选择下一个动作类型和法术， 而非使用权重随机选择。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-02-08 20:53
@@ -68,40 +68,18 @@ public class SpellTestChooseTask extends SpellChooseTask {
             return false;
         }
 
-        // 初始化所有可用法术（先清空），全部从 MaidSpellRegistry 获取，使用最高等级
-        usableAttackSpells.clear();
-        usableDefenseSpells.clear();
-        usableMovementSpells.clear();
-        usableSupportSpells.clear();
-        usablePositiveEffectSpells.clear();
-        usableNegativeEffectSpells.clear();
-        usableSupportEffectSpells.clear();
-
-        if (allowedActions.contains(MaidSpellAction.ATTACK)) {
-            populateFromRegistry(MaidSpellRegistry.ATTACK_SPELLS, usableAttackSpells);
-        }
-        if (allowedActions.contains(MaidSpellAction.DEFENSE)) {
-            populateFromRegistry(MaidSpellRegistry.DEFENSE_SPELLS, usableDefenseSpells);
-        }
-        if (allowedActions.contains(MaidSpellAction.MOVEMENT)) {
-            populateFromRegistry(MaidSpellRegistry.MOVEMENT_SPELLS, usableMovementSpells);
-        }
-        if (allowedActions.contains(MaidSpellAction.SUPPORT)) {
-            populateFromRegistry(MaidSpellRegistry.SUPPORT_SPELLS, usableSupportSpells);
-        }
-        if (allowedActions.contains(MaidSpellAction.POSITIVE)) {
-            populateFromRegistry(MaidSpellRegistry.POSITIVE_EFFECT_SPELLS, usablePositiveEffectSpells);
-        }
-        if (allowedActions.contains(MaidSpellAction.NEGATIVE)) {
-            populateFromRegistry(MaidSpellRegistry.NEGATIVE_EFFECT_SPELLS, usableNegativeEffectSpells);
-        }
-        if (allowedActions.contains(MaidSpellAction.SUPPORT_OTHER)) {
-            populateFromRegistry(MaidSpellRegistry.SUPPORT_EFFECT_SPELLS, usableSupportEffectSpells);
+        // 初始化所有可用法术（先清空），全部从 MaidSpellCatalog 获取，使用最高等级
+        for (MaidSpellAction action : MaidSpellAction.ALL) {
+            List<SpellData> bucket = usableSpells.get(action);
+            bucket.clear();
+            if (allowedActions.contains(action)) {
+                populateFromRegistry(MaidSpellCatalog.spellsOf(action), bucket);
+            }
         }
 
         // 计算附近队友，检查有无可用支援队友的法术，如果没有可用法术则跳过
         nearbyAlliedEntities.clear();
-        if (usablePositiveEffectSpells.size() + usableSupportEffectSpells.size() > 0) {
+        if (!usable(MaidSpellAction.POSITIVE).isEmpty() || !usable(MaidSpellAction.SUPPORT_OTHER).isEmpty()) {
             AABB aabb;
             if (mob instanceof EntityMaid maid) {
                 aabb = maid.searchDimension();
@@ -150,13 +128,10 @@ public class SpellTestChooseTask extends SpellChooseTask {
     @Override
     protected MaidSpellAction getNextSpellAction() {
         // 收集有可用法术的动作类型（保持枚举声明顺序）
+        // 遍历 ALL 而非 allowedActions：后者是 Set，迭代顺序不保证，轮转会乱序
         List<MaidSpellAction> availableActions = new ArrayList<>();
-        for (MaidSpellAction action : allowedActions) {
-            if (!allowedActions.contains(action)) {
-                continue;
-            }
-            List<SpellData> spells = getSpellListForAction(action);
-            if (spells != null && !spells.isEmpty()) {
+        for (MaidSpellAction action : MaidSpellAction.ALL) {
+            if (allowedActions.contains(action) && !usable(action).isEmpty()) {
                 availableActions.add(action);
             }
         }
@@ -184,8 +159,8 @@ public class SpellTestChooseTask extends SpellChooseTask {
             .getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get())
             .orElseThrow();
 
-        List<SpellData> availableSpells = getSpellListForAction(nextSpellAction);
-        if (availableSpells == null || availableSpells.isEmpty()) {
+        List<SpellData> availableSpells = usable(nextSpellAction);
+        if (availableSpells.isEmpty()) {
             return;
         }
 

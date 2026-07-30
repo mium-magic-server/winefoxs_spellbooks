@@ -19,13 +19,13 @@ import java.util.TreeMap;
 import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.api.event.MaidSpellActionChooseEvent;
 import net.magicterra.winefoxsspellbooks.api.event.MaidSpellChooseEvent;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
-import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
+import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.magic.spell.ManaTransferSpell;
-import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -50,23 +50,28 @@ import net.neoforged.neoforge.common.NeoForge;
  */
 public class SpellChooseTask extends Behavior<Mob> {
     protected final Set<MaidSpellAction> allowedActions;
+
     protected final Mob mob;
+
     protected final IMagicEntity magicEntity;
+
     protected final double startCastingRange;
+
     protected final double startCastingRangeSqr;
-    protected final List<SpellData> usableAttackSpells = new ArrayList<>();
-    protected final List<SpellData> usableDefenseSpells = new ArrayList<>();
-    protected final List<SpellData> usableMovementSpells = new ArrayList<>();
-    protected final List<SpellData> usableSupportSpells = new ArrayList<>();
-    protected final List<SpellData> usablePositiveEffectSpells = new ArrayList<>();
-    protected final List<SpellData> usableNegativeEffectSpells = new ArrayList<>();
-    protected final List<SpellData> usableSupportEffectSpells = new ArrayList<>();
+
+    /**
+     * 本轮筛出的可用法术，按行为类别分桶。桶实例在构造时建好后不再更换—— 子类（如 {@code SpellTestChooseTask}）持有它们的引用直接填充。
+     */
+    protected final Map<MaidSpellAction, List<SpellData>> usableSpells = new EnumMap<>(MaidSpellAction.class);
+
     protected final List<LivingEntity> nearbyAlliedEntities = new ArrayList<>();
 
     protected Predicate<LivingEntity> alliedEntityPredicate;
 
     protected MaidSpellAction lastAction;
+
     protected int maxDelayTicks;
+
     protected int nextSpellTickCount;
 
     public SpellChooseTask(double startCastingRange, int maxDelayTicks, Mob mob, Set<MaidSpellAction> allowedActions) {
@@ -79,6 +84,9 @@ public class SpellChooseTask extends Behavior<Mob> {
         this.mob = mob;
         this.magicEntity = (IMagicEntity) mob;
         this.allowedActions = allowedActions;
+        for (MaidSpellAction action : MaidSpellAction.ALL) {
+            usableSpells.put(action, new ArrayList<>());
+        }
         this.startCastingRange = startCastingRange;
         this.startCastingRangeSqr = startCastingRange * startCastingRange;
         this.alliedEntityPredicate = (entity) -> {
@@ -118,66 +126,22 @@ public class SpellChooseTask extends Behavior<Mob> {
         // 初始化所有可用法术 （先清空）
         MaidMagicEntity maidMagicEntity = (MaidMagicEntity) owner;
         MaidSpellDataHolder spellDataHolder = maidMagicEntity.winefoxsSpellbooks$getSpellDataHolder();
-        usableAttackSpells.clear();
-        usableDefenseSpells.clear();
-        usableMovementSpells.clear();
-        usableSupportSpells.clear();
-        usablePositiveEffectSpells.clear();
-        usableNegativeEffectSpells.clear();
-        usableSupportEffectSpells.clear();
-        if (allowedActions.contains(MaidSpellAction.ATTACK)) {
-            for (SpellData spellData : spellDataHolder.getAttackSpells()) {
-                if (MaidMagicManager.isSpellUsable(owner, spellData)) {
-                    usableAttackSpells.add(spellData);
-                }
+        for (MaidSpellAction action : MaidSpellAction.ALL) {
+            List<SpellData> bucket = usableSpells.get(action);
+            bucket.clear();
+            if (!allowedActions.contains(action)) {
+                continue;
             }
-        }
-        if (allowedActions.contains(MaidSpellAction.DEFENSE)) {
-            for (SpellData spellData : spellDataHolder.getDefenseSpells()) {
+            for (SpellData spellData : spellDataHolder.get(action)) {
                 if (MaidMagicManager.isSpellUsable(owner, spellData)) {
-                    usableDefenseSpells.add(spellData);
-                }
-            }
-        }
-        if (allowedActions.contains(MaidSpellAction.MOVEMENT)) {
-            for (SpellData spellData : spellDataHolder.getMovementSpells()) {
-                if (MaidMagicManager.isSpellUsable(owner, spellData)) {
-                    usableMovementSpells.add(spellData);
-                }
-            }
-        }
-        if (allowedActions.contains(MaidSpellAction.SUPPORT)) {
-            for (SpellData spellData : spellDataHolder.getSupportSpells()) {
-                if (MaidMagicManager.isSpellUsable(owner, spellData)) {
-                    usableSupportSpells.add(spellData);
-                }
-            }
-        }
-        if (allowedActions.contains(MaidSpellAction.POSITIVE)) {
-            for (SpellData spellData : spellDataHolder.getPositiveEffectSpells()) {
-                if (MaidMagicManager.isSpellUsable(owner, spellData)) {
-                    usablePositiveEffectSpells.add(spellData);
-                }
-            }
-        }
-        if (allowedActions.contains(MaidSpellAction.NEGATIVE)) {
-            for (SpellData spellData : spellDataHolder.getNegativeEffectSpells()) {
-                if (MaidMagicManager.isSpellUsable(owner, spellData)) {
-                    usableNegativeEffectSpells.add(spellData);
-                }
-            }
-        }
-        if (allowedActions.contains(MaidSpellAction.SUPPORT_OTHER)) {
-            for (SpellData spellData : spellDataHolder.getSupportEffectSpells()) {
-                if (MaidMagicManager.isSpellUsable(owner, spellData)) {
-                    usableSupportEffectSpells.add(spellData);
+                    bucket.add(spellData);
                 }
             }
         }
 
         // 计算附近队友，检查有无可用支援队友的法术，如果没有可用法术则跳过
         nearbyAlliedEntities.clear();
-        if (usablePositiveEffectSpells.size() + usableSupportEffectSpells.size() > 0) {
+        if (!usable(MaidSpellAction.POSITIVE).isEmpty() || !usable(MaidSpellAction.SUPPORT_OTHER).isEmpty()) {
             AABB aabb;
             if (mob instanceof EntityMaid maid) {
                 aabb = maid.searchDimension();
@@ -206,16 +170,18 @@ public class SpellChooseTask extends Behavior<Mob> {
     @Override
     protected void start(ServerLevel level, Mob entity, long gameTime) {
         // 设置记忆
-        MaidSpellAction nextSpellAction = entity.getBrain().getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get()).orElseThrow();
+        MaidSpellAction nextSpellAction = entity.getBrain()
+            .getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get()).orElseThrow();
         // 随机挑选法术，根据操作类型
-        List<SpellData> availableSpells = getSpellListForAction(nextSpellAction);
-        if (availableSpells == null || availableSpells.isEmpty()) {
+        List<SpellData> availableSpells = usable(nextSpellAction);
+        if (availableSpells.isEmpty()) {
             return;
         }
 
         // 触发 MaidSpellChooseEvent 事件
         LivingEntity attackTarget = entity.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
-        LivingEntity supportTarget = entity.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()).orElse(null);
+        LivingEntity supportTarget = entity.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get())
+            .orElse(null);
         MaidSpellChooseEvent spellEvent = new MaidSpellChooseEvent(
             entity, attackTarget, supportTarget, nearbyAlliedEntities,
             nextSpellAction, availableSpells
@@ -267,33 +233,19 @@ public class SpellChooseTask extends Behavior<Mob> {
         entity.getBrain().eraseMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get());
         entity.getBrain().eraseMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get());
         // 清理可用法术避免泄露
-        usableAttackSpells.clear();
-        usableDefenseSpells.clear();
-        usableMovementSpells.clear();
-        usableSupportSpells.clear();
-        usablePositiveEffectSpells.clear();
-        usableNegativeEffectSpells.clear();
-        usableSupportEffectSpells.clear();
+        usableSpells.values().forEach(List::clear);
         // 清理队友列表
         nearbyAlliedEntities.clear();
     }
 
     /**
-     * 根据行为类型获取对应的法术列表
+     * 本轮某一行为类型下筛出的可用法术（活引用，只读使用）。
      *
      * @param action 行为类型
-     * @return 对应的可用法术列表，未知类型返回 null
+     * @return 对应的可用法术列表，恒非 null（无可用时为空表）
      */
-    protected List<SpellData> getSpellListForAction(MaidSpellAction action) {
-        return switch (action) {
-            case ATTACK -> usableAttackSpells;
-            case DEFENSE -> usableDefenseSpells;
-            case MOVEMENT -> usableMovementSpells;
-            case SUPPORT -> usableSupportSpells;
-            case POSITIVE -> usablePositiveEffectSpells;
-            case NEGATIVE -> usableNegativeEffectSpells;
-            case SUPPORT_OTHER -> usableSupportEffectSpells;
-        };
+    protected List<SpellData> usable(MaidSpellAction action) {
+        return usableSpells.get(action);
     }
 
     /**
@@ -303,13 +255,11 @@ public class SpellChooseTask extends Behavior<Mob> {
      */
     protected Map<MaidSpellAction, List<SpellData>> buildAvailableSpellsByAction() {
         EnumMap<MaidSpellAction, List<SpellData>> map = new EnumMap<>(MaidSpellAction.class);
-        if (!usableAttackSpells.isEmpty()) map.put(MaidSpellAction.ATTACK, List.copyOf(usableAttackSpells));
-        if (!usableDefenseSpells.isEmpty()) map.put(MaidSpellAction.DEFENSE, List.copyOf(usableDefenseSpells));
-        if (!usableMovementSpells.isEmpty()) map.put(MaidSpellAction.MOVEMENT, List.copyOf(usableMovementSpells));
-        if (!usableSupportSpells.isEmpty()) map.put(MaidSpellAction.SUPPORT, List.copyOf(usableSupportSpells));
-        if (!usablePositiveEffectSpells.isEmpty()) map.put(MaidSpellAction.POSITIVE, List.copyOf(usablePositiveEffectSpells));
-        if (!usableNegativeEffectSpells.isEmpty()) map.put(MaidSpellAction.NEGATIVE, List.copyOf(usableNegativeEffectSpells));
-        if (!usableSupportEffectSpells.isEmpty()) map.put(MaidSpellAction.SUPPORT_OTHER, List.copyOf(usableSupportEffectSpells));
+        usableSpells.forEach((action, spells) -> {
+            if (!spells.isEmpty()) {
+                map.put(action, List.copyOf(spells));
+            }
+        });
         return Collections.unmodifiableMap(map);
     }
 
@@ -323,13 +273,13 @@ public class SpellChooseTask extends Behavior<Mob> {
      * @return 行为类型 -&gt; 权重的映射
      */
     protected EnumMap<MaidSpellAction, Integer> calculateDefaultActionWeights(
-            LivingEntity attackTarget, LivingEntity supportTarget,
-            double distanceSquared, boolean canSee) {
+        LivingEntity attackTarget, LivingEntity supportTarget,
+        double distanceSquared, boolean canSee) {
         EnumMap<MaidSpellAction, Integer> weights = new EnumMap<>(MaidSpellAction.class);
 
         // 治疗自己
         int supportWeight = getSupportWeight(attackTarget, distanceSquared);
-        if (!usableSupportSpells.isEmpty()) {
+        if (!usable(MaidSpellAction.SUPPORT).isEmpty()) {
             weights.put(MaidSpellAction.SUPPORT, supportWeight);
         }
 
@@ -337,10 +287,10 @@ public class SpellChooseTask extends Behavior<Mob> {
         if (!nearbyAlliedEntities.isEmpty() || supportTarget != null) {
             int positiveEffectWeight = getPositiveWeight(supportTarget);
             int supportEffectWeight = getSupportOtherWeight(supportTarget);
-            if (!usablePositiveEffectSpells.isEmpty()) {
+            if (!usable(MaidSpellAction.POSITIVE).isEmpty()) {
                 weights.put(MaidSpellAction.POSITIVE, positiveEffectWeight);
             }
-            if (!usableSupportEffectSpells.isEmpty()) {
+            if (!usable(MaidSpellAction.SUPPORT_OTHER).isEmpty()) {
                 weights.put(MaidSpellAction.SUPPORT_OTHER, supportEffectWeight);
             }
         }
@@ -358,21 +308,21 @@ public class SpellChooseTask extends Behavior<Mob> {
             negativeEffectWeight += getNegativeWeight(attackTarget, distanceSquared, canSee);
         }
 
-        if (!usableAttackSpells.isEmpty()) weights.put(MaidSpellAction.ATTACK, attackWeight);
-        if (!usableDefenseSpells.isEmpty()) weights.put(MaidSpellAction.DEFENSE, defenseWeight);
-        if (!usableMovementSpells.isEmpty()) weights.put(MaidSpellAction.MOVEMENT, movementWeight);
-        if (!usableNegativeEffectSpells.isEmpty()) weights.put(MaidSpellAction.NEGATIVE, negativeEffectWeight);
+        if (!usable(MaidSpellAction.ATTACK).isEmpty())
+            weights.put(MaidSpellAction.ATTACK, attackWeight);
+        if (!usable(MaidSpellAction.DEFENSE).isEmpty())
+            weights.put(MaidSpellAction.DEFENSE, defenseWeight);
+        if (!usable(MaidSpellAction.MOVEMENT).isEmpty())
+            weights.put(MaidSpellAction.MOVEMENT, movementWeight);
+        if (!usable(MaidSpellAction.NEGATIVE).isEmpty())
+            weights.put(MaidSpellAction.NEGATIVE, negativeEffectWeight);
 
         return weights;
     }
 
     /**
-     * 根据权重映射选择行为类型
-     * <p>
-     * 保留原有的两阶段加权随机逻辑：
-     * 第一阶段（支援类优先）：SUPPORT + POSITIVE + SUPPORT_OTHER 参与加权随机，
-     * 若选中则直接返回；
-     * 第二阶段（战斗类）：ATTACK + DEFENSE + MOVEMENT + NEGATIVE 参与加权随机。
+     * 两阶段加权随机：先支援类（SUPPORT / POSITIVE / SUPPORT_OTHER），选不中再战斗类
+     * （ATTACK / DEFENSE / MOVEMENT / NEGATIVE）。
      *
      * @param weights 行为类型 -&gt; 权重的映射
      * @return 选中的行为类型，null 表示没有可用的行为
@@ -383,22 +333,23 @@ public class SpellChooseTask extends Behavior<Mob> {
 
         // 第一阶段：支援类优先
         int supportWeight = weights.getOrDefault(MaidSpellAction.SUPPORT, 0);
-        if (!usableSupportSpells.isEmpty() && supportWeight > 0) {
+        if (!usable(MaidSpellAction.SUPPORT).isEmpty() && supportWeight > 0) {
             total += supportWeight;
             weightedSpells.put(total, MaidSpellAction.SUPPORT);
         }
 
-        LivingEntity supportTarget = mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()).orElse(null);
+        LivingEntity supportTarget = mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get())
+            .orElse(null);
         if (!nearbyAlliedEntities.isEmpty() || supportTarget != null) {
             int positiveEffectWeight = weights.getOrDefault(MaidSpellAction.POSITIVE, 0);
             int supportEffectWeight = weights.getOrDefault(MaidSpellAction.SUPPORT_OTHER, 0);
 
-            if (!usablePositiveEffectSpells.isEmpty() && positiveEffectWeight > 0) {
+            if (!usable(MaidSpellAction.POSITIVE).isEmpty() && positiveEffectWeight > 0) {
                 total += positiveEffectWeight;
                 weightedSpells.put(total, MaidSpellAction.POSITIVE);
             }
 
-            if (!usableSupportEffectSpells.isEmpty() && supportEffectWeight > 0) {
+            if (!usable(MaidSpellAction.SUPPORT_OTHER).isEmpty() && supportEffectWeight > 0) {
                 total += supportEffectWeight;
                 weightedSpells.put(total, MaidSpellAction.SUPPORT_OTHER);
             }
@@ -407,7 +358,8 @@ public class SpellChooseTask extends Behavior<Mob> {
                 int seed = mob.getRandom().nextInt(total);
                 return weightedSpells.higherEntry(seed).getValue();
             }
-            if (mob instanceof EntityMaid maid && usableSupportEffectSpells.isEmpty() && supportEffectWeight > 0) {
+            if (mob instanceof EntityMaid maid && usable(MaidSpellAction.SUPPORT_OTHER).isEmpty()
+                && supportEffectWeight > 0) {
                 MaidMagicManager.showCurrentSpellInChatBubble(maid, SpellData.EMPTY, true);
             }
         }
@@ -418,22 +370,22 @@ public class SpellChooseTask extends Behavior<Mob> {
         int movementWeight = weights.getOrDefault(MaidSpellAction.MOVEMENT, 0);
         int negativeEffectWeight = weights.getOrDefault(MaidSpellAction.NEGATIVE, 0);
 
-        if (!usableAttackSpells.isEmpty() && attackWeight > 0) {
+        if (!usable(MaidSpellAction.ATTACK).isEmpty() && attackWeight > 0) {
             total += attackWeight;
             weightedSpells.put(total, MaidSpellAction.ATTACK);
         }
 
-        if (!usableDefenseSpells.isEmpty() && defenseWeight > 0) {
+        if (!usable(MaidSpellAction.DEFENSE).isEmpty() && defenseWeight > 0) {
             total += defenseWeight;
             weightedSpells.put(total, MaidSpellAction.DEFENSE);
         }
 
-        if (!usableMovementSpells.isEmpty() && movementWeight > 0) {
+        if (!usable(MaidSpellAction.MOVEMENT).isEmpty() && movementWeight > 0) {
             total += movementWeight;
             weightedSpells.put(total, MaidSpellAction.MOVEMENT);
         }
 
-        if (!usableNegativeEffectSpells.isEmpty() && negativeEffectWeight > 0) {
+        if (!usable(MaidSpellAction.NEGATIVE).isEmpty() && negativeEffectWeight > 0) {
             total += negativeEffectWeight;
             weightedSpells.put(total, MaidSpellAction.NEGATIVE);
         }
@@ -448,7 +400,8 @@ public class SpellChooseTask extends Behavior<Mob> {
 
     protected MaidSpellAction getNextSpellAction() {
         LivingEntity attackTarget = mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
-        LivingEntity supportTarget = mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()).orElse(null);
+        LivingEntity supportTarget = mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get())
+            .orElse(null);
         boolean canSee;
         if (mob instanceof EntityMaid maid) {
             canSee = attackTarget != null && maid.canSee(attackTarget);
@@ -480,9 +433,8 @@ public class SpellChooseTask extends Behavior<Mob> {
         return selectActionByWeights(actionEvent.getActionWeightsInternal());
     }
 
-    // The follow is from WizardAttackGoal
+    // 攻击是常态动作：己方血厚或目标血薄时权重更高
     protected int getAttackWeight(LivingEntity target, double distanceSquared, boolean hasLineOfSight) {
-        //We want attack to be a common action in any circumstance, but the more "confident" we are the more likely we are to attack (we have health or our target is weak)
         int baseWeight = 80;
         if (!hasLineOfSight || target == null) {
             return 0;
@@ -494,30 +446,24 @@ public class SpellChooseTask extends Behavior<Mob> {
         return baseWeight + targetHealthWeight + distanceWeight;
     }
 
+    // 血量越低、被压制越狠，防御法术权重越高
     protected int getDefenseWeight(LivingEntity target) {
-        //We want defensive spells to be used when we feel "threatened", meaning we aren't confident, or we're actively being attacked
         int baseWeight = 20;
 
         if (target == null) {
             return baseWeight;
         }
 
-        //https://www.desmos.com/calculator/tqs7dudcmv
-        //https://www.desmos.com/calculator/7skhcvpic0
         float x = mob.getHealth();
         float m = mob.getMaxHealth();
-        //int healthWeight = (int) (50 * (Math.pow(-(x / m) * (x - m), 3) / Math.pow(m / 2, 3)) * 8);
         int healthWeight = (int) (50 * (-(x * x * x) / (m * m * m) + 1));
 
         float targetHealth = target.getHealth() / target.getMaxHealth();
         int targetHealthWeight = (int) ((1 - targetHealth) * -35);
 
-        //this count be finicky due to the fact that projectiles don't stick around for long, so it might be easy to miss them
-        // int threatWeight = projectileCount * 95;
-
         int usableSpellWeight = 0;
-        for (SpellData spellData : usableDefenseSpells) {
-            Holder<MobEffect> causedEffect = MaidSpellRegistry.getSpellCausedEffect(spellData.getSpell());
+        for (SpellData spellData : usable(MaidSpellAction.DEFENSE)) {
+            Holder<MobEffect> causedEffect = MaidSpellCatalog.getSpellCausedEffect(spellData.getSpell());
             if (causedEffect != null && !mob.hasEffect(causedEffect)) {
                 // 还没上此 buff
                 usableSpellWeight += 20;
@@ -530,11 +476,11 @@ public class SpellChooseTask extends Behavior<Mob> {
         return baseWeight + healthWeight + targetHealthWeight + usableSpellWeight;
     }
 
+    // 位置不利或没视线时才走位
     protected int getMovementWeight(LivingEntity target, double distanceSquared, boolean hasLineOfSight) {
         if (target == null) {
             return 0;
         }
-        //We want to move if we're in a disadvantageous spot, or we need a better angle on our target
         double distancePercent = Mth.clamp(distanceSquared / startCastingRangeSqr, 0, 1);
 
         int distanceWeight = (int) ((distancePercent) * 50);
@@ -548,14 +494,13 @@ public class SpellChooseTask extends Behavior<Mob> {
         return distanceWeight + losWeight + runWeight;
     }
 
+    // 血量越低越想自保；目标贴脸时不喝药
     protected int getSupportWeight(LivingEntity target, double distanceSquared) {
-        //We want to support/buff ourselves if we are weak
         int baseWeight = -10;
 
         float health = 1 - mob.getHealth() / mob.getMaxHealth();
         int healthWeight = (int) (200 * health);
 
-        //If our target is close we should probably not drink a potion right in front of them
         double distancePercent = Mth.clamp(distanceSquared / startCastingRangeSqr, 0, 1);
         int distanceWeight = (int) ((1 - distancePercent) * -75);
 
@@ -582,20 +527,31 @@ public class SpellChooseTask extends Behavior<Mob> {
         return baseWeight;
     }
 
+    /**
+     * 目标身上有没有能被净化术清掉的负面效果。
+     * <p>
+     * 用普通循环而非 stream：本方法处在「每个附近队友 × 每个可用法术」的双重循环内层， 每次调用都新建一条 stream 管线纯属浪费；短路语义与 {@code anyMatch} 一致。
+     */
+    private static boolean hasCleansableEffect(LivingEntity target) {
+        for (MobEffectInstance instance : target.getActiveEffects()) {
+            Holder<MobEffect> effect = instance.getEffect();
+            if (effect.value().getCategory() == MobEffectCategory.HARMFUL && !effect.is(ModTags.CLEANSE_IMMUNE)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private int getPositiveWeightForSpecifiedEntity(LivingEntity supportTarget) {
-        for (SpellData spellData : usablePositiveEffectSpells) {
-            Holder<MobEffect> causedEffect = MaidSpellRegistry.getSpellCausedEffect(spellData.getSpell());
+        for (SpellData spellData : usable(MaidSpellAction.POSITIVE)) {
+            Holder<MobEffect> causedEffect = MaidSpellCatalog.getSpellCausedEffect(spellData.getSpell());
             if (causedEffect != null && !supportTarget.hasEffect(causedEffect)) {
                 // 队友还没上 buff
                 return 500;
             }
             if (spellData.getSpell() instanceof CleanseSpell) {
                 // 队友有负面 buff，我们有净化
-                boolean hasHarmfulEffect = supportTarget.getActiveEffects()
-                    .stream()
-                    .map(MobEffectInstance::getEffect)
-                    .anyMatch(effect -> effect.value().getCategory() == MobEffectCategory.HARMFUL && !effect.is(ModTags.CLEANSE_IMMUNE));
-                if (hasHarmfulEffect) {
+                if (hasCleansableEffect(supportTarget)) {
                     return 1000;
                 }
             } else if (spellData.getSpell() instanceof ManaTransferSpell spell) {
@@ -615,9 +571,10 @@ public class SpellChooseTask extends Behavior<Mob> {
 
     protected int getNegativeWeight(LivingEntity target, double distanceSquared, boolean hasLineOfSight) {
         // 权重基于攻击法术，使得此类型的法术可用的越多优先级更高
-        int baseWeight = usableNegativeEffectSpells.isEmpty() ? 0 : getAttackWeight(target, distanceSquared, hasLineOfSight);
-        for (SpellData spellData : usableNegativeEffectSpells) {
-            Holder<MobEffect> causedEffect = MaidSpellRegistry.getSpellCausedEffect(spellData.getSpell());
+        int baseWeight =
+            usable(MaidSpellAction.NEGATIVE).isEmpty() ? 0 : getAttackWeight(target, distanceSquared, hasLineOfSight);
+        for (SpellData spellData : usable(MaidSpellAction.NEGATIVE)) {
+            Holder<MobEffect> causedEffect = MaidSpellCatalog.getSpellCausedEffect(spellData.getSpell());
             if (causedEffect != null && !target.hasEffect(causedEffect)) {
                 // 敌人没有这个 buff
                 baseWeight += 10;
