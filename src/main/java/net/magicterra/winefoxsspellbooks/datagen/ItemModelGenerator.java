@@ -25,14 +25,13 @@ public class ItemModelGenerator extends ItemModelProvider {
         basicItem(WsbItems.CRESCENT_BLOOD_VINTAGE.get());
         basicItem(WsbItems.VULPINE_ANIMA.get());
 
-        // 学派卷轴模型：主模组 ScrollModel 按 SchoolType id 动态加载
-        // <school_namespace>:item/scroll_<school_path>，所以这里需要一个无 Item
-        // 绑定的独立模型条目，由 ScrollModel#getScrollModelLocation() 引用。
-        scrollModel(WsbSchools.WINEFOX_HEX_RESOURCE.getPath());
+        // 学派卷轴 / 姻缘戒指：主模组按 SchoolType id 动态加载，需要无 Item 绑定的独立模型条目
+        schoolItemModel("scroll_", WsbSchools.WINEFOX_HEX_RESOURCE.getPath());
+        schoolItemModel("affinity_ring_", WsbSchools.WINEFOX_HEX_RESOURCE.getPath());
     }
 
-    private void scrollModel(String schoolPath) {
-        withExistingParent("scroll_" + schoolPath, "item/generated")
-            .texture("layer0", modLoc("item/scroll_" + schoolPath));
+    private void schoolItemModel(String prefix, String schoolPath) {
+        withExistingParent(prefix + schoolPath, "item/generated")
+            .texture("layer0", modLoc("item/" + prefix + schoolPath));
     }
 }
