@@ -1,0 +1,18 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "idle": {
+      "loop": true,
+      "animation_length": 1.2,
+      "bones": {
+        "bomb": {
+          "rotation": {
+            "0.0": [0, 0, 0],
+            "0.6": [180, 0, 12],
+            "1.2": [360, 0, 0]
+          }
+        }
+      }
+    }
+  }
+}

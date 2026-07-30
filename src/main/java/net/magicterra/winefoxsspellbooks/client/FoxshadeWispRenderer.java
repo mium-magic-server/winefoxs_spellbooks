@@ -2,47 +2,56 @@ package net.magicterra.winefoxsspellbooks.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
-import net.magicterra.winefoxsspellbooks.entity.spells.FoxshadeWispProjectile;
+import com.mojang.math.Axis;
+import net.magicterra.winefoxsspellbooks.client.layer.FoxshadeWispOrbitLayer;
+import net.magicterra.winefoxsspellbooks.client.model.SnowFoxModel;
+import net.magicterra.winefoxsspellbooks.entity.projectile.FoxshadeWispProjectile;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
-import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
 /**
  * 酒杯狐影弹渲染器（GeckoLib）。
  * <p>
- * 渲染一颗以 littlefox 狐头为参照、紫粉重调的拖焰狐头模型。资产路径由
- * {@link DefaultedEntityGeoModel} 按名称 {@code foxshade_wisp} 自动解析，且固定带 entity/ 子目录：
- * geo/entity/foxshade_wisp.geo.json、animations/entity/foxshade_wisp.animation.json、
- * textures/entity/foxshade_wisp.png。资产不在该路径下编译期查不出，首次渲染时才会崩溃。
+ * 渲染一只冰狐配色的小狐狸弹体，飞行中叠加翻滚与行走循环。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-06-21
  */
 public class FoxshadeWispRenderer extends GeoEntityRenderer<FoxshadeWispProjectile> {
 
+    /**
+     * 弹体缩放：全身狐模型比旧狐头大得多，整体缩小。
+     */
+    private static final float WISP_SCALE = 0.45f;
+
     public FoxshadeWispRenderer(EntityRendererProvider.Context context) {
-        super(context, new DefaultedEntityGeoModel<>(
-            ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "foxshade_wisp")));
+        super(context, new SnowFoxModel<>());
+        this.addRenderLayer(new FoxshadeWispOrbitLayer(this));
     }
 
-    /**
-     * finisher 弹体（第 6 发）渲染放大至 0.85；普通弹保持 0.55。
-     *
-     * @author Gardel &lt;gardel741@outlook.com&gt;
-     * @since 2026-06-21
-     */
     @Override
     public void preRender(PoseStack poseStack, FoxshadeWispProjectile animatable, BakedGeoModel model,
                           MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender,
                           float partialTick, int packedLight, int packedOverlay, int colour) {
-        float s = animatable.isFinisher() ? 0.85f : 0.55f;
+        float s = WISP_SCALE;
         this.scaleWidth = s;
         this.scaleHeight = s;
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender,
             partialTick, packedLight, packedOverlay, colour);
+    }
+
+    /**
+     * 按弹体自身的 yRot/xRot 定向；偏航补 +180° 把模型局部 -Z 转到飞行方向。
+     */
+    @Override
+    protected void applyRotations(FoxshadeWispProjectile animatable, PoseStack poseStack, float ageInTicks,
+                                  float rotationYaw, float partialTick, float nativeScale) {
+        float yaw = Mth.lerp(partialTick, animatable.yRotO, animatable.getYRot());
+        float pitch = Mth.lerp(partialTick, animatable.xRotO, animatable.getXRot());
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw + 180.0f));
+        poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
     }
 }
