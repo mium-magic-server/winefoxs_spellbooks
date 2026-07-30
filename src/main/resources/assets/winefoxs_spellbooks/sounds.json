@@ -4,5 +4,74 @@
     "sounds": [
       "winefoxs_spellbooks:cast/winefox_hex1"
     ]
+  },
+  "entity.foxshade_biter.spawn": {
+    "subtitle": "subtitle.winefoxs_spellbooks.entity.foxshade_biter.spawn",
+    "sounds": [
+      "winefoxs_spellbooks:entity/foxshade_biter_spawn1",
+      "winefoxs_spellbooks:entity/foxshade_biter_spawn2",
+      "winefoxs_spellbooks:entity/foxshade_biter_spawn3",
+      "winefoxs_spellbooks:entity/foxshade_biter_spawn4"
+    ]
+  },
+  "entity.foxshade_biter.bite": {
+    "subtitle": "subtitle.winefoxs_spellbooks.entity.foxshade_biter.bite",
+    "sounds": [
+      "winefoxs_spellbooks:entity/foxshade_biter_bite"
+    ]
+  },
+  "impact.foxshade_wisps": {
+    "subtitle": "subtitle.winefoxs_spellbooks.impact.foxshade_wisps",
+    "sounds": [
+      "winefoxs_spellbooks:impact/foxshade_wisps1",
+      "winefoxs_spellbooks:impact/foxshade_wisps2",
+      "winefoxs_spellbooks:impact/foxshade_wisps3"
+    ]
+  },
+  "ambient.tipsy_mist": {
+    "subtitle": "subtitle.winefoxs_spellbooks.ambient.tipsy_mist",
+    "sounds": [
+      "winefoxs_spellbooks:ambient/tipsy_mist"
+    ]
+  },
+  "cast.vintners_bomb.throw": {
+    "subtitle": "subtitle.winefoxs_spellbooks.cast.vintners_bomb.throw",
+    "sounds": [
+      "winefoxs_spellbooks:cast/vintners_bomb_throw"
+    ]
+  },
+  "cast.vintners_bomb.explode": {
+    "subtitle": "subtitle.winefoxs_spellbooks.cast.vintners_bomb.explode",
+    "sounds": [
+      "winefoxs_spellbooks:cast/vintners_bomb_explode1",
+      "winefoxs_spellbooks:cast/vintners_bomb_explode2",
+      "winefoxs_spellbooks:cast/vintners_bomb_explode3"
+    ]
+  },
+  "cast.summon_maid.arrive": {
+    "subtitle": "subtitle.winefoxs_spellbooks.cast.summon_maid.arrive",
+    "sounds": [
+      "winefoxs_spellbooks:cast/summon_maid_arrive"
+    ]
+  },
+  "cast.foxshade_wisps.fire": {
+    "subtitle": "subtitle.winefoxs_spellbooks.cast.foxshade_wisps.fire",
+    "sounds": [
+      "winefoxs_spellbooks:cast/foxshade_wisps_fire1",
+      "winefoxs_spellbooks:cast/foxshade_wisps_fire2",
+      "winefoxs_spellbooks:cast/foxshade_wisps_fire3"
+    ]
+  },
+  "cast.foxshade_ambush.cast": {
+    "subtitle": "subtitle.winefoxs_spellbooks.cast.foxshade_ambush.cast",
+    "sounds": [
+      "winefoxs_spellbooks:cast/foxshade_ambush_cast"
+    ]
+  },
+  "cast.tipsy_mist.burst": {
+    "subtitle": "subtitle.winefoxs_spellbooks.cast.tipsy_mist.burst",
+    "sounds": [
+      "winefoxs_spellbooks:cast/tipsy_mist_burst"
+    ]
   }
 }
