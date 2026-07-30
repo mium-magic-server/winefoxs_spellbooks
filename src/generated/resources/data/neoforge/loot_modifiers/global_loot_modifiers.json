@@ -13,7 +13,23 @@
     "winefoxs_spellbooks:scroll_citadel_tomes",
     "winefoxs_spellbooks:scroll_catacombs_coffin",
     "winefoxs_spellbooks:scroll_stronghold_library",
-    "winefoxs_spellbooks:scroll_nether_bridge"
+    "winefoxs_spellbooks:scroll_nether_bridge",
+    "winefoxs_spellbooks:vintage_village_plains_house",
+    "winefoxs_spellbooks:vintage_village_desert_house",
+    "winefoxs_spellbooks:vintage_village_savanna_house",
+    "winefoxs_spellbooks:vintage_village_snowy_house",
+    "winefoxs_spellbooks:vintage_village_taiga_house",
+    "winefoxs_spellbooks:vintage_village_temple",
+    "winefoxs_spellbooks:vintage_pillager_outpost",
+    "winefoxs_spellbooks:vintage_woodland_mansion",
+    "winefoxs_spellbooks:vintage_pyromancer_fire_ale_cask",
+    "winefoxs_spellbooks:vintage_pyromancer_old_cask",
+    "winefoxs_spellbooks:vintage_pyromancer_fire_ale_trove",
+    "winefoxs_spellbooks:vintage_ice_spider_den_cask",
+    "winefoxs_spellbooks:vintage_icebreaker_food_barrel",
+    "winefoxs_spellbooks:vintage_citadel_rampart_supplies",
+    "winefoxs_spellbooks:vintage_mangrove_hut_potion_storage",
+    "winefoxs_spellbooks:vintage_catacombs_coffin"
   ],
   "replace": false
 }

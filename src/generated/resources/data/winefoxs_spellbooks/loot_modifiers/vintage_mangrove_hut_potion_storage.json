@@ -1,0 +1,15 @@
+{
+  "type": "winefoxs_spellbooks:add_item",
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "irons_spellbooks:chests/mangrove_hut/hidden_potion_storage"
+    },
+    {
+      "chance": 0.25,
+      "condition": "minecraft:random_chance"
+    }
+  ],
+  "count": 1,
+  "item": "winefoxs_spellbooks:crescent_blood_vintage"
+}

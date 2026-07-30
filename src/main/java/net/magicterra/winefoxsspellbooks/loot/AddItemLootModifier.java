@@ -16,9 +16,7 @@ import net.neoforged.neoforge.common.loot.LootModifier;
 /**
  * 向战利品池追加一个固定物品的 GlobalLootModifier
  * <p>
- * 触发与否完全交给 {@link LootModifier#conditions}（vanilla {@code entity_properties} /
- * {@code random_chance_with_enchanted_bonus} / NeoForge {@code loot_table_id}），
- * 本类只在条件全部通过后把 ItemStack 加进去。
+ * 触发与否完全交给 {@link LootModifier#conditions}（vanilla {@code entity_properties} / {@code random_chance_with_enchanted_bonus} / NeoForge {@code loot_table_id}）， 本类只在条件全部通过后把 ItemStack 加进去。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-05-11
@@ -31,12 +29,34 @@ public class AddItemLootModifier extends LootModifier {
         .apply(inst, AddItemLootModifier::new));
 
     private final Item item;
+
     private final IntProvider count;
 
     public AddItemLootModifier(LootItemCondition[] conditions, Item item, IntProvider count) {
         super(conditions);
         this.item = item;
         this.count = count;
+    }
+
+    /**
+     * 追加的物品。
+     */
+    public Item getItem() {
+        return item;
+    }
+
+    /**
+     * 追加的数量范围。
+     */
+    public IntProvider getCountProvider() {
+        return count;
+    }
+
+    /**
+     * 生效条件（不叫 {@code getConditions()}：ALI 的 Accessor Mixin 已占用该名）。
+     */
+    public LootItemCondition[] getLootConditions() {
+        return conditions;
     }
 
     @Override

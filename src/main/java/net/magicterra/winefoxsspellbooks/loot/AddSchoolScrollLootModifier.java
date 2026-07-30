@@ -21,9 +21,7 @@ import net.neoforged.neoforge.common.loot.LootModifier;
 /**
  * 往命中的战利品表追加一卷指定学派（{@code school} 字段，学派注册 id）的卷轴。
  * <p>
- * 法术按稀有度加权随机（权重表照抄 Iron's {@code RandomizeSpellFunction}），等级由
- * {@code minQuality}~{@code maxQuality} 区间内的随机 quality 映射：
- * {@code level = 1 + round(quality * (maxLevel - 1))}。
+ * 法术按稀有度加权随机（权重表照抄 Iron's {@code RandomizeSpellFunction}），等级由 {@code minQuality}~{@code maxQuality} 区间内的随机 quality 映射： {@code level = 1 + round(quality * (maxLevel - 1))}。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-07-06
@@ -37,7 +35,9 @@ public class AddSchoolScrollLootModifier extends LootModifier {
         )).apply(inst, AddSchoolScrollLootModifier::new));
 
     private final ResourceLocation school;
+
     private final float minQuality;
+
     private final float maxQuality;
 
     public AddSchoolScrollLootModifier(LootItemCondition[] conditions, ResourceLocation school,
@@ -90,7 +90,9 @@ public class AddSchoolScrollLootModifier extends LootModifier {
         return spells.getLast(); // roll < total 保证循环内必命中,此处仅作保底
     }
 
-    /** 权重表与 Iron's {@code RandomizeSpellFunction#getWeightFromRarity} 保持一致。 */
+    /**
+     * 权重表与 Iron's {@code RandomizeSpellFunction#getWeightFromRarity} 保持一致。
+     */
     private static int weightFromRarity(SpellRarity rarity) {
         return switch (rarity) {
             case COMMON -> 40;
