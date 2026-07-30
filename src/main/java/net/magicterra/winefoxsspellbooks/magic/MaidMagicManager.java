@@ -17,17 +17,14 @@ import io.redspace.ironsspellbooks.config.ServerConfigs;
 import java.util.Objects;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
-import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -35,11 +32,15 @@ import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 
 public class MaidMagicManager {
     public static final int MANA_REGEN_TICKS = 10;
+
     public static final int CONTINUOUS_CAST_TICK_INTERVAL = 10;
 
-    public static boolean regenMaidMana(EntityMaid maid, MagicData magicData) {
-        return regenMana(maid, magicData);
-    }
+    /**
+     * 雷击女仆的魔力恢复倍率。
+     * <p>
+     * 按 {@link #regenMana} 的公式，100 意味着每 {@link #MANA_REGEN_TICKS} tick 回满整条蓝条（0.5 秒一满）， 等同于无限法力；而 TLM 的 {@code isStruckByLightning} 是<b>持久化的永久标志</b>（存 NBT，一次雷劈终身有效）， 所以这是个一次性触发、不可逆的巨大增益。默认关，由 {@link Config#isLightningManaRegenEnabled()} 控制。
+     */
+    private static final float LIGHTNING_MANA_REGEN_MULTIPLIER = 100.0f;
 
     /**
      * 恢复魔力值 (通用方法)
@@ -57,8 +58,9 @@ public class MaidMagicManager {
         var mana = magicData.getMana();
         if (mana < maxMana) {
             float manaRegenMultiplier;
-            if (entity instanceof EntityMaid maid && maid.isStruckByLightning()) {
-                manaRegenMultiplier = 100; // 雷击加速恢复
+            if (Config.isLightningManaRegenEnabled()
+                && entity instanceof EntityMaid maid && maid.isStruckByLightning()) {
+                manaRegenMultiplier = LIGHTNING_MANA_REGEN_MULTIPLIER; // 雷击加速恢复
             } else {
                 manaRegenMultiplier = (float) entity.getAttributeValue(AttributeRegistry.MANA_REGEN);
             }
@@ -74,10 +76,6 @@ public class MaidMagicManager {
         } else {
             return false;
         }
-    }
-
-    public static double getMaxMana(EntityMaid maid) {
-        return getMaxMana((LivingEntity) maid);
     }
 
     /**
@@ -120,10 +118,6 @@ public class MaidMagicManager {
         return (int) (spell.getSpellCooldown() * (2 - Utils.softCapFormula(playerCooldownModifier)) * itemCoolDownModifer);
     }
 
-    public static void spawnParticles(Level level, ParticleOptions particle, double x, double y, double z, int count, double deltaX, double deltaY, double deltaZ, double speed, boolean force) {
-        level.getServer().getPlayerList().getPlayers().forEach(player -> ((ServerLevel) level).sendParticles(player, particle, force, x, y, z, count, deltaX, deltaY, deltaZ, speed));
-    }
-
     public static int getLevelFor(EntityMaid maid, AbstractSpell spell, int level) {
         int addition = 0;
         if (maid != null) {
@@ -157,7 +151,7 @@ public class MaidMagicManager {
             // 二段咏唱，例如:
             // 炽焰追踪弹幕、火墙术 需要二段咏唱才能施放
             // 而召唤术二段咏唱会收回召唤物
-            if (!MaidSpellRegistry.maidShouldRecast(spellData.getSpell())) {
+            if (!MaidSpellCatalog.maidShouldRecast(spellData.getSpell())) {
                 // 不能二段咏唱
                 return false;
             }

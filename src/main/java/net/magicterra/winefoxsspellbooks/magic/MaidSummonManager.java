@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedMaidBroom;
 import net.magicterra.winefoxsspellbooks.mixin.SummonManagerAccessor;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
 import net.minecraft.nbt.CompoundTag;
@@ -26,37 +26,43 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
  */
 public class MaidSummonManager {
     public static void onMaidPlaced(LivingEntity maid) {
-        if (maid.level instanceof ServerLevel serverLevel) {
-            SummonManagerAccessor manager = (SummonManagerAccessor) SummonManager.INSTANCE;
-            var savedSummons = maid.getExistingDataOrNull(WsbAttachments.SAVED_SUMMONS);
-            if (savedSummons != null) {
-                Set<UUID> summonsSet = new HashSet<>();
-                UUID ownerUUID = maid.getUUID();
-                for (CompoundTag summon : savedSummons) {
-                    var summonedEntity = EntityType.create(summon, serverLevel).orElse(null);
-                    if (summonedEntity != null) {
-                        Vec3 position = maid.position();
-                        if (summonedEntity instanceof SummonedMaidBroom) {
-                            summonedEntity.getSelfAndPassengers().forEach(entity -> {
-                                serverLevel.addFreshEntity(entity);
-                                var summonUUID = entity.getUUID();
-                                summonsSet.add(summonUUID);
-                                manager.getSummonToOwner().put(summonUUID, ownerUUID);
-                                SummonManager.setDuration(entity, summon.getInt("summon_duration_remaining"));
-                            });
-                        } else {
-                            serverLevel.addFreshEntityWithPassengers(summonedEntity);
-                            var summonUUID = summonedEntity.getUUID();
-                            summonsSet.add(summonUUID);
-                            manager.getSummonToOwner().put(summonUUID, ownerUUID);
-                            SummonManager.setDuration(summonedEntity, summon.getInt("summon_duration_remaining"));
-                        }
-                        summonedEntity.teleportTo(position.x, position.y, position.z);
-                    }
-                    manager.getOwnerToSummons().put(ownerUUID, summonsSet);
-                }
-            }
+        if (!(maid.level() instanceof ServerLevel serverLevel)) {
+            return;
         }
+        var savedSummons = maid.getExistingDataOrNull(WsbAttachments.SAVED_SUMMONS);
+        if (savedSummons == null) {
+            return;
+        }
+
+        SummonManagerAccessor manager = (SummonManagerAccessor) SummonManager.INSTANCE;
+        Set<UUID> summonsSet = new HashSet<>();
+        UUID ownerUUID = maid.getUUID();
+        Vec3 position = maid.position();
+        for (CompoundTag summon : savedSummons) {
+            var summonedEntity = EntityType.create(summon, serverLevel).orElse(null);
+            if (summonedEntity == null) {
+                continue;
+            }
+            if (summonedEntity instanceof SummonedMaidBroom) {
+                // 扫帚要连同骑乘者一起注册，否则骑在上面的女仆不会被记进召唤链
+                summonedEntity.getSelfAndPassengers().forEach(entity -> {
+                    serverLevel.addFreshEntity(entity);
+                    var summonUUID = entity.getUUID();
+                    summonsSet.add(summonUUID);
+                    manager.getSummonToOwner().put(summonUUID, ownerUUID);
+                    SummonManager.setDuration(entity, summon.getInt("summon_duration_remaining"));
+                });
+            } else {
+                serverLevel.addFreshEntityWithPassengers(summonedEntity);
+                var summonUUID = summonedEntity.getUUID();
+                summonsSet.add(summonUUID);
+                manager.getSummonToOwner().put(summonUUID, ownerUUID);
+                SummonManager.setDuration(summonedEntity, summon.getInt("summon_duration_remaining"));
+            }
+            summonedEntity.teleportTo(position.x, position.y, position.z);
+        }
+        // 一遍——结果无害，但读起来像是在按元素累加，实际不是
+        manager.getOwnerToSummons().put(ownerUUID, summonsSet);
     }
 
     public static void onMaidRemoved(LivingEntity maid) {
@@ -65,10 +71,9 @@ public class MaidSummonManager {
         if (summons == null) {
             return;
         }
-        if (maid.level.isClientSide) {
+        if (!(maid.level() instanceof ServerLevel serverLevel)) {
             return;
         }
-        var serverLevel = ((ServerLevel) maid.level);
         var savedSummons = new ArrayList<CompoundTag>();
         for (UUID uuid : summons) {
             Entity entity = serverLevel.getEntity(uuid);
