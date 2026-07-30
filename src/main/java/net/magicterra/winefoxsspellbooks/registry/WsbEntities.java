@@ -1,12 +1,13 @@
 package net.magicterra.winefoxsspellbooks.registry;
 
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
-import net.magicterra.winefoxsspellbooks.entity.spells.FoxshadeWispProjectile;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
-import net.magicterra.winefoxsspellbooks.entity.spells.TipsyMistCloud;
-import net.magicterra.winefoxsspellbooks.entity.spells.WineBombProjectile;
-import net.magicterra.winefoxsspellbooks.entity.spells.WinePoolCloud;
+import net.magicterra.winefoxsspellbooks.entity.cloud.TipsyMistCloud;
+import net.magicterra.winefoxsspellbooks.entity.cloud.WinePoolCloud;
+import net.magicterra.winefoxsspellbooks.entity.projectile.FoxshadeWispProjectile;
+import net.magicterra.winefoxsspellbooks.entity.projectile.WineBombProjectile;
+import net.magicterra.winefoxsspellbooks.entity.summon.FoxshadeBiterEntity;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedMaidBroom;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -28,30 +29,37 @@ public class WsbEntities {
 
     public static final DeferredHolder<EntityType<?>, EntityType<SummonedMaidBroom>> SUMMONED_MAID_BROOM = ENTITY_TYPES.register("summoned_maid_broom", () -> SummonedMaidBroom.TYPE);
 
-    /** 酒杯狐影弹。投射物实体，无 LivingEntity 属性，故不进 addEntityAttributeEvent。 */
+    /**
+     * 酒杯狐影弹。
+     */
     public static final DeferredHolder<EntityType<?>, EntityType<FoxshadeWispProjectile>> FOXSHADE_WISP = ENTITY_TYPES.register("foxshade_wisp", () -> FoxshadeWispProjectile.TYPE);
 
-    /** 醉狐之雾的紫粉雾团。AoeEntity 子类,无 LivingEntity 属性,不进 addEntityAttributeEvent。 */
-    public static final DeferredHolder<EntityType<?>, EntityType<TipsyMistCloud>> TIPSY_MIST_CLOUD = ENTITY_TYPES.register("tipsy_mist_cloud", () -> TipsyMistCloud.TYPE);
-
-    /** 狐酿炸弹的投掷弹体。AbstractMagicProjectile 子类,无 LivingEntity 属性,不进 addEntityAttributeEvent。 */
-    public static final DeferredHolder<EntityType<?>, EntityType<WineBombProjectile>> WINE_BOMB = ENTITY_TYPES.register("wine_bomb", () -> WineBombProjectile.TYPE);
-
-    /** 狐酿炸弹落点铺开的酒池。AoeEntity 子类,无 LivingEntity 属性,不进 addEntityAttributeEvent。 */
-    public static final DeferredHolder<EntityType<?>, EntityType<WinePoolCloud>> WINE_POOL = ENTITY_TYPES.register("wine_pool", () -> WinePoolCloud.TYPE);
+    /**
+     * 狐影伏击的落地扑咬狐（PathfinderMob，须注册基础属性）。
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<FoxshadeBiterEntity>> FOXSHADE_BITER = ENTITY_TYPES.register("foxshade_biter", () -> FoxshadeBiterEntity.TYPE);
 
     /**
-     * 注册实体属性
-     * <p>
-     * 使用 SummonedEntityMaid.createAttributes() 注册召唤女仆的属性，
-     * 包含魔法属性 (MAX_MANA, MANA_REGEN, COOLDOWN_REDUCTION)
-     *
-     * @param event 属性创建事件
+     * 醉狐之雾的粉色雾团。
      */
+    public static final DeferredHolder<EntityType<?>, EntityType<TipsyMistCloud>> TIPSY_MIST_CLOUD = ENTITY_TYPES.register("tipsy_mist_cloud", () -> TipsyMistCloud.TYPE);
+
+    /**
+     * 狐酿炸弹的投掷弹体。
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<WineBombProjectile>> WINE_BOMB = ENTITY_TYPES.register("wine_bomb", () -> WineBombProjectile.TYPE);
+
+    /**
+     * 狐酿炸弹落点铺开的酒池。
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<WinePoolCloud>> WINE_POOL = ENTITY_TYPES.register("wine_pool", () -> WinePoolCloud.TYPE);
+
     public static void addEntityAttributeEvent(EntityAttributeCreationEvent event) {
         event.put(SummonedEntityMaid.TYPE, SummonedEntityMaid.createAttributes().build());
         // SummonedMaidBroom 继承自 EntityBroom (LivingEntity)，需要注册基础属性
         event.put(SummonedMaidBroom.TYPE, LivingEntity.createLivingAttributes().build());
+        // 狐影伏击扑咬狐：PathfinderMob 基础属性（血量/移速/寻路范围/台阶高度）
+        event.put(FoxshadeBiterEntity.TYPE, FoxshadeBiterEntity.createAttributes().build());
     }
 
     public static void register(IEventBus modBus) {

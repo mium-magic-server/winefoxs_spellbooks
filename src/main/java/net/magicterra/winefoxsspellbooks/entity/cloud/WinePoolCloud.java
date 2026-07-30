@@ -1,4 +1,4 @@
-package net.magicterra.winefoxsspellbooks.entity.spells;
+package net.magicterra.winefoxsspellbooks.entity.cloud;
 
 import io.redspace.ironsspellbooks.entity.spells.AoeEntity;
 import java.util.Optional;
@@ -6,6 +6,7 @@ import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
+import net.magicterra.winefoxsspellbooks.registry.WsbParticles;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -16,8 +17,6 @@ import net.minecraft.world.level.Level;
 
 /**
  * 狐酿炸弹落点铺开的酒池:自家女仆泡在其中持续回魔,敌对生物反复刷新微醺。
- * 结构同 {@link TipsyMistCloud},差异集中在 {@link #applyEffect}(回魔/微醺双通道)
- * 与 {@link #canHitEntity}(女仆需被显式放行,不能沿用父类的"owner 盟友豁免")。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-07-06
@@ -30,7 +29,9 @@ public class WinePoolCloud extends AoeEntity {
         .clientTrackingRange(64)
         .build("wine_pool");
 
-    /** 池中女仆回魔比例:每次重涂(10 tick)回 2.5% 最大魔力,约合每秒 5%。 */
+    /**
+     * 池中女仆回魔比例:每次重涂(10 tick)回 2.5% 最大魔力,约合每秒 5%。
+     */
     private static final float MANA_RATIO_PER_APPLY = 0.025f;
 
     public WinePoolCloud(EntityType<WinePoolCloud> type, Level level) {
@@ -62,9 +63,7 @@ public class WinePoolCloud extends AoeEntity {
     }
 
     /**
-     * 父类判定会豁免 owner 的盟友,但酒池要对自家女仆生效(回魔),不能套用该豁免;
-     * 施法者自家女仆单独显式放行,只保留 owner 本人排除与 Projectile 基础可命中判定,
-     * 其余实体(含其他玩家的女仆)仍走父类完整判定链(owner/盟友豁免 + 存活可选取)。
+     * 父类会豁免 owner 的盟友,但酒池要对自家女仆生效(回魔),故显式放行;其余仍走父类判定。
      */
     @Override
     protected boolean canHitEntity(Entity target) {
@@ -77,13 +76,19 @@ public class WinePoolCloud extends AoeEntity {
         return super.canHitEntity(target);
     }
 
+    /**
+     * 半径 2.5 的池面约每 tick 冒 1 颗泡,泡自身寿命 30~55 tick,池面常年浮着十来颗。
+     */
     @Override
     public float getParticleCount() {
-        return 0.3f;
+        return 0.4f;
     }
 
+    /**
+     * 酒泡:从池面升起、摇摆、破裂,肥皂泡观感(上浮逻辑在粒子自身)。
+     */
     @Override
     public Optional<ParticleOptions> getParticle() {
-        return Optional.of(WinefoxHexHelper.SCHOOL_MIST);
+        return Optional.of(WsbParticles.WINE_BUBBLE.get());
     }
 }

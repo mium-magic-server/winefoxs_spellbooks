@@ -1,6 +1,5 @@
-package net.magicterra.winefoxsspellbooks.entity.spells;
+package net.magicterra.winefoxsspellbooks.entity.summon;
 
-import com.github.tartaricacid.touhoulittlemaid.api.animation.IMagicCastingState;
 import com.github.tartaricacid.touhoulittlemaid.api.entity.IMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
 import com.github.tartaricacid.touhoulittlemaid.client.resource.pojo.MaidModelInfo;
@@ -8,10 +7,8 @@ import com.github.tartaricacid.touhoulittlemaid.entity.info.ServerCustomPackLoad
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import com.github.tartaricacid.touhoulittlemaid.util.ParseI18n;
-import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
-import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
@@ -25,7 +22,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
-import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
+import net.magicterra.winefoxsspellbooks.entity.MagicMaidDelegate;
+import net.magicterra.winefoxsspellbooks.entity.SummonedMaidPresence;
 import net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter;
 import net.magicterra.winefoxsspellbooks.entity.ai.brain.SummonedMaidBrain;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
@@ -64,7 +63,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -74,17 +72,21 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 召唤出的女仆
  * <p>
- * 实现了 IMagicEntity, IMagicSummon, IMaid 三个接口，使用 MagicMaidAdapter 委托施法逻辑。 参考 {@link SummonedSkeleton} 实现召唤物生命周期。
+ * 施法能力经 {@link MagicMaidDelegate} 转发给 {@link MagicMaidAdapter}。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-11-17 01:23
  */
-public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity, IMagicEntity, IMagicSummon, IMaid {
-    public static final EntityType<SummonedEntityMaid> TYPE = EntityType.Builder.of(SummonedEntityMaid::new, MobCategory.CREATURE)
+public class SummonedEntityMaid extends PathfinderMob implements MagicMaidDelegate, IMagicSummon, IMaid {
+    public static final EntityType<SummonedEntityMaid> TYPE = EntityType.Builder.of(SummonedEntityMaid::new,
+            MobCategory.CREATURE)
         .sized(0.6f, 1.5f).clientTrackingRange(10).build("summoned_maid");
 
-    private static final EntityDataAccessor<String> DATA_MODEL_ID = SynchedEntityData.defineId(SummonedEntityMaid.class, EntityDataSerializers.STRING);
-    private static final EntityDataAccessor<Boolean> DATA_AIR_FORCE = SynchedEntityData.defineId(SummonedEntityMaid.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<String> DATA_MODEL_ID = SynchedEntityData.defineId(SummonedEntityMaid.class,
+        EntityDataSerializers.STRING);
+
+    private static final EntityDataAccessor<Boolean> DATA_AIR_FORCE = SynchedEntityData.defineId(
+        SummonedEntityMaid.class, EntityDataSerializers.BOOLEAN);
 
     /**
      * 默认女仆模型 ID
@@ -100,6 +102,7 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
      * 飞行模式 NBT 标签
      */
     private static final String TAG_AIR_FORCE = "AirForce";
+
     /**
      * 编队索引 NBT 标签
      */
@@ -218,10 +221,9 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
         }
         magicAdapter.tickMagicLogic(this.level().getServer().getTickCount());
 
-        // 骑乘关系的恢复由扫帚负责（SummonedMaidBroom.tryRestoreRiding）
-        // 这里不再尝试恢复，避免冲突
-
-        if (!airForceInitialized && isAirForce() && this.isPassenger() && this.getVehicle() instanceof SummonedMaidBroom broom) {
+        // 骑乘关系的恢复由 SummonedMaidBroom.tryRestoreRiding 负责
+        if (!airForceInitialized && isAirForce() && this.isPassenger()
+            && this.getVehicle() instanceof SummonedMaidBroom broom) {
             // 初始化飞行高度与扫帚绑定
             Vec3 targetPos = this.position().add(0.0, Config.getFollowHeight(), 0.0);
             broom.setFlightTarget(targetPos);
@@ -239,10 +241,9 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
     /**
      * 骑乘时的 tick 处理
      * <p>
-     * 仿照 AbstractSpellCastingMob.rideTick()，让乘客（女仆）控制载具（扫帚）的方向。
+     * 让乘客（女仆）控制载具（扫帚）的方向。
      * <p>
-     * 有战斗目标时：扫帚朝向目标（使用女仆的 yBodyRot）
-     * 无战斗目标时：扫帚朝向移动方向
+     * 有战斗目标时：扫帚朝向目标（使用女仆的 yBodyRot） 无战斗目标时：扫帚朝向移动方向
      */
     @Override
     public void rideTick() {
@@ -382,7 +383,7 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
         if (super.getTarget() == null && hasCombatTarget()) {
             return getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
                 .or(() -> getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
-                    .orElse(null);
+                .orElse(null);
         }
         return super.getTarget();
     }
@@ -406,7 +407,7 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
     /**
      * 获取当前模型的显示名称
      * <p>
-     * 参考 EntityMaid 的实现，从 ServerCustomPackLoader 获取模型信息
+     * 从 ServerCustomPackLoader 取模型显示名。
      *
      * @return 模型名称组件
      */
@@ -462,72 +463,8 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
         return false;
     }
 
-    // ==================== IMagicEntity 接口实现 (委托给 MagicMaidAdapter) ====================
-
-    @Override
-    public MagicData getMagicData() {
-        return magicAdapter.getMagicData();
-    }
-
-    @Override
-    public void setSyncedSpellData(SyncedSpellData syncedSpellData) {
-        magicAdapter.setSyncedSpellData(syncedSpellData);
-    }
-
-    @Override
-    public boolean isCasting() {
-        return magicAdapter.isCasting();
-    }
-
-    @Override
-    public void initiateCastSpell(AbstractSpell spell, int spellLevel) {
-        magicAdapter.initiateCastSpell(spell, spellLevel);
-    }
-
-    @Override
-    public void cancelCast() {
-        magicAdapter.cancelCast();
-    }
-
-    @Override
-    public void castComplete() {
-        magicAdapter.castComplete();
-    }
-
-    @Override
-    public void notifyDangerousProjectile(Projectile projectile) {
-        magicAdapter.notifyDangerousProjectile(projectile);
-    }
-
-    @Override
-    public boolean setTeleportLocationBehindTarget(int distance) {
-        return magicAdapter.setTeleportLocationBehindTarget(distance);
-    }
-
-    @Override
-    public void setBurningDashDirectionData() {
-        magicAdapter.setBurningDashDirectionData();
-    }
-
-    @Override
-    public boolean isDrinkingPotion() {
-        return magicAdapter.isDrinkingPotion();
-    }
-
-    @Override
-    public boolean getHasUsedSingleAttack() {
-        return magicAdapter.getHasUsedSingleAttack();
-    }
-
-    @Override
-    public void setHasUsedSingleAttack(boolean bool) {
-        magicAdapter.setHasUsedSingleAttack(bool);
-    }
-
-    @Override
-    public void startDrinkingPotion() {
-        magicAdapter.startDrinkingPotion();
-    }
+    // IMagicEntity / MaidMagicEntity 的全部转发由 MagicMaidDelegate 的默认实现提供，
+    // 本类只需交出适配器本身（见文件末尾的 winefoxsSpellbooks$getMagicMaidAdapter）
 
     // ==================== IMagicSummon 接口实现 ====================
 
@@ -562,6 +499,7 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
         }
         super.onRemovedFromLevel();
 
+        SummonedMaidPresence.onRemoved(this.level());
         MaidSummonManager.onMaidRemoved(this);
     }
 
@@ -569,6 +507,7 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
     public void onAddedToLevel() {
         super.onAddedToLevel();
 
+        SummonedMaidPresence.onAdded(this.level());
         MaidSummonManager.onMaidPlaced(this);
     }
 
@@ -665,42 +604,11 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
         }
     }
 
-    // ==================== 渲染辅助接口 ====================
-    @Override
-    public IMagicCastingState winefoxSpellbooks$getMagicCastingState() {
-        return magicAdapter.winefoxSpellbooks$getMagicCastingState();
-    }
+    // ==================== 施法委托 ====================
 
-    @Override
-    public boolean winefoxsSpellbooks$getCancelCastAnimation() {
-        return magicAdapter.winefoxsSpellbooks$getCancelCastAnimation();
-    }
-
-    @Override
-    public void winefoxsSpellbooks$setCancelCastAnimation(boolean cancelCastAnimation) {
-        magicAdapter.winefoxsSpellbooks$setCancelCastAnimation(cancelCastAnimation);
-    }
-
-    @Override
-    public float winefoxsSpellbooks$getMana() {
-        return magicAdapter.winefoxsSpellbooks$getMana();
-    }
-
-    @Override
-    public void winefoxsSpellbooks$setMana(float mana) {
-        magicAdapter.winefoxsSpellbooks$setMana(mana);
-    }
-
-    @Override
-    public int winefoxsSpellbooks$getManaCost(AbstractSpell spell, int level) {
-        return magicAdapter.winefoxsSpellbooks$getManaCost(spell, level);
-    }
-
-    @Override
-    public MaidSpellDataHolder winefoxsSpellbooks$getSpellDataHolder() {
-        return magicAdapter.winefoxsSpellbooks$getSpellDataHolder();
-    }
-
+    /**
+     * {@link MagicMaidDelegate} 唯一要求实现的方法；其余转发全走默认实现。
+     */
     @Override
     public MagicMaidAdapter winefoxsSpellbooks$getMagicMaidAdapter() {
         return magicAdapter;
@@ -740,7 +648,8 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
 
             if (loadout == null) {
                 // 没有可用配置时，使用灵梦模型，不分配装备和法术
-                WinefoxsSpellbooks.LOGGER.warn("SummonedEntityMaid: No loadout configuration available, using default Reimu model");
+                WinefoxsSpellbooks.LOGGER.warn(
+                    "SummonedEntityMaid: No loadout configuration available, using default Reimu model");
                 setModelId(DEFAULT_MODEL_ID);
                 return;
             }
@@ -827,18 +736,16 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
     private void applySpells(CategorizedSpells spells) {
         MaidSpellDataHolder holder = magicAdapter.winefoxsSpellbooks$getSpellDataHolder();
 
-        holder.updateAttackSpells(toSpellDataList(spells.attack()));
-        holder.updateDefenseSpells(toSpellDataList(spells.defense()));
-        holder.updateMovementSpells(toSpellDataList(spells.movement()));
-        holder.updateSupportSpells(toSpellDataList(spells.support()));
-        holder.updatePositiveEffectSpells(toSpellDataList(spells.positive()));
-        holder.updateNegativeEffectSpells(toSpellDataList(spells.negativeEffect()));
-        holder.updateSupportEffectSpells(toSpellDataList(spells.supportOther()));
+        for (MaidSpellAction action : MaidSpellAction.ALL) {
+            holder.update(action, toSpellDataList(spells.get(action)));
+        }
 
         if (WinefoxsSpellbooks.DEBUG) {
-            WinefoxsSpellbooks.LOGGER.debug("SummonedEntityMaid: Applied spells - attack:{}, defense:{}, movement:{}, support:{}, positiveEffect:{}, negative:{}, supportOther:{}",
-                spells.attack().size(), spells.defense().size(), spells.movement().size(),
-                spells.support().size(), spells.positive().size(), spells.negativeEffect().size(), spells.supportOther().size());
+            StringBuilder summary = new StringBuilder();
+            for (MaidSpellAction action : MaidSpellAction.ALL) {
+                summary.append(action.poolName()).append(':').append(spells.get(action).size()).append(' ');
+            }
+            WinefoxsSpellbooks.LOGGER.debug("SummonedEntityMaid: Applied spells - {}", summary.toString().trim());
         }
     }
 
@@ -866,7 +773,6 @@ public class SummonedEntityMaid extends PathfinderMob implements MaidMagicEntity
         // 召唤女仆不可交互，禁用 GUI 打开
         return InteractionResult.PASS;
     }
-
 
     /**
      * 获取魔法适配器

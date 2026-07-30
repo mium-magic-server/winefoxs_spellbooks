@@ -1,4 +1,4 @@
-package net.magicterra.winefoxsspellbooks.entity.spells;
+package net.magicterra.winefoxsspellbooks.entity.summon;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.item.EntityBroom;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
@@ -11,9 +11,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
-import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
-import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
+import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -72,8 +72,7 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
     /**
      * 速度插值因子
      * <p>
-     * 较大的值使加速更快，较小的值使飞行更平滑。
-     * 0.125 提供良好的平衡：既有惯性感又不会太迟钝
+     * 较大的值使加速更快，较小的值使飞行更平滑。 0.125 提供良好的平衡：既有惯性感又不会太迟钝
      */
     private static final double SPEED_LERP_FACTOR = 0.125;
 
@@ -135,20 +134,24 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
     private boolean hasBeenRidden = false;
 
     // === 客户端插值相关字段 ===
+
     /**
      * 客户端插值剩余步数
      */
     private int clientLerpSteps;
+
     /**
      * 客户端插值目标位置
      */
     private double clientLerpX, clientLerpY, clientLerpZ;
+
     /**
      * 客户端插值目标旋转
      */
     private double clientLerpYRot, clientLerpXRot;
 
     // === 扫射状态字段 ===
+
     /**
      * 当前是否顺时针移动
      */
@@ -316,8 +319,7 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
     /**
      * 重写客户端位置插值（模仿 Boat 的实现）
      * <p>
-     * 使用 10 步插值，即使服务端每 3 tick 发送一次更新，
-     * 客户端也会用 10 tick 来平滑移动，实现跨网络更新周期的平滑过渡。
+     * 使用 10 步插值，即使服务端每 3 tick 发送一次更新， 客户端也会用 10 tick 来平滑移动，实现跨网络更新周期的平滑过渡。
      */
     @Override
     public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps) {
@@ -553,7 +555,7 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
             .getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get())
             .orElse(null);
         if (spellData != null && spellData != SpellData.EMPTY) {
-            return MaidSpellRegistry.getSpellRange(spellData.getSpell());
+            return MaidSpellCatalog.getSpellRange(spellData.getSpell());
         }
         return DEFAULT_ATTACK_RANGE;
     }
@@ -610,17 +612,6 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
             return maid.getBrain().getMemory(MaidCastingMemoryModuleTypes.IS_HOVERING.get()).orElse(false);
         }
         return false;
-    }
-
-    /**
-     * 获取召唤者
-     * <p>
-     * IMagicSummon 接口的默认实现会调用 SummonManager.getOwner()，
-     * 这里返回 null 让默认实现生效
-     */
-    @Override
-    public Entity getSummoner() {
-        return IMagicSummon.super.getSummoner();
     }
 
     /**
