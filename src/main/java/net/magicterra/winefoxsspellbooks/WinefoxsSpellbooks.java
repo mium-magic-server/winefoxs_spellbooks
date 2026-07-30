@@ -3,18 +3,22 @@ package net.magicterra.winefoxsspellbooks;
 import com.mojang.logging.LogUtils;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidLoadoutManager;
+import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
+import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.magic.data.SpellDataManager;
+import net.magicterra.winefoxsspellbooks.magic.recast.RecastHandlers;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttributes;
 import net.magicterra.winefoxsspellbooks.registry.WsbCommands;
+import net.magicterra.winefoxsspellbooks.registry.WsbCreativeTabs;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
 import net.magicterra.winefoxsspellbooks.registry.WsbEntities;
 import net.magicterra.winefoxsspellbooks.registry.WsbItems;
 import net.magicterra.winefoxsspellbooks.registry.WsbLootModifiers;
+import net.magicterra.winefoxsspellbooks.registry.WsbParticles;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.magicterra.winefoxsspellbooks.registry.WsbSounds;
 import net.magicterra.winefoxsspellbooks.registry.WsbSpells;
-import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -25,12 +29,16 @@ import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.slf4j.Logger;
 
 @Mod(WinefoxsSpellbooks.MODID)
 public class WinefoxsSpellbooks {
     public static final boolean DEBUG = !FMLEnvironment.production;
+
     public static final String MODID = "winefoxs_spellbooks";
+
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public WinefoxsSpellbooks(ModContainer modContainer, IEventBus modBus, Dist dist) {
@@ -43,25 +51,42 @@ public class WinefoxsSpellbooks {
         WsbAttributes.register(modBus);
         WsbSchools.register(modBus);
         WsbSounds.register(modBus);
+        WsbParticles.register(modBus);
+        WsbCreativeTabs.register(modBus);
         WsbLootModifiers.register(modBus);
         modBus.addListener(LittleMaidSpellbooksCompat::onRegisterItem);
 
-        NeoForge.EVENT_BUS.addListener(MaidSpellRegistry::registerSpell);
-        NeoForge.EVENT_BUS.addListener(MaidSpellRegistry::onTagsUpdated);
+        NeoForge.EVENT_BUS.addListener(MaidSpellCatalog::registerSpell);
+        NeoForge.EVENT_BUS.addListener(MaidSpellCatalog::onTagsUpdated);
+        NeoForge.EVENT_BUS.addListener(WinefoxsSpellbooks::onServerStarting);
+        // 关服时把女仆的召唤物存档
+        NeoForge.EVENT_BUS.addListener(MaidSummonManager::onServerStopping);
         NeoForge.EVENT_BUS.addListener(WinefoxsSpellbooks::onAddReloadListener);
+        NeoForge.EVENT_BUS.addListener(WinefoxsSpellbooks::onServerAboutToStart);
         NeoForge.EVENT_BUS.addListener(WsbCommands::onRegisterCommands);
 
-        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        modContainer.registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
         if (dist == Dist.CLIENT) {
             modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         }
     }
 
-    /**
-     * 注册资源重载监听器
-     */
     private static void onAddReloadListener(AddReloadListenerEvent event) {
         event.addListener(SpellDataManager.getInstance());
         event.addListener(MaidLoadoutManager.getInstance());
+    }
+
+    /**
+     * 初次进世界时数据包比 SERVER 配置先加载，这里把配置层补叠回去。
+     */
+    private static void onServerAboutToStart(ServerAboutToStartEvent event) {
+        SpellDataManager.getInstance().applyConfigOverrides();
+    }
+
+    /**
+     * 启动时校验附属模组 recast 反射引用是否还在。
+     */
+    private static void onServerStarting(ServerStartingEvent event) {
+        RecastHandlers.selfCheck();
     }
 }
