@@ -3,7 +3,7 @@ package net.magicterra.winefoxsspellbooks.api.event;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.neoforged.neoforge.event.entity.living.LivingEvent;
@@ -11,8 +11,7 @@ import net.neoforged.neoforge.event.entity.living.LivingEvent;
 /**
  * 女仆法术选择事件
  * <p>
- * 在女仆从选定的行为类型对应的法术列表中选择具体法术时触发。
- * 监听者可以：
+ * 在女仆从选定的行为类型对应的法术列表中选择具体法术时触发。 监听者可以：
  * <ol>
  *     <li>查看可用法术列表</li>
  *     <li>直接指定选中的法术 {@link #setSelectedSpell}（跳过随机选择）</li>
@@ -29,6 +28,7 @@ public class MaidSpellChooseEvent extends LivingEvent {
     private final LivingEntity attackTarget;
     @Nullable
     private final LivingEntity supportTarget;
+
     private final List<LivingEntity> nearbyAlliedEntities;
 
     /**
@@ -58,12 +58,12 @@ public class MaidSpellChooseEvent extends LivingEvent {
      * @param availableSpells      该行为类型下可用的法术列表
      */
     public MaidSpellChooseEvent(
-            Mob mob,
-            @Nullable LivingEntity attackTarget,
-            @Nullable LivingEntity supportTarget,
-            List<LivingEntity> nearbyAlliedEntities,
-            MaidSpellAction action,
-            List<SpellData> availableSpells) {
+        Mob mob,
+        @Nullable LivingEntity attackTarget,
+        @Nullable LivingEntity supportTarget,
+        List<LivingEntity> nearbyAlliedEntities,
+        MaidSpellAction action,
+        List<SpellData> availableSpells) {
         super(mob);
         this.mob = mob;
         this.attackTarget = attackTarget;

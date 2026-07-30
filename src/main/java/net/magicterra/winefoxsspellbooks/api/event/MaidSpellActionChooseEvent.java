@@ -6,7 +6,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.neoforged.neoforge.event.entity.living.LivingEvent;
@@ -14,8 +14,7 @@ import net.neoforged.neoforge.event.entity.living.LivingEvent;
 /**
  * 女仆行为类型选择事件
  * <p>
- * 在女仆 AI 决定使用哪种行为类型（攻击/防御/治疗等）时触发。
- * 监听者可以：
+ * 在女仆 AI 决定使用哪种行为类型（攻击/防御/治疗等）时触发。 监听者可以：
  * <ol>
  *     <li>修改各行为类型的权重 {@link #setActionWeight}</li>
  *     <li>直接指定行为类型 {@link #setSelectedAction}（跳过权重计算）</li>
@@ -32,6 +31,7 @@ public class MaidSpellActionChooseEvent extends LivingEvent {
     private final LivingEntity attackTarget;
     @Nullable
     private final LivingEntity supportTarget;
+
     private final List<LivingEntity> nearbyAlliedEntities;
 
     /**
@@ -53,20 +53,20 @@ public class MaidSpellActionChooseEvent extends LivingEvent {
     /**
      * 构造事件
      *
-     * @param mob                      生物实体
-     * @param attackTarget             当前攻击目标，可为 null
-     * @param supportTarget            当前支援目标，可为 null
-     * @param nearbyAlliedEntities     附近的友方实体列表
-     * @param availableSpellsByAction  各行为类型对应的可用法术列表
-     * @param actionWeights            各行为类型的初始权重
+     * @param mob                     生物实体
+     * @param attackTarget            当前攻击目标，可为 null
+     * @param supportTarget           当前支援目标，可为 null
+     * @param nearbyAlliedEntities    附近的友方实体列表
+     * @param availableSpellsByAction 各行为类型对应的可用法术列表
+     * @param actionWeights           各行为类型的初始权重
      */
     public MaidSpellActionChooseEvent(
-            Mob mob,
-            @Nullable LivingEntity attackTarget,
-            @Nullable LivingEntity supportTarget,
-            List<LivingEntity> nearbyAlliedEntities,
-            Map<MaidSpellAction, List<SpellData>> availableSpellsByAction,
-            Map<MaidSpellAction, Integer> actionWeights) {
+        Mob mob,
+        @Nullable LivingEntity attackTarget,
+        @Nullable LivingEntity supportTarget,
+        List<LivingEntity> nearbyAlliedEntities,
+        Map<MaidSpellAction, List<SpellData>> availableSpellsByAction,
+        Map<MaidSpellAction, Integer> actionWeights) {
         super(mob);
         this.mob = mob;
         this.attackTarget = attackTarget;

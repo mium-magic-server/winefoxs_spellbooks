@@ -1,20 +1,29 @@
 package net.magicterra.winefoxsspellbooks.magic;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.DataResult;
 import io.netty.buffer.ByteBuf;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.common.util.ConcatenatedListView;
 
 /**
- * 可用法术和等级包装
+ * 女仆当前可用的法术，按 {@link MaidSpellAction} 行为类别分组。
+ * <p>
+ * NBT/JSON 字段名取自 {@link MaidSpellAction#catalogName()}，空列表省略；网络包按枚举声明顺序写。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-09-11 00:41
@@ -36,192 +45,158 @@ public class MaidSpellDataHolder {
     ).apply(ByteBufCodecs.list());
 
     /**
-     * MaidSpellDataHolder 的 Codec
+     * 落盘字段名 → 行为类别的查表。
      */
-    public static final Codec<MaidSpellDataHolder> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        SPELL_LIST_CODEC.optionalFieldOf("attack_spells", List.of()).forGetter(h -> h.attackSpells),
-        SPELL_LIST_CODEC.optionalFieldOf("defense_spells", List.of()).forGetter(h -> h.defenseSpells),
-        SPELL_LIST_CODEC.optionalFieldOf("movement_spells", List.of()).forGetter(h -> h.movementSpells),
-        SPELL_LIST_CODEC.optionalFieldOf("support_spells", List.of()).forGetter(h -> h.supportSpells),
-        SPELL_LIST_CODEC.optionalFieldOf("positive_effect_spells", List.of()).forGetter(h -> h.positiveEffectSpells),
-        SPELL_LIST_CODEC.optionalFieldOf("negative_effect_spells", List.of()).forGetter(h -> h.negativeEffectSpells),
-        SPELL_LIST_CODEC.optionalFieldOf("support_effect_spells", List.of()).forGetter(h -> h.supportEffectSpells)
-    ).apply(instance, MaidSpellDataHolder::new));
+    private static final Map<String, MaidSpellAction> CATALOG_NAMES = Arrays.stream(MaidSpellAction.ALL)
+        .collect(Collectors.toUnmodifiableMap(MaidSpellAction::catalogName, Function.identity()));
+
+    /**
+     * 行为类别 ↔ 其 {@code catalogName}（即落盘字段名）。
+     * <p>
+     * 用 {@code comapFlatMap} 而非 {@code xmap}，认不出的字段名要报错而不是抛异常： 玩家把本模组降级到还没有某个类别的版本时，存档里会留着未来版本写的字段， 那时该跳过它继续读，不能崩在实体加载上。
+     */
+    private static final Codec<MaidSpellAction> ACTION_CODEC = Codec.STRING.comapFlatMap(
+        name -> {
+            MaidSpellAction action = CATALOG_NAMES.get(name);
+            return action != null
+                   ? DataResult.success(action)
+                   : DataResult.error(() -> "Unknown maid spell category '" + name + "'");
+        },
+        MaidSpellAction::catalogName
+    );
+
+    /**
+     * MaidSpellDataHolder 的 Codec。键集固定为枚举，用 {@code unboundedMap} 产出的
+     * JSON/NBT 结构与逐字段写相同，加一类法术零改动。
+     */
+    public static final Codec<MaidSpellDataHolder> CODEC =
+        Codec.unboundedMap(ACTION_CODEC, SPELL_LIST_CODEC).xmap(
+            map -> {
+                MaidSpellDataHolder holder = new MaidSpellDataHolder();
+                map.forEach(holder::update);
+                return holder;
+            },
+            holder -> {
+                // 空列表不写
+                Map<MaidSpellAction, List<SpellData>> map = new LinkedHashMap<>();
+                for (MaidSpellAction action : MaidSpellAction.ALL) {
+                    List<SpellData> spells = holder.get(action);
+                    if (!spells.isEmpty()) {
+                        map.put(action, spells);
+                    }
+                }
+                return map;
+            }
+        );
 
     public static final StreamCodec<ByteBuf, MaidSpellDataHolder> STREAM_CODEC = new StreamCodec<>() {
         @Nonnull
         @Override
         public MaidSpellDataHolder decode(@Nonnull ByteBuf b) {
-            return new MaidSpellDataHolder(
-                SPELL_LIST_STREAM_CODEC.decode(b),
-                SPELL_LIST_STREAM_CODEC.decode(b),
-                SPELL_LIST_STREAM_CODEC.decode(b),
-                SPELL_LIST_STREAM_CODEC.decode(b),
-                SPELL_LIST_STREAM_CODEC.decode(b),
-                SPELL_LIST_STREAM_CODEC.decode(b),
-                SPELL_LIST_STREAM_CODEC.decode(b)
-            );
+            MaidSpellDataHolder holder = new MaidSpellDataHolder();
+            // 读写顺序都是 MaidSpellAction 的声明顺序，严格对称
+            for (MaidSpellAction action : MaidSpellAction.ALL) {
+                holder.update(action, SPELL_LIST_STREAM_CODEC.decode(b));
+            }
+            return holder;
         }
 
         @Override
         public void encode(@Nonnull ByteBuf b, @Nonnull MaidSpellDataHolder h) {
-            SPELL_LIST_STREAM_CODEC.encode(b, h.getAttackSpells());
-            SPELL_LIST_STREAM_CODEC.encode(b, h.getDefenseSpells());
-            SPELL_LIST_STREAM_CODEC.encode(b, h.getMovementSpells());
-            SPELL_LIST_STREAM_CODEC.encode(b, h.getSupportSpells());
-            SPELL_LIST_STREAM_CODEC.encode(b, h.getPositiveEffectSpells());
-            SPELL_LIST_STREAM_CODEC.encode(b, h.getNegativeEffectSpells());
-            SPELL_LIST_STREAM_CODEC.encode(b, h.getSupportEffectSpells());
+            for (MaidSpellAction action : MaidSpellAction.ALL) {
+                SPELL_LIST_STREAM_CODEC.encode(b, h.get(action));
+            }
         }
     };
 
-    private final ArrayList<SpellData> attackSpells;
-    private final ArrayList<SpellData> defenseSpells;
-    private final ArrayList<SpellData> movementSpells;
-    private final ArrayList<SpellData> supportSpells;
-    private final ArrayList<SpellData> positiveEffectSpells;
-    private final ArrayList<SpellData> negativeEffectSpells;
-    private final ArrayList<SpellData> supportEffectSpells;
+    /**
+     * 类别 → 该类可用法术。七个桶在构造时建好，之后只清空重填，从不换实例。
+     */
+    private final Map<MaidSpellAction, ArrayList<SpellData>> spells = new EnumMap<>(MaidSpellAction.class);
+
+    /**
+     * 全类别的拼接视图。因为底层 ArrayList 实例恒定，这个视图建一次即可长期有效， 不必每次 {@link #getAllSpells()} 重新拼。
+     */
+    private final Collection<SpellData> allSpellsView;
 
     /**
      * 默认构造函数
      */
     public MaidSpellDataHolder() {
-        this.attackSpells = new ArrayList<>();
-        this.defenseSpells = new ArrayList<>();
-        this.movementSpells = new ArrayList<>();
-        this.supportSpells = new ArrayList<>();
-        this.positiveEffectSpells = new ArrayList<>();
-        this.negativeEffectSpells = new ArrayList<>();
-        this.supportEffectSpells = new ArrayList<>();
+        for (MaidSpellAction action : MaidSpellAction.ALL) {
+            spells.put(action, new ArrayList<>());
+        }
+        this.allSpellsView = ConcatenatedListView.of(List.copyOf(spells.values()));
     }
+
+    // ==================== 读取 ====================
 
     /**
-     * Codec 使用的构造函数
+     * 取某一类别的可用法术。返回活引用——调用方多是热路径上的只读遍历，不做防御性拷贝。
+     *
+     * @param action 行为类别
+     * @return 该类别的法术列表
      */
-    public MaidSpellDataHolder(
-        List<SpellData> attackSpells,
-        List<SpellData> defenseSpells,
-        List<SpellData> movementSpells,
-        List<SpellData> supportSpells,
-        List<SpellData> positiveEffectSpells,
-        List<SpellData> negativeEffectSpells,
-        List<SpellData> supportEffectSpells) {
-        this.attackSpells = new ArrayList<>(attackSpells);
-        this.defenseSpells = new ArrayList<>(defenseSpells);
-        this.movementSpells = new ArrayList<>(movementSpells);
-        this.supportSpells = new ArrayList<>(supportSpells);
-        this.positiveEffectSpells = new ArrayList<>(positiveEffectSpells);
-        this.negativeEffectSpells = new ArrayList<>(negativeEffectSpells);
-        this.supportEffectSpells = new ArrayList<>(supportEffectSpells);
-    }
-
-    // ==================== Getter 方法 ====================
-
-    public ArrayList<SpellData> getAttackSpells() {
-        return attackSpells;
-    }
-
-    public ArrayList<SpellData> getDefenseSpells() {
-        return defenseSpells;
-    }
-
-    public ArrayList<SpellData> getMovementSpells() {
-        return movementSpells;
-    }
-
-    public ArrayList<SpellData> getSupportSpells() {
-        return supportSpells;
-    }
-
-    public ArrayList<SpellData> getPositiveEffectSpells() {
-        return positiveEffectSpells;
-    }
-
-    public ArrayList<SpellData> getNegativeEffectSpells() {
-        return negativeEffectSpells;
-    }
-
-    public ArrayList<SpellData> getSupportEffectSpells() {
-        return supportEffectSpells;
+    public List<SpellData> get(MaidSpellAction action) {
+        return spells.get(action);
     }
 
     // ==================== 判断方法 ====================
 
+    /**
+     * 是否持有任意可用法术。
+     */
     public boolean hasAnySpells() {
-        return attackSpells.size() +
-            defenseSpells.size() +
-            movementSpells.size() +
-            supportSpells.size() +
-            positiveEffectSpells.size() +
-            negativeEffectSpells.size() +
-            supportEffectSpells.size() > 0;
+        return hasAnyOf(MaidSpellAction.ALL);
     }
 
+    /**
+     * 施法任务（{@code MaidCastingTask}）用得上的法术是否至少有一个。
+     */
     public boolean hasAnyCastingTaskSpells() {
-        return attackSpells.size() +
-            defenseSpells.size() +
-            movementSpells.size() +
-            supportSpells.size() +
-            negativeEffectSpells.size() > 0;
+        return hasAnyOf(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT,
+            MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE);
     }
 
+    /**
+     * 支援任务（{@code MaidMagicSupportTask}）用得上的法术是否至少有一个。
+     */
     public boolean hasAnyMagicSupportTaskSpells() {
-        return defenseSpells.size() +
-            supportSpells.size() +
-            positiveEffectSpells.size() +
-            negativeEffectSpells.size() +
-            supportEffectSpells.size() > 0;
+        return hasAnyOf(MaidSpellAction.DEFENSE, MaidSpellAction.SUPPORT, MaidSpellAction.POSITIVE,
+            MaidSpellAction.NEGATIVE, MaidSpellAction.SUPPORT_OTHER);
+    }
+
+    private boolean hasAnyOf(MaidSpellAction... actions) {
+        for (MaidSpellAction action : actions) {
+            if (!spells.get(action).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ==================== 更新方法 ====================
 
-    public void updateAttackSpells(Collection<SpellData> spells) {
-        attackSpells.clear();
-        attackSpells.addAll(spells);
+    /**
+     * 整体替换某一类别的法术。
+     *
+     * @param action 行为类别
+     * @param source 新的法术集合（内容被拷入，不持有其引用）
+     */
+    public void update(MaidSpellAction action, Collection<SpellData> source) {
+        ArrayList<SpellData> target = spells.get(action);
+        target.clear();
+        target.addAll(source);
     }
 
-    public void updateDefenseSpells(Collection<SpellData> spells) {
-        defenseSpells.clear();
-        defenseSpells.addAll(spells);
-    }
-
-    public void updateMovementSpells(Collection<SpellData> spells) {
-        movementSpells.clear();
-        movementSpells.addAll(spells);
-    }
-
-    public void updateSupportSpells(Collection<SpellData> spells) {
-        supportSpells.clear();
-        supportSpells.addAll(spells);
-    }
-
-    public void updatePositiveEffectSpells(Collection<SpellData> spells) {
-        positiveEffectSpells.clear();
-        positiveEffectSpells.addAll(spells);
-    }
-
-    public void updateNegativeEffectSpells(Collection<SpellData> spells) {
-        negativeEffectSpells.clear();
-        negativeEffectSpells.addAll(spells);
-    }
-
-    public void updateSupportEffectSpells(Collection<SpellData> spells) {
-        supportEffectSpells.clear();
-        supportEffectSpells.addAll(spells);
-    }
-
+    /**
+     * 全部类别的法术拼接视图（惰性，不拷贝）。
+     */
     public Collection<SpellData> getAllSpells() {
-        return ConcatenatedListView.of(attackSpells, defenseSpells, movementSpells, supportSpells, positiveEffectSpells, negativeEffectSpells, supportEffectSpells);
+        return allSpellsView;
     }
 
     public void clear() {
-        attackSpells.clear();
-        defenseSpells.clear();
-        movementSpells.clear();
-        supportSpells.clear();
-        positiveEffectSpells.clear();
-        negativeEffectSpells.clear();
-        supportEffectSpells.clear();
+        spells.values().forEach(ArrayList::clear);
     }
 }
