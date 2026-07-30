@@ -1,18 +1,14 @@
 package net.magicterra.winefoxsspellbooks.mixin;
 
-import com.github.tartaricacid.touhoulittlemaid.api.animation.IMagicCastingState;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
-import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.magicterra.winefoxsspellbooks.entity.MagicMaidDelegate;
 import net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter;
 import net.magicterra.winefoxsspellbooks.magic.MaidAllyHelper;
-import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
@@ -21,7 +17,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -31,19 +26,22 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * 魔法女仆，参考 AbstractSpellCastingMob
+ * 为 EntityMaid 挂上施法能力与 {@code MagicMaidAdapter}。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-07-20 23:45
- * @see io.redspace.ironsspellbooks.entity.mobs.abstract_spell_casting_mob.AbstractSpellCastingMob
  */
 @Mixin(EntityMaid.class)
-public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEntity, MaidMagicEntity {
-    @Shadow @Nullable public abstract LivingEntity getOwner();
+public abstract class MaidEntityMixin extends PathfinderMob implements MagicMaidDelegate {
+    @Shadow
+    @Nullable
+    public abstract LivingEntity getOwner();
 
-    @Shadow public boolean guiOpening;
+    @Shadow
+    public boolean guiOpening;
 
-    @Shadow protected abstract void completeUsingItem();
+    @Shadow
+    protected abstract void completeUsingItem();
 
     @Unique
     public boolean hasUsedSingleAttack;
@@ -62,6 +60,10 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         magicAdapter.getMagicData().setSyncedData(new SyncedSpellData(self));
     }
 
+    /**
+     * 覆写 {@link MagicMaidDelegate} 的默认实现：真·女仆的这个标志要随实体 NBT 存档 （{@code usedSpecial} 键），所以存在女仆自己身上而不是适配器里。
+     */
+    @Override
     public boolean getHasUsedSingleAttack() {
         return hasUsedSingleAttack;
     }
@@ -71,40 +73,25 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         this.hasUsedSingleAttack = hasUsedSingleAttack;
     }
 
-    public MagicData getMagicData() {
-        return magicAdapter.getMagicData();
-    }
-
-    public boolean isDrinkingPotion() {
-        return magicAdapter.isDrinkingPotion();
-    }
-
     @Override
     public boolean isAlliedTo(Entity entity) {
-        if (entity.level.isClientSide) {
+        if (entity.level().isClientSide) {
             return super.isAlliedTo(entity);
         }
 
         if (Objects.equals(getOwner(), entity)) {
-            // 女仆和主人是相同的队伍
             return true;
         }
         if (entity instanceof TamableAnimal tamableAnimal) {
             LivingEntity owner = tamableAnimal.getOwner();
             if (Objects.equals(getOwner(), owner) || getOwner() != null && owner != null && getOwner().isAlliedTo(owner)) {
-                // 主人相同，或都没有主人，或者主人是同一个队伍，认为是相同的队伍
                 return true;
             }
         }
         if (entity instanceof IMagicSummon) {
-            // 召唤物
             return MaidAllyHelper.isAllied(this, entity) || super.isAlliedTo(entity);
         }
         return super.isAlliedTo(entity);
-    }
-
-    public void startDrinkingPotion() {
-        magicAdapter.startDrinkingPotion();
     }
 
     @Inject(method = "completeUsingItem", at = @At(value = "INVOKE", target = "Lcom/github/tartaricacid/touhoulittlemaid/entity/passive/EntityMaid;backCurrentHandItemStack()V"))
@@ -132,7 +119,6 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
             magicAdapter.setRecreateSpell(true);
         }
         hasUsedSingleAttack = pCompound.getBoolean("usedSpecial");
-        // 恢复喝药水状态：通过设置 useItem 和 useItemRemaining 来恢复
         if (pCompound.getBoolean("isDrinkingPotion")) {
             useItemRemaining = pCompound.getInt("useItemRemaining");
             boolean isUsedItemOffhand = pCompound.getBoolean("usedItemOffhand");
@@ -159,18 +145,6 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         MaidSummonManager.onMaidRemoved(self());
     }
 
-    public void cancelCast() {
-        magicAdapter.cancelCast();
-    }
-
-    public void castComplete() {
-        magicAdapter.castComplete();
-    }
-
-    public void setSyncedSpellData(SyncedSpellData syncedSpellData) {
-        magicAdapter.setSyncedSpellData(syncedSpellData);
-    }
-
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/TamableAnimal;tick()V"))
     protected void beforeAnimalTick(CallbackInfo ci) {
         if (level.isClientSide) {
@@ -191,61 +165,11 @@ public abstract class MaidEntityMixin extends PathfinderMob implements IMagicEnt
         magicAdapter.aiStepMagicLogic();
     }
 
-    public void initiateCastSpell(AbstractSpell spell, int spellLevel) {
-        magicAdapter.initiateCastSpell(spell, spellLevel);
-    }
+    // ==================== 施法委托 ====================
 
-    @Override
-    public int winefoxsSpellbooks$getManaCost(AbstractSpell spell, int level) {
-        return magicAdapter.winefoxsSpellbooks$getManaCost(spell, level);
-    }
-
-    public void notifyDangerousProjectile(Projectile projectile) {
-        magicAdapter.notifyDangerousProjectile(projectile);
-    }
-
-    public boolean isCasting() {
-        return magicAdapter.isCasting();
-    }
-
-    public boolean setTeleportLocationBehindTarget(int distance) {
-        return magicAdapter.setTeleportLocationBehindTarget(distance);
-    }
-
-    public void setBurningDashDirectionData() {
-        magicAdapter.setBurningDashDirectionData();
-    }
-
-    @Override
-    public IMagicCastingState winefoxSpellbooks$getMagicCastingState() {
-        return magicAdapter.winefoxSpellbooks$getMagicCastingState();
-    }
-
-    @Override
-    public boolean winefoxsSpellbooks$getCancelCastAnimation() {
-        return magicAdapter.winefoxsSpellbooks$getCancelCastAnimation();
-    }
-
-    @Override
-    public void winefoxsSpellbooks$setCancelCastAnimation(boolean cancelCastAnimation) {
-        magicAdapter.winefoxsSpellbooks$setCancelCastAnimation(cancelCastAnimation);
-    }
-
-    @Override
-    public float winefoxsSpellbooks$getMana() {
-        return magicAdapter.winefoxsSpellbooks$getMana();
-    }
-
-    @Override
-    public void winefoxsSpellbooks$setMana(float mana) {
-        magicAdapter.winefoxsSpellbooks$setMana(mana);
-    }
-
-    @Override
-    public MaidSpellDataHolder winefoxsSpellbooks$getSpellDataHolder() {
-        return magicAdapter.winefoxsSpellbooks$getSpellDataHolder();
-    }
-
+    /**
+     * {@link MagicMaidDelegate} 唯一要求实现的方法；其余转发全走接口默认实现。
+     */
     @Override
     public MagicMaidAdapter winefoxsSpellbooks$getMagicMaidAdapter() {
         return magicAdapter;

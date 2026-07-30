@@ -16,11 +16,11 @@ import io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData;
 import io.redspace.ironsspellbooks.spells.ender.TeleportSpell;
 import io.redspace.ironsspellbooks.spells.fire.BurningDashSpell;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
-import net.magicterra.winefoxsspellbooks.client.animation.MagicCastingAnimateStateHolder;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicData;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
+import net.magicterra.winefoxsspellbooks.magic.animation.MagicCastingAnimateStateHolder;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.sounds.SoundEvents;
@@ -45,11 +45,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.wrapper.EntityHandsInvWrapper;
 
 /**
- * 魔法女仆适配器
- * <br />
- * 使用细节: <br />
- * 使用方需要在 Entity 对应的 Override 方法调用此类的: <br />
- * {@link net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter#completeUsingItem()} <br />
+ * 魔法女仆适配器 <br /> 使用细节: <br /> 使用方需要在 Entity 对应的 Override 方法调用此类的: <br /> {@link net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter#completeUsingItem()} <br />
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-11-21 00:45
@@ -92,7 +88,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
     @Override
     public void setSyncedSpellData(SyncedSpellData syncedSpellData) {
-        if (!delegatedEntity.level.isClientSide) {
+        if (!delegatedEntity.level().isClientSide) {
             return;
         }
 
@@ -118,7 +114,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             initiateCastSpell(spell, maidMagicData.getCastingSpellLevel());
 
             if (castingSpell.getSpell().getCastType() == CastType.INSTANT) {
-                castingSpell.getSpell().onClientPreCast(delegatedEntity.level, castingSpell.getLevel(), delegatedEntity, InteractionHand.MAIN_HAND, maidMagicData);
+                castingSpell.getSpell().onClientPreCast(delegatedEntity.level(), castingSpell.getLevel(), delegatedEntity, InteractionHand.MAIN_HAND, maidMagicData);
                 castComplete();
             }
         }
@@ -132,7 +128,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
     @Override
     public void initiateCastSpell(AbstractSpell spell, int spellLevel) {
         if (WinefoxsSpellbooks.DEBUG) {
-            WinefoxsSpellbooks.LOGGER.debug("MagicMaidAdapter.initiateCastSpell: spellType:{} spellLevel:{}, isClient:{}", spell.getSpellId(), spellLevel, delegatedEntity.level.isClientSide);
+            WinefoxsSpellbooks.LOGGER.debug("MagicMaidAdapter.initiateCastSpell: spellType:{} spellLevel:{}, isClient:{}", spell.getSpellId(), spellLevel, delegatedEntity.level().isClientSide);
         }
 
         if (spell == SpellRegistry.none()) {
@@ -140,7 +136,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             return;
         }
 
-        if (delegatedEntity.level.isClientSide) {
+        if (delegatedEntity.level().isClientSide) {
             cancelCastAnimation = false;
         }
 
@@ -156,9 +152,9 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             delegatedEntity.stopUsingItem();
         }
 
-        if (!bypassCastCheck && !delegatedEntity.level.isClientSide && !(canCast(spell, spellLevel) && castingSpell.getSpell().checkPreCastConditions(delegatedEntity.level, spellLevel, delegatedEntity, maidMagicData))) {
+        if (!bypassCastCheck && !delegatedEntity.level().isClientSide && !(canCast(spell, spellLevel) && castingSpell.getSpell().checkPreCastConditions(delegatedEntity.level(), spellLevel, delegatedEntity, maidMagicData))) {
             if (WinefoxsSpellbooks.DEBUG) {
-                WinefoxsSpellbooks.LOGGER.debug("MagicMaidAdapter.precastfailed: spellType:{} spellLevel:{}, isClient:{}", spell.getSpellId(), spellLevel, delegatedEntity.level.isClientSide);
+                WinefoxsSpellbooks.LOGGER.debug("MagicMaidAdapter.precastfailed: spellType:{} spellLevel:{}, isClient:{}", spell.getSpellId(), spellLevel, delegatedEntity.level().isClientSide);
             }
 
             castingSpell = SpellData.EMPTY;
@@ -176,15 +172,15 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         maidMagicData.initiateCast(castingSpell.getSpell(), castingSpell.getLevel(), castingSpell.getSpell().getEffectiveCastTime(castingSpell.getLevel(), delegatedEntity), CastSource.MOB, SpellSelectionManager.MAINHAND);
         maidMagicData.setPlayerCastingItem(delegatedEntity.getMainHandItem());
 
-        if (!delegatedEntity.level.isClientSide) {
-            castingSpell.getSpell().onServerPreCast(delegatedEntity.level, castingSpell.getLevel(), delegatedEntity, maidMagicData);
+        if (!delegatedEntity.level().isClientSide) {
+            castingSpell.getSpell().onServerPreCast(delegatedEntity.level(), castingSpell.getLevel(), delegatedEntity, maidMagicData);
         }
     }
 
     @Override
     public void cancelCast() {
         if (isCasting()) {
-            if (delegatedEntity.level.isClientSide) {
+            if (delegatedEntity.level().isClientSide) {
                 cancelCastAnimation = true;
             }
             castComplete();
@@ -193,9 +189,9 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
     @Override
     public void castComplete() {
-        if (!delegatedEntity.level.isClientSide) {
+        if (!delegatedEntity.level().isClientSide) {
             if (castingSpell != SpellData.EMPTY) {
-                castingSpell.getSpell().onServerCastComplete(delegatedEntity.level, castingSpell.getLevel(), delegatedEntity, maidMagicData, false);
+                castingSpell.getSpell().onServerCastComplete(delegatedEntity.level(), castingSpell.getLevel(), delegatedEntity, maidMagicData, false);
             }
         } else {
             maidMagicData.resetCastingState();
@@ -220,10 +216,10 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
             for (int i = 0; i < 24; i++) {
                 Vec3 randomness = Utils.getRandomVec3(.15f * i).multiply(1, 0, 1);
-                teleportPos = Utils.moveToRelativeGroundLevel(delegatedEntity.level, target.position().subtract(new Vec3(0, 0, distance / (float) (i / 7 + 1)).yRot(-(target.getYRot() + i * 45) * Mth.DEG_TO_RAD)).add(randomness), 5);
+                teleportPos = Utils.moveToRelativeGroundLevel(delegatedEntity.level(), target.position().subtract(new Vec3(0, 0, distance / (float) (i / 7 + 1)).yRot(-(target.getYRot() + i * 45) * Mth.DEG_TO_RAD)).add(randomness), 5);
                 teleportPos = new Vec3(teleportPos.x, teleportPos.y + .1f, teleportPos.z);
                 var reposBB = delegatedEntity.getBoundingBox().move(teleportPos.subtract(delegatedEntity.position()));
-                if (!delegatedEntity.level.collidesWithSuffocatingBlock(delegatedEntity, reposBB.inflate(-.05f))) {
+                if (!delegatedEntity.level().collidesWithSuffocatingBlock(delegatedEntity, reposBB.inflate(-.05f))) {
                     valid = true;
                     break;
                 }
@@ -267,7 +263,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
     @Override
     public void startDrinkingPotion() {
-        if (!delegatedEntity.level.isClientSide) {
+        if (!delegatedEntity.level().isClientSide) {
             isDrinking = true;
             if (delegatedEntity instanceof EntityMaid maid) {
                 // 对手部进行处理：如果没有空的手部，那就取副手
@@ -282,7 +278,6 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
                 ItemStack handStack = itemInHand.copy();
                 ItemStack potionStack = PotionContents.createItemStack(Items.POTION, Potions.HEALING);
                 maid.setItemInHand(eatHand, potionStack);
-                // itemInHand = maid.getItemInHand(eatHand);
                 if (!handStack.isEmpty()) {
                     maid.memoryHandItemStack(handStack);
                 }
@@ -323,23 +318,19 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         isDrinking = false;
         delegatedEntity.getAttribute(Attributes.MOVEMENT_SPEED).removeModifier(SPEED_MODIFIER_DRINKING);
         if (!delegatedEntity.isSilent()) {
-            delegatedEntity.level.playSound(null, delegatedEntity.getX(), delegatedEntity.getY(), delegatedEntity.getZ(), SoundEvents.WITCH_DRINK, delegatedEntity.getSoundSource(), 1.0F, 0.8F + delegatedEntity.getRandom().nextFloat() * 0.4F);
+            delegatedEntity.level().playSound(null, delegatedEntity.getX(), delegatedEntity.getY(), delegatedEntity.getZ(), SoundEvents.WITCH_DRINK, delegatedEntity.getSoundSource(), 1.0F, 0.8F + delegatedEntity.getRandom().nextFloat() * 0.4F);
         }
     }
 
     // ==================== tick 和 customServerAiStep 通用逻辑 ====================
 
     /**
-     * 处理 tick 中的通用魔法逻辑
-     * <br />
-     * 包括: 魔力恢复、冷却更新、重铸更新
-     * <br />
-     * 使用方需要在服务端 tick 中调用此方法
+     * 处理 tick 中的通用魔法逻辑 <br /> 包括: 魔力恢复、冷却更新、重铸更新 <br /> 使用方需要在服务端 tick 中调用此方法
      *
      * @param serverTickCount 服务器 tick 计数 (通常是 level.getServer().getTickCount())
      */
     public void tickMagicLogic(int serverTickCount) {
-        if (delegatedEntity.level.isClientSide) {
+        if (delegatedEntity.level().isClientSide) {
             return;
         }
 
@@ -356,14 +347,10 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
     }
 
     /**
-     * 处理 customServerAiStep 中的通用施法逻辑
-     * <br />
-     * 包括: 法术状态恢复、施法处理
-     * <br />
-     * 使用方需要在服务端 customServerAiStep 中调用此方法
+     * 处理 customServerAiStep 中的通用施法逻辑 <br /> 包括: 法术状态恢复、施法处理 <br /> 使用方需要在服务端 customServerAiStep 中调用此方法
      */
     public void aiStepMagicLogic() {
-        if (delegatedEntity.level.isClientSide) {
+        if (delegatedEntity.level().isClientSide) {
             return;
         }
 
@@ -396,7 +383,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             maidMagicData.handleCastDuration();
             var spell = castingSpell.getSpell();
 
-            // 施法期间强制朝向目标（仿照 AbstractSpellCastingMob.forceLookAtTarget）
+            // 施法期间强制朝向目标
             LivingEntity target = getTargetFromBrain();
             forceLookAtTarget(target);
 
@@ -409,7 +396,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
                 if ((maidMagicData.getCastDurationRemaining() + 1) % MaidMagicManager.CONTINUOUS_CAST_TICK_INTERVAL == 0) {
                     if (maidMagicData.getCastDurationRemaining() < MaidMagicManager.CONTINUOUS_CAST_TICK_INTERVAL ||
                         (maidMagicData.getCastSource().consumesMana() &&
-                         maidMagicData.getMana() - getManaCost(spell, maidMagicData.getCastingSpellLevel()) * 2 < 0)) {
+                            maidMagicData.getMana() - getManaCost(spell, maidMagicData.getCastingSpellLevel()) * 2 < 0)) {
                         castSpell(spell, maidMagicData.getCastingSpellLevel(), true);
                         castComplete();
                     } else {
@@ -419,7 +406,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             }
 
             if (maidMagicData.isCasting()) {
-                spell.onServerCastTick(delegatedEntity.level, castingSpell.getLevel(), delegatedEntity, maidMagicData);
+                spell.onServerCastTick(delegatedEntity.level(), castingSpell.getLevel(), delegatedEntity, maidMagicData);
             }
         }
     }
@@ -427,8 +414,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
     /**
      * 强制朝向目标
      * <p>
-     * 仿照 AbstractSpellCastingMob.forceLookAtTarget()，直接设置实体的 XRot 和 YRot。
-     * 这对于需要精确瞄准的投射物法术至关重要。
+     * 直接设置 XRot/YRot 强制瞄准目标，并同步 LOOK_TARGET 记忆。
      * <p>
      * 同时更新 LOOK_TARGET 记忆，确保与 Brain 系统保持一致。
      *
@@ -449,8 +435,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         delegatedEntity.setXRot(xRot % 360.0F);
         delegatedEntity.setYRot(yRot % 360.0F);
 
-        // 同时更新 LOOK_TARGET 记忆，确保与 Brain 系统保持一致
-        // 使用 setMemoryInternal 避免记忆未注册时抛出异常
+        // 同步 LOOK_TARGET 记忆，与 Brain 系统保持一致
         if (delegatedEntity instanceof Mob mob) {
             Brain<?> brain = mob.getBrain();
             if (brain.checkMemory(MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED)) {
@@ -462,14 +447,14 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
     /**
      * 执行法术
      *
-     * @param spell 要执行的法术
-     * @param spellLevel 法术等级
+     * @param spell           要执行的法术
+     * @param spellLevel      法术等级
      * @param triggerCooldown 是否触发冷却
      */
     public void castSpell(AbstractSpell spell, int spellLevel, boolean triggerCooldown) {
         if (WinefoxsSpellbooks.DEBUG) {
             WinefoxsSpellbooks.LOGGER.debug("MagicMaidAdapter.castSpell isClient:{}, spell{}({})",
-                delegatedEntity.level.isClientSide, spell.getSpellId(), spellLevel);
+                delegatedEntity.level().isClientSide, spell.getSpellId(), spellLevel);
         }
 
         var mobRecasts = maidMagicData.getPlayerRecasts();
@@ -481,7 +466,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             winefoxsSpellbooks$setMana(newMana);
         }
 
-        spell.onCast(delegatedEntity.level, spellLevel, delegatedEntity, CastSource.MOB, maidMagicData);
+        spell.onCast(delegatedEntity.level(), spellLevel, delegatedEntity, CastSource.MOB, maidMagicData);
 
         var mobHasRecastsLeft = mobRecasts.hasRecastForSpell(spell);
         if (mobAlreadyHasRecast && mobHasRecastsLeft) {
