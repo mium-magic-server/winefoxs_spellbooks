@@ -257,6 +257,10 @@
       "spell": "winefoxs_spellbooks:crescent_brand"
     },
     {
+      "effect": "winefoxs_spellbooks:foxshade_ambush",
+      "spell": "winefoxs_spellbooks:foxshade_ambush"
+    },
+    {
       "effect": "winefoxs_spellbooks:tipsy",
       "spell": "winefoxs_spellbooks:tipsy_mist"
     },
