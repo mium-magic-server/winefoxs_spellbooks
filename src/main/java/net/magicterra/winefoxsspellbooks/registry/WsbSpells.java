@@ -7,6 +7,7 @@ import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.spell.CrescentBrandSpell;
 import net.magicterra.winefoxsspellbooks.magic.spell.CrescentMantleSpell;
 import net.magicterra.winefoxsspellbooks.magic.spell.DecantTheBindSpell;
+import net.magicterra.winefoxsspellbooks.magic.spell.FoxshadeAmbushSpell;
 import net.magicterra.winefoxsspellbooks.magic.spell.FoxshadeWispsSpell;
 import net.magicterra.winefoxsspellbooks.magic.spell.ManaTransferSpell;
 import net.magicterra.winefoxsspellbooks.magic.spell.SummonMaidSpell;
@@ -22,7 +23,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * @since 2026-01-02 22:17
  */
 public class WsbSpells {
-    public static final DeferredRegister<AbstractSpell> SPELLS = DeferredRegister.create(SpellRegistry.SPELL_REGISTRY_KEY, WinefoxsSpellbooks.MODID);
+    public static final DeferredRegister<AbstractSpell> SPELLS = DeferredRegister.create(
+        SpellRegistry.SPELL_REGISTRY_KEY, WinefoxsSpellbooks.MODID);
 
     public static void register(IEventBus eventBus) {
         SPELLS.register(eventBus);
@@ -33,11 +35,20 @@ public class WsbSpells {
     }
 
     public static final Supplier<AbstractSpell> SUMMON_MAID_SPELL = registerSpell(new SummonMaidSpell());
+
     public static final Supplier<AbstractSpell> MANA_TRANSFER_SPELL = registerSpell(new ManaTransferSpell());
+
     public static final Supplier<AbstractSpell> CRESCENT_BRAND_SPELL = registerSpell(new CrescentBrandSpell());
+
     public static final Supplier<AbstractSpell> FOXSHADE_WISPS_SPELL = registerSpell(new FoxshadeWispsSpell());
+
+    public static final Supplier<AbstractSpell> FOXSHADE_AMBUSH_SPELL = registerSpell(new FoxshadeAmbushSpell());
+
     public static final Supplier<AbstractSpell> CRESCENT_MANTLE_SPELL = registerSpell(new CrescentMantleSpell());
+
     public static final Supplier<AbstractSpell> DECANT_THE_BIND_SPELL = registerSpell(new DecantTheBindSpell());
+
     public static final Supplier<AbstractSpell> TIPSY_MIST_SPELL = registerSpell(new TipsyMistSpell());
+
     public static final Supplier<AbstractSpell> VINTNERS_BOMB_SPELL = registerSpell(new VintnersBombSpell());
 }

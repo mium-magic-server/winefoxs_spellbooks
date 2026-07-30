@@ -4,6 +4,7 @@ import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.effect.BrewsurgeEffect;
 import net.magicterra.winefoxsspellbooks.effect.CrescentBrandEffect;
 import net.magicterra.winefoxsspellbooks.effect.FoxfireBoostEffect;
+import net.magicterra.winefoxsspellbooks.effect.FoxshadeAmbushEffect;
 import net.magicterra.winefoxsspellbooks.effect.ManaDisruptionEffect;
 import net.magicterra.winefoxsspellbooks.effect.TipsyEffect;
 import net.minecraft.core.registries.Registries;
@@ -22,9 +23,15 @@ public class WsbEffects {
     public static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(Registries.MOB_EFFECT, WinefoxsSpellbooks.MODID);
 
     public static final DeferredHolder<MobEffect, MobEffect> MANA_DISRUPTION = MOB_EFFECTS.register("mana_disruption", ManaDisruptionEffect::new);
+
     public static final DeferredHolder<MobEffect, MobEffect> FOXFIRE_BOOST = MOB_EFFECTS.register("foxfire_boost", FoxfireBoostEffect::new);
+
+    public static final DeferredHolder<MobEffect, MobEffect> FOXSHADE_AMBUSH = MOB_EFFECTS.register("foxshade_ambush", FoxshadeAmbushEffect::new);
+
     public static final DeferredHolder<MobEffect, MobEffect> BREWSURGE = MOB_EFFECTS.register("brewsurge", BrewsurgeEffect::new);
+
     public static final DeferredHolder<MobEffect, MobEffect> CRESCENT_BRAND = MOB_EFFECTS.register("crescent_brand", CrescentBrandEffect::new);
+
     public static final DeferredHolder<MobEffect, MobEffect> TIPSY = MOB_EFFECTS.register("tipsy", TipsyEffect::new);
 
     public static void register(IEventBus eventBus) {
