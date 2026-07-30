@@ -16,19 +16,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * 把 {@code winefoxs_spellbooks:gameplay/maid_morning_gift} 战利品表注入
- * Advanced Loot Info 的 gameplay category 列表，让它在 JEI/EMI/REI 里
- * 以独立类别页（图标=灵狐精魂）展示，而不是落入兜底的 {@code ali:gameplay_loot}。
+ * 把 {@code winefoxs_spellbooks:gameplay/maid_morning_gift} 战利品表注入 Advanced Loot Info 的 gameplay category 列表，让它在 JEI/EMI/REI 里 以独立类别页（图标=灵狐精魂）展示，而不是落入兜底的 {@code ali:gameplay_loot}。
  * <p>
- * 注入点：{@link com.yanny.ali.configuration.ConfigUtils#readConfiguration()} 的 RETURN —
- * 无论玩家本地 {@code config/ali/ali_common.json} 是首次生成还是手改过，
- * 都能在 config 进入 {@code AbstractServer.processLootTables} 之前补上我们的类别。
- * <p>
- * {@link Pseudo} + {@code targets="..."}：让 mixin 在 ALI 类不存在时静默失败；
- * 真正的"是否安装"判断由
- * {@link net.magicterra.winefoxsspellbooks.mixin.WsbMixinPlugin#shouldApplyMixin}
- * 按子包名 {@code ali} 解析后通过 {@code LoadingModList} 完成。
- * {@code require=0, expect=1}：ALI 升版本若改了 {@code readConfiguration} 签名只警告不崩。
+ * ALI 未安装时由 {@link net.magicterra.winefoxsspellbooks.mixin.WsbMixinPlugin} 跳过本 mixin。
  *
  * @author Gardel
  * @since 2026-05-16
@@ -38,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ConfigUtilsMixin {
     private static final ResourceLocation CATEGORY_KEY = ResourceLocation.fromNamespaceAndPath(
         WinefoxsSpellbooks.MODID, "maid_morning_gift");
+
     // GameplayLootCategory.validate 用的是 Pattern#find，所以 ^…$ 锚是必要的
     private static final Pattern LOOT_TABLE_PATTERN = Pattern.compile(
         "^" + Pattern.quote(WsbLootTables.MAID_MORNING_GIFT.location().toString()) + "$");
