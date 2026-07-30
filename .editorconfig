@@ -1,0 +1,113 @@
+root = true
+
+# ---------------------------------------------------------------------------
+# 全体文件
+# ---------------------------------------------------------------------------
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+# 对应 LINE_SEPARATOR = "\n"。仓库入库内容本来就是 LF；本机 git 的 core.autocrlf=true
+# 会在检出时写成 CRLF，两者不冲突（入库仍归一化为 LF，不产生 diff）
+end_of_line = lf
+# 对应 FORMATTER_TAGS_ENABLED = true，允许用 @formatter:off / @formatter:on 局部关闭格式化
+ij_formatter_tags_enabled = true
+
+# ---------------------------------------------------------------------------
+# Java
+# ---------------------------------------------------------------------------
+[*.java]
+indent_size = 4
+# RIGHT_MARGIN = 256
+max_line_length = 256
+# CONTINUATION_INDENT_SIZE = 4（IDEA 默认是 8）
+ij_continuation_indent_size = 4
+# WRAP_ON_TYPING = 0
+ij_wrap_on_typing = false
+
+# WRAP_COMMENTS = true —— 注释按右边距（256）折行。
+# 这也是多行 JavaDoc 会被重排/合并、单行 /** 描述 */ 会展开成三行块注释的原因，
+# 属方案既定行为，保持不变
+ij_java_wrap_comments = true
+
+# 空行
+# BLANK_LINES_BEFORE_PACKAGE = 1
+ij_java_blank_lines_before_package = 1
+# KEEP_BLANK_LINES_IN_CODE = 1
+ij_java_keep_blank_lines_in_code = 1
+# KEEP_BLANK_LINES_BEFORE_RBRACE = 1
+ij_java_keep_blank_lines_before_right_brace = 1
+# KEEP_BLANK_LINES_BETWEEN_PACKAGE_DECLARATION_AND_HEADER = 0
+ij_java_keep_blank_lines_between_package_declaration_and_header = 0
+# 唯一的新增项：成员属性之间留一个空行
+ij_java_blank_lines_around_field = 1
+
+# 对齐与换行
+# ALIGN_MULTILINE_TERNARY_OPERATION = true
+ij_java_align_multiline_ternary_operation = true
+# ALIGN_MULTILINE_THROWS_LIST = true
+ij_java_align_multiline_throws_list = true
+# ALIGN_MULTILINE_EXTENDS_LIST = true
+ij_java_align_multiline_extends_list = true
+# BINARY_OPERATION_SIGN_ON_NEXT_LINE = true
+ij_java_binary_operation_sign_on_next_line = true
+# KEEP_SIMPLE_LAMBDAS_IN_ONE_LINE = true
+ij_java_keep_simple_lambdas_in_one_line = true
+# KEEP_SIMPLE_CLASSES_IN_ONE_LINE = true
+ij_java_keep_simple_classes_in_one_line = true
+# SPACE_BEFORE_ARRAY_INITIALIZER_LBRACE = true
+ij_java_space_before_array_initializer_left_brace = true
+
+# 导入
+# IMPORT_LAYOUT_TABLE：全部普通导入排一块（按字母序，java.* 不单独提前），空行，然后静态导入
+ij_java_imports_layout = *,|,$*
+# CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND = 999 / NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND = 999
+# 即实际上永不使用通配符导入
+ij_java_class_count_to_use_import_on_demand = 999
+ij_java_names_count_to_use_import_on_demand = 999
+
+# ---------------------------------------------------------------------------
+# 资源与配置
+# ---------------------------------------------------------------------------
+# JSON 一律 2 空格：手写的语言文件 / mixins.json 与 runData 生成的数据都是 2 空格，
+# 保持一致，免得手工编辑生成目录时引起无意义的重排
+[*.json]
+indent_size = 2
+
+[*.{json5,yml,yaml}]
+indent_size = 2
+
+[*.{gradle,gradle.kts}]
+indent_size = 4
+
+[*.{toml,properties,cfg}]
+indent_size = 4
+
+# Markdown：行尾空格在 Markdown 里是硬换行语法，不能剪；散文也不做硬折行
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = off
+
+# Shell 脚本：对应方案里 Shell Script 的 INDENT_SIZE=1 + USE_TAB_CHARACTER=true
+[*.sh]
+indent_style = tab
+indent_size = 1
+
+# Windows 批处理必须是 CRLF，否则 cmd 解析异常
+[*.bat]
+end_of_line = crlf
+
+# gradle wrapper 与 IDE 元数据不参与本项目的风格约定
+[gradle/wrapper/*]
+indent_style = unset
+indent_size = unset
+end_of_line = unset
+
+[.idea/**]
+indent_style = unset
+indent_size = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
