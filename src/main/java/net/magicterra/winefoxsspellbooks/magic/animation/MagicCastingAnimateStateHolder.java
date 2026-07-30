@@ -1,4 +1,4 @@
-package net.magicterra.winefoxsspellbooks.client.animation;
+package net.magicterra.winefoxsspellbooks.magic.animation;
 
 import com.github.tartaricacid.touhoulittlemaid.api.animation.IMagicCastingState;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
@@ -8,13 +8,17 @@ import io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
- * 简单的魔法咏唱状态实现
+ * 咏唱动画状态机：把「同步下来的施法数据」翻译成女仆动画系统认得的 {@link IMagicCastingState.CastingPhase}（起手 / 持续 / 收招 / 瞬发）。
+ * <p>
+ * 双端共用（由 {@code MagicMaidAdapter} 持有），但 {@link #updateState} 开头有 {@code isClientSide}
+ * 闸门，只有客户端会推进阶段。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-01-11
  */
 public class MagicCastingAnimateStateHolder implements IMagicCastingState {
     private CastingPhase phase;
+
     private boolean cancelled;
 
     private AbstractSpell castingSpellType = SpellRegistry.none();
@@ -23,21 +27,10 @@ public class MagicCastingAnimateStateHolder implements IMagicCastingState {
 
     private boolean clientIsCasting = false;
 
-    /**
-     * 创建一个新的魔法咏唱状态
-     *
-     * @param phase 当前咏唱阶段
-     */
     public MagicCastingAnimateStateHolder(CastingPhase phase) {
         this(phase, false);
     }
 
-    /**
-     * 创建一个新的魔法咏唱状态
-     *
-     * @param phase     当前咏唱阶段
-     * @param cancelled 是否已取消
-     */
     public MagicCastingAnimateStateHolder(CastingPhase phase, boolean cancelled) {
         this.phase = phase;
         this.cancelled = cancelled;
@@ -57,11 +50,6 @@ public class MagicCastingAnimateStateHolder implements IMagicCastingState {
         return cancelled;
     }
 
-    /**
-     * 设置咏唱取消状态
-     *
-     * @param cancelled 是否已取消
-     */
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
     }
@@ -104,10 +92,9 @@ public class MagicCastingAnimateStateHolder implements IMagicCastingState {
             phase = CastingPhase.START;
             if (castingSpellType.getCastType() == CastType.INSTANT) {
                 instantCastSpellType = castingSpellType;
-                // castingSpell.getSpell().onClientPreCast(maid.level(), castingSpell.getLevel(), maid, InteractionHand.MAIN_HAND, data.getMagicData());
                 castingSpellType = SpellRegistry.none();
                 phase = CastingPhase.INSTANT;
-            } else  {
+            } else {
                 instantCastSpellType = SpellRegistry.none();
             }
         } else if (clientIsCasting) {
