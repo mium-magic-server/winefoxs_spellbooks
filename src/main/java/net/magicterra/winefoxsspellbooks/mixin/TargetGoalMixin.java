@@ -30,7 +30,7 @@ public abstract class TargetGoalMixin {
         if (mob == null || potentialTarget == null) {
             return;
         }
-        if (potentialTarget.level.isClientSide) {
+        if (potentialTarget.level().isClientSide) {
             return;
         }
         Entity owner = SummonManager.getOwner(mob);

@@ -6,19 +6,24 @@ import io.redspace.ironsspellbooks.api.spells.SchoolType;
 import io.redspace.ironsspellbooks.damage.DamageSources;
 import io.redspace.ironsspellbooks.damage.SpellDamageSource;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
+import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.damage.WsbDamageTypes;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -27,16 +32,17 @@ import net.minecraft.world.phys.AABB;
 import org.joml.Vector3f;
 
 /**
- * Winefox Hex 学派胶水：常量 + 跨系统判定的单一事实源。
- * 工具类（私有构造 + final），以静态方法/常量扩展，不通过继承。
+ * Winefox Hex 学派胶水：常量 + 跨系统判定的单一事实源。 工具类（私有构造 + final），以静态方法/常量扩展，不通过继承。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-06-04
  */
 public final class WinefoxHexHelper {
-    private WinefoxHexHelper() {}
+    private WinefoxHexHelper() {
+    }
 
-    public static final int BREWSURGE_DURATION = 100;    // 5s 滚动刷新
+    public static final int BREWSURGE_DURATION = 200;    // 10s 滚动刷新（引爆计层触发较稀有，窗口放宽）
+
     public static final int BREWSURGE_MAX_STACKS = 3;    // amplifier 上限 = 2
 
     public static final int BRAND_DURATION = 240;         // 12s（240 ticks）残月烙印持续时间
@@ -46,46 +52,67 @@ public final class WinefoxHexHelper {
     // 雾团/酒池的重涂时长也须一致，故集中于此单一事实源
     // -----------------------------------------------------------------------
 
-    /** 每 tick yaw 抖动/弹道偏转标准差(度);高斯 → 典型 ±30°。 */
+    /**
+     * 每 tick yaw 抖动/弹道偏转标准差(度);高斯 → 典型 ±30°。
+     */
     public static final double TIPSY_YAW_DEG = 30.0;
-    /** pitch 抖动/偏转相对 yaw 的衰减比例(约 30%)。 */
+
+    /**
+     * pitch 抖动/偏转相对 yaw 的衰减比例(约 30%)。
+     */
     public static final double TIPSY_PITCH_RATIO = 0.3;
-    /** AoE 雾团/酒池每次命中刷新的微醺时长(3s);离开区域后效果自然到期,不会无限续杯。 */
+
+    /**
+     * AoE 雾团/酒池每次命中刷新的微醺时长(3s);离开区域后效果自然到期,不会无限续杯。
+     */
     public static final int TIPSY_REAPPLY_TICKS = 60;
 
     public static final ResourceLocation WINEFOX_HEX_ID =
-            ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "winefox_hex");
+        ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "winefox_hex");
 
-    /** 该 SchoolType 是否本学派（按注册 id，schools 为单例）。 */
+    /**
+     * 该 SchoolType 是否本学派（按注册 id，schools 为单例）。
+     */
     public static boolean isWinefoxHexSchool(SchoolType school) {
         return school != null && WINEFOX_HEX_ID.equals(school.getId());
     }
 
-    // -----------------------------------------------------------------------
-    // 视觉 · 施法主粒子：紫粉酒滴（向下凋谢）+ 暖橘狐火（向上飘）+ 偶发金色符箓
-    // -----------------------------------------------------------------------
+    /**
+     * 学派主色 #FF5FA0（粉）。学派文本、粒子、弹体拖尾、药水染色共用此常量。 色相约 336°，刻意避开紫向；任何学派配色都从这里取，不要另写字面量。
+     */
+    public static final int SCHOOL_COLOR = 0xFF5FA0;
 
-    /** 学派主色 #C846FF（紫粉）。学派文本、粒子、弹体拖尾、药水染色共用此常量。 */
-    public static final int SCHOOL_COLOR = 0xC846FF;
-    /** 学派主色的归一化 RGB（粒子用）。 */
+    /**
+     * 学派主色的归一化 RGB（{@link DustParticleOptions} 用，该粒子不吃 alpha）。
+     */
     public static final Vector3f SCHOOL_COLOR_VEC = new Vector3f(
         (SCHOOL_COLOR >> 16 & 0xFF) / 255f, (SCHOOL_COLOR >> 8 & 0xFF) / 255f, (SCHOOL_COLOR & 0xFF) / 255f);
 
-    /** 蜜金符箓尘色 #F5C77A（符箓金线），归一化 RGB。 */
-    private static final Vector3f RUNE_GOLD_COLOR = new Vector3f(0xF5 / 255f, 0xC7 / 255f, 0x7A / 255f);
-    private static final DustParticleOptions WINE_DROPLET = new DustParticleOptions(SCHOOL_COLOR_VEC, 1.3f);
-    private static final DustParticleOptions RUNE_GOLD = new DustParticleOptions(RUNE_GOLD_COLOR, 0.8f);
-    /** 学派色大号尘粒：醉狐之雾/酒池共用的雾团粒子。 */
-    public static final DustParticleOptions SCHOOL_MIST = new DustParticleOptions(SCHOOL_COLOR_VEC, 2.0f);
+    /**
+     * 造一枚指定颜色的 {@code ENTITY_EFFECT} 粒子选项，alpha 自动补满。
+     * <p>
+     * <b>必须走这里，不要直接 {@code ColorParticleOption.create(ENTITY_EFFECT, rgb)}</b>：该重载吃的是
+     * <b>ARGB</b>（{@code getAlpha()} 取的是高 8 位），而 {@code SpellParticle.MobEffectProvider} 会把它
+     * 灌进 {@code setAlpha()} 并锁成 {@code originalAlpha}——传六位 RGB 得到 alpha=0，粒子全程完全透明。 本模组的颜色常量一律是六位 RGB（药水染色、文本 {@code Style#withColor} 都要求不带 alpha）， 故统一在此补 {@code 0xFF} 高位。
+     *
+     * @param rgb 六位 RGB（0xRRGGBB）
+     */
+    public static ColorParticleOption effectParticle(int rgb) {
+        return ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0xFF000000 | rgb);
+    }
 
     /**
-     * 在施法者周身发射一批本学派的施法环绕粒子。可一次性爆发（瞬发法术），
-     * 也可按 tick 反复调用（持续法术）。仅服务端调用——通过 {@link ServerLevel#sendParticles}
-     * 广播给附近所有玩家。
+     * 蜜金符箓尘色 #F5C77A（符箓金线），归一化 RGB。
+     */
+    private static final Vector3f RUNE_GOLD_COLOR = new Vector3f(0xF5 / 255f, 0xC7 / 255f, 0x7A / 255f);
+
+    private static final DustParticleOptions RUNE_GOLD = new DustParticleOptions(RUNE_GOLD_COLOR, 0.8f);
+
+    /**
+     * 在施法者周身发射一批本学派的施法环绕粒子。可一次性爆发（瞬发法术）， 也可按 tick 反复调用（持续法术）。仅服务端调用——通过 {@link ServerLevel#sendParticles} 广播给附近所有玩家。
      * <p>
-     * 三类粒子（count=0 → 速度 = (dx,dy,dz)，单粒子方向运动）：
+     * 两类粒子（count=0 → 速度 = (dx,dy,dz)，单粒子方向运动）：
      * <ul>
-     *   <li>紫粉酒滴：环绕上半身，向下凋谢；</li>
      *   <li>暖橘狐火（vanilla FLAME）：环绕脚边，向上飘；</li>
      *   <li>偶发蜜金符箓尘：腰际高度，缓慢上浮。</li>
      * </ul>
@@ -101,18 +128,6 @@ public final class WinefoxHexHelper {
         double h = caster.getBbHeight();
         double r = caster.getBbWidth() * 0.6;
 
-        // 紫粉酒滴：上半身环绕，向下凋谢
-        for (int i = 0; i < 3; i++) {
-            double angle = rng.nextDouble() * Math.PI * 2;
-            double rad = r * (0.6 + rng.nextDouble() * 0.5);
-            double px = cx + Math.cos(angle) * rad;
-            double pz = cz + Math.sin(angle) * rad;
-            double py = cy + h * (0.6 + rng.nextDouble() * 0.4);
-            level.sendParticles(WINE_DROPLET, px, py, pz, 0,
-                (rng.nextDouble() - 0.5) * 0.01, -0.04 - rng.nextDouble() * 0.04, (rng.nextDouble() - 0.5) * 0.01, 1.0);
-        }
-
-        // 暖橘狐火：脚边环绕，向上飘
         for (int i = 0; i < 2; i++) {
             double angle = rng.nextDouble() * Math.PI * 2;
             double rad = r * (0.4 + rng.nextDouble() * 0.5);
@@ -123,7 +138,6 @@ public final class WinefoxHexHelper {
                 (rng.nextDouble() - 0.5) * 0.01, 0.03 + rng.nextDouble() * 0.03, (rng.nextDouble() - 0.5) * 0.01, 1.0);
         }
 
-        // 偶发金色符箓尘
         if (rng.nextFloat() < 0.25f) {
             double angle = rng.nextDouble() * Math.PI * 2;
             double rad = r * 0.9;
@@ -135,8 +149,7 @@ public final class WinefoxHexHelper {
     }
 
     /**
-     * 瞬发法术的一次性施法粒子爆发：连发三批 {@link #spawnCastParticles}。
-     * 持续法术仍应按 tick 调用 {@link #spawnCastParticles}。
+     * 瞬发法术的一次性施法粒子爆发：连发三批 {@link #spawnCastParticles}。 持续法术仍应按 tick 调用 {@link #spawnCastParticles}。
      */
     public static void spawnCastBurst(ServerLevel level, LivingEntity caster) {
         for (int i = 0; i < 3; i++) {
@@ -148,49 +161,120 @@ public final class WinefoxHexHelper {
     // 残月烙印引爆系统常量
     // -----------------------------------------------------------------------
 
-    public static final float DETONATE_BASE = 6.0f;
-    /** 女仆引爆伤害倍率 */
+    /**
+     * 引爆基础伤害；实际伤害 = 本值 + 挂印时的 bouquet，再乘女仆/玩家分支倍率。
+     */
+    public static final float DETONATE_BASE = 10.0f;
+
+    /**
+     * 女仆引爆伤害倍率
+     */
     public static final float MAID_MULT = 1.5f;
-    /** 女仆引爆半径（普通） */
+
+    /**
+     * 女仆引爆半径（普通）
+     */
     public static final int MAID_RADIUS = 4;
-    /** 女仆引爆半径（≥3 层 Brewsurge 时） */
+
+    /**
+     * 女仆引爆半径（≥3 层 Brewsurge 时）
+     */
     public static final int MAID_RADIUS_SURGE = 5;
-    /** 玩家分支引爆半径 */
+
+    /**
+     * 玩家分支引爆半径
+     */
     public static final int PLAYER_RADIUS = 3;
-    /** 烙印自然过期弱自爆半径 */
+
+    /**
+     * 烙印自然过期弱自爆半径
+     */
     public static final float WEAK_SELF_RADIUS = 2.0f;
-    /** 烙印自然过期弱自爆伤害 */
+
+    /**
+     * 烙印自然过期弱自爆伤害
+     */
     public static final float WEAK_SELF_DAMAGE = 3.0f;
 
     /**
-     * 判断伤害源是否为酒狐巫法类型。
-     * 检测键为伤害类型 ResourceKey（非 instanceof SpellDamageSource），
-     * 这样 /damage … winefox_hex_magic 命令注入也能命中。
+     * 判断伤害源是否为酒狐巫法类型。 检测键为伤害类型 ResourceKey（非 instanceof SpellDamageSource）， 这样 /damage … winefox_hex_magic 命令注入也能命中。
      */
     public static boolean isWinefoxHexDamage(DamageSource source) {
         return source != null && source.is(WsbDamageTypes.WINEFOX_HEX_MAGIC);
     }
 
+    // -----------------------------------------------------------------------
+    // 敌我判定：学派敌我（instanceof Enemy，用于主动选目标）与阵营敌我
+    // （isAlliedTo，用于 AoE 波及）语义不同，不可互换。isAlliedTo 已由
+    // EntityAllyMixin 织入召唤链解析，无需再叠 MaidAllyHelper。
+    // -----------------------------------------------------------------------
+
     /**
-     * 敌我判定单一事实源:是否为「敌对」实体。复用代码既有约定 {@code instanceof Enemy}
-     * (与 Foxshade Wisps 目标筛选、SummonedMaidBrain.isEnemyTarget 一致)。
-     * 非 Enemy(女仆/玩家/中立动物)视为友方侧。供 Tipsy 等区分敌我表现的效果复用。
+     * 【学派敌我】是否为「敌对」实体，判据 {@code instanceof Enemy}。
      */
     public static boolean isHexEnemy(LivingEntity entity) {
         return entity instanceof Enemy;
     }
 
     /**
-     * 「存活的敌对目标且不是自己」——目标选取/AoE 过滤的统一谓词
-     * （狐影弹选目标、finisher 爆发等共用，避免各处手写三连判定）。
+     * 【学派敌我】「存活的敌对目标且不是自己」——<b>主动目标选取</b>的统一谓词 （狐影弹选目标、伏击触发判定等共用，避免各处手写三连判定）。
+     * <p>
+     * AoE 波及范围请用 {@link #isFactionHostile}，两者语义不同，见本节顶部说明。
      */
     public static boolean isHostileTo(LivingEntity candidate, @Nullable Entity self) {
         return candidate != self && candidate.isAlive() && isHexEnemy(candidate);
     }
 
     /**
-     * 弹体伤害归因实体：优先 owner（施法者，引爆系统据此区分女仆/玩家分支），
-     * owner 缺失（已卸载/下线）时退回弹体自身，保证伤害类型仍为学派伤害。
+     * 【阵营敌我】「存活、不是施法者本人、且不与施法者同阵营」——<b>AoE 波及</b>的统一谓词。
+     * <p>
+     * {@code attacker} 允许为 {@code null}（环境学派伤害 / {@code /damage} 无 {@code by} 注入的测试）。此时必须短路，不能落到 {@code isAlliedTo(null)}—— {@code Entity#isAlliedTo} 会对参数调 {@code getTeam()}，传 null 直接 NPE 崩 tick。 无归因时视作「谁都不是自己人」，全部波及。
+     *
+     * @param candidate AoE 范围内的候选受害者
+     * @param attacker  伤害归因实体，可为 {@code null}
+     */
+    public static boolean isFactionHostile(LivingEntity candidate, @Nullable Entity attacker) {
+        return candidate != attacker
+            && candidate.isAlive()
+            && (attacker == null || !candidate.isAlliedTo(attacker));
+    }
+
+    /**
+     * 是否挂着残月烙印——「优先打挂印目标」这条规则的单一判定入口。
+     */
+    public static boolean isBranded(LivingEntity entity) {
+        return entity.hasEffect(WsbEffects.CRESCENT_BRAND);
+    }
+
+    /**
+     * 女仆索敌：挂着残月烙印的目标优先，其余取最近。
+     * <p>
+     * {@link MemoryModuleType#NEAREST_VISIBLE_LIVING_ENTITIES} 已按距离排序，故单趟遍历即可：
+     * 第一个通过 {@code valid} 的是最近有效目标，遇到挂印目标立即短路返回。
+     *
+     * @param mob   索敌的女仆（真·TLM 女仆或召唤女仆均可）
+     * @param valid 目标有效性判定（各调用点不同）
+     * @return 优先挂印、其次最近的有效目标；都没有时 empty
+     */
+    public static Optional<? extends LivingEntity> findTargetPreferBranded(
+        Mob mob, Predicate<LivingEntity> valid) {
+        return mob.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
+            .flatMap(entities -> {
+                LivingEntity nearest = null;
+                for (LivingEntity candidate : entities.findAll(valid)) {
+                    if (isBranded(candidate)) {
+                        return Optional.of(candidate);
+                    }
+                    if (nearest == null) {
+                        nearest = candidate;
+                    }
+                }
+                return Optional.ofNullable(nearest);
+            });
+    }
+
+    /**
+     * 弹体伤害归因实体：优先 owner（施法者，引爆系统据此区分女仆/玩家分支）， owner 缺失（已卸载/下线）时退回弹体自身，保证伤害类型仍为学派伤害。
      */
     public static Entity projectileAttribution(Projectile projectile) {
         Entity owner = projectile.getOwner();
@@ -198,9 +282,7 @@ public final class WinefoxHexHelper {
     }
 
     /**
-     * 以学派伤害源打出一次 AoE 爆发：{@code setIFrames(0)} 绕过受击无敌帧，
-     * 保证同一次爆发能命中多个目标、且不被同 tick 直击刚触发的无敌帧吞掉。
-     * 过滤器由调用方提供（存活/敌我/归因排除等判定各站点不同）。
+     * 以学派伤害源打出一次 AoE 爆发：{@code setIFrames(0)} 绕过受击无敌帧， 保证同一次爆发能命中多个目标、且不被同 tick 直击刚触发的无敌帧吞掉。 过滤器由调用方提供（存活/敌我/归因排除等判定各站点不同）。
      */
     public static void applyAoeBurst(Level level, AABB box, float damage,
                                      SpellDamageSource source, Predicate<LivingEntity> filter) {
@@ -214,7 +296,7 @@ public final class WinefoxHexHelper {
      * 攻击者是否为「有主人的女仆」。涵盖两类女仆：
      * <ul>
      *   <li>真·TLM 雇佣女仆 {@link EntityMaid}（{@code TamableAnimal} 主人，{@code getOwner() != null}）；</li>
-     *   <li>法术召唤的战斗女仆 {@link net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid}
+     *   <li>法术召唤的战斗女仆 {@link net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid}
      *       （{@link IMaid} + Iron's {@link IMagicSummon}，{@code getSummoner() != null}）。</li>
      * </ul>
      * 两类均归玩家所有，故引爆时都应走女仆分支（×1.5 / AoE+1 / 连锁）。
@@ -225,9 +307,7 @@ public final class WinefoxHexHelper {
     }
 
     /**
-     * 取女仆的主人：雇佣女仆（{@link EntityMaid}）取 {@code getOwner()}，
-     * 召唤女仆（{@link IMaid} + {@link IMagicSummon}）取 {@code getSummoner()}；
-     * 非女仆或无主时返回 {@code null}。两类女仆的判定统一收口于此。
+     * 取女仆的主人：雇佣女仆（{@link EntityMaid}）取 {@code getOwner()}， 召唤女仆（{@link IMaid} + {@link IMagicSummon}）取 {@code getSummoner()}； 非女仆或无主时返回 {@code null}。两类女仆的判定统一收口于此。
      */
     @Nullable
     private static Entity maidOwner(Entity maid) {
@@ -241,10 +321,7 @@ public final class WinefoxHexHelper {
     }
 
     /**
-     * 目标是否为「owner 阵营的自家女仆」：目标是有主人的女仆，且与 owner 共享同一召唤链顶层
-     * （{@link MaidAllyHelper#isAllied}，兼容玩家直接施法与女仆代姐妹施法两种情形）。
-     * 增益类效果（披风、酒池回魔、豁免微醺等）须用本方法而非 {@link #isOwnedMaid}，
-     * 否则会把其他玩家的女仆也当成自家人。
+     * 目标是否为「owner 阵营的自家女仆」：目标是有主人的女仆，且与 owner 共享同一召唤链顶层 （{@link MaidAllyHelper#isAllied}，兼容玩家直接施法与女仆代姐妹施法两种情形）。 增益类效果（披风、酒池回魔、豁免微醺等）须用本方法而非 {@link #isOwnedMaid}， 否则会把其他玩家的女仆也当成自家人。
      */
     public static boolean isMaidOwnedBy(Entity target, @Nullable Entity owner) {
         return owner != null && isOwnedMaid(target) && MaidAllyHelper.isAllied(target, owner);
@@ -267,5 +344,25 @@ public final class WinefoxHexHelper {
         }
         var e = commander.getEffect(WsbEffects.BREWSURGE);
         return e == null ? 0 : e.getAmplifier() + 1;
+    }
+
+    /**
+     * 引爆归因的「指挥者」：攻击者为玩家时即其本人，为自家女仆时取其主人玩家；其余返回 {@code null}。
+     */
+    @Nullable
+    public static Player commanderOf(@Nullable Entity attacker) {
+        if (attacker instanceof Player p) {
+            return p;
+        }
+        return attacker == null ? null : maidCommander(attacker);
+    }
+
+    /**
+     * 为指挥者叠一层酒涌（{@link #BREWSURGE_DURATION 10s} 滚动刷新，至多 {@link #BREWSURGE_MAX_STACKS 3} 层）。仅由烙印引爆调用——酒涌是「引爆的余韵」， 施法本身不计层。
+     */
+    public static void addBrewsurgeStack(Player commander) {
+        var cur = commander.getEffect(WsbEffects.BREWSURGE);
+        int next = Math.min((cur == null ? -1 : cur.getAmplifier()) + 1, BREWSURGE_MAX_STACKS - 1);
+        commander.addEffect(new MobEffectInstance(WsbEffects.BREWSURGE, BREWSURGE_DURATION, next));
     }
 }
