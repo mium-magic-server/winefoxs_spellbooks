@@ -5,7 +5,8 @@ import com.gametechbc.gtbcs_geomancy_plus.init.GGSpells;
 
 public final class GeomancyPlusData {
 
-    private GeomancyPlusData() {}
+    private GeomancyPlusData() {
+    }
 
     public static void contribute(SpellDataContext ctx) {
         // Defense

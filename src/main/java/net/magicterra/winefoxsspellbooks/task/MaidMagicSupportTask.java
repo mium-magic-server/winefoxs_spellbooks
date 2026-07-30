@@ -10,12 +10,12 @@ import java.util.Optional;
 import java.util.Set;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellAttackWalkToTarget;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellCastingTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellChooseTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellStrafingTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.StartAttacking;
-import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.registry.WsbItems;
 import net.magicterra.winefoxsspellbooks.util.LineOfSightGuard;
 import net.minecraft.resources.ResourceLocation;
@@ -59,7 +59,7 @@ public class MaidMagicSupportTask extends MaidCastingTask {
     static Optional<? extends LivingEntity> findNearbyFriendsAttackTarget(EntityMaid maid) {
         // 检查攻击主人的对象
         LivingEntity owner = maid.getOwner();
-        LivingEntity lastAttacker = owner !=null ? owner.getLastHurtByMob() : null;
+        LivingEntity lastAttacker = owner != null ? owner.getLastHurtByMob() : null;
         if (lastAttacker != null && maid.canAttack(lastAttacker) && maid.canSee(lastAttacker)) {
             return Optional.of(lastAttacker);
         }

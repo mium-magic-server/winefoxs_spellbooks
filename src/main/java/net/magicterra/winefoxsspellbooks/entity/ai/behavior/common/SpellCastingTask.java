@@ -7,7 +7,7 @@ import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
-import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
+import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -28,6 +28,7 @@ public class SpellCastingTask extends Behavior<Mob> {
     protected final IMagicEntity magicEntity;
 
     protected SpellData currentSpell = SpellData.EMPTY;
+
     protected int seeTime = 0;
 
     public SpellCastingTask(IMagicEntity magicEntity) {
@@ -82,7 +83,7 @@ public class SpellCastingTask extends Behavior<Mob> {
         }
 
         double distanceSquared = target == null ? 0 : mob.distanceToSqr(target);
-        float spellcastingRange = MaidSpellRegistry.getSpellRange(currentSpell.getSpell());
+        float spellcastingRange = MaidSpellCatalog.getSpellRange(currentSpell.getSpell());
         float spellcastingRangeSqr = spellcastingRange * spellcastingRange;
 
         if (currentSpell == SpellData.EMPTY) {
@@ -166,7 +167,7 @@ public class SpellCastingTask extends Behavior<Mob> {
 
         // 存在未完成的二段咏唱时，只对允许女仆逐发的法术继续施放；
         // 其余法术（如召唤类）重复施放会触发收回等副作用，等待 recast 超时即可
-        if (currentSpell != SpellData.EMPTY && (!hasRecastForSpell || MaidSpellRegistry.maidShouldRecast(spell))) {
+        if (currentSpell != SpellData.EMPTY && (!hasRecastForSpell || MaidSpellCatalog.maidShouldRecast(spell))) {
             LivingEntity target = mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
                 .or(() -> mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
                 .orElse(null);

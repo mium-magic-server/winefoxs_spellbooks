@@ -4,7 +4,8 @@ import com.rinko1231.SnowWaifuSpell.init.ModSpellRegistry;
 
 public final class SnowWaifuSpellTags {
 
-    private SnowWaifuSpellTags() {}
+    private SnowWaifuSpellTags() {
+    }
 
     public static void contribute(SpellTagContext ctx) {
         ctx.attack().addOptional(ModSpellRegistry.SUMMON_SNOW_QUEEN_SPELL.get().getSpellResource());

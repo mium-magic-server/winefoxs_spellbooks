@@ -20,7 +20,6 @@ import net.magicterra.winefoxsspellbooks.bauble.SpellBookBauble;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.brain.MaidMagicBrain;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
-import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
 import net.magicterra.winefoxsspellbooks.task.MaidCastingTask;
 import net.magicterra.winefoxsspellbooks.task.MaidMagicSupportTask;
 import net.magicterra.winefoxsspellbooks.task.debug.MaidDrinkPotionTask;
@@ -45,13 +44,13 @@ import snownee.jade.api.ITooltip;
 @LittleMaidExtension
 public class LittleMaidSpellbooksCompat implements ILittleMaid {
     private static final Set<String> ALL_SPELL_IDS = ConcurrentHashMap.newKeySet();
+
     private static final Set<Item> REGISTERED_SPELL_BOOKS = ConcurrentHashMap.newKeySet();
 
     public LittleMaidSpellbooksCompat() {
         if (FMLLoader.getLoadingModList().getModFileById("jade") != null) {
             NeoForge.EVENT_BUS.addListener(this::addJadeInfoEvent);
         }
-        NeoForge.EVENT_BUS.addListener(MaidSummonManager::onServerStopping);
     }
 
     @Override

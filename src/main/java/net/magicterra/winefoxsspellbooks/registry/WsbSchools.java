@@ -19,7 +19,9 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * @since 2026-05-11
  */
 public class WsbSchools {
-    /** 学派注册 id；别名自 {@link WinefoxHexHelper#WINEFOX_HEX_ID}，保持单一事实源。 */
+    /**
+     * 学派注册 id；别名自 {@link WinefoxHexHelper#WINEFOX_HEX_ID}，保持单一事实源。
+     */
     public static final ResourceLocation WINEFOX_HEX_RESOURCE = WinefoxHexHelper.WINEFOX_HEX_ID;
 
     private static final DeferredRegister<SchoolType> SCHOOLS =

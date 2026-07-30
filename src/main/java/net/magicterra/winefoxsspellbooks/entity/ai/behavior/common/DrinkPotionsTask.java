@@ -22,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public class DrinkPotionsTask extends Behavior<Mob> {
     private final float fleeSpeed;
+
     private final int drinkCooldown;
 
     private int lastDrinkTick = 0;
@@ -83,12 +84,16 @@ public class DrinkPotionsTask extends Behavior<Mob> {
         IMagicEntity magicEntity = (IMagicEntity) entity;
         magicEntity.startDrinkingPotion();
 
-        // 朝相反方向逃跑
-        // TODO 测试此功能
-        Vec3 fleeVector = target.getForward().reverse().scale(10);
+        setFleeWalkTarget(entity, target);
+    }
 
+    /**
+     * 朝目标的反方向设置行走目标。
+     */
+    private void setFleeWalkTarget(Mob mob, LivingEntity target) {
+        Vec3 fleeVector = target.getForward().reverse().scale(10);
         BlockPos fleePos = target.blockPosition().offset(Mth.floor(fleeVector.x), Mth.floor(fleeVector.y), Mth.floor(fleeVector.z));
-        entity.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(fleePos, fleeSpeed, 0));
+        mob.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(fleePos, fleeSpeed, 0));
     }
 
     @Override
@@ -97,9 +102,7 @@ public class DrinkPotionsTask extends Behavior<Mob> {
         if (target == null) {
             return;
         }
-        Vec3 fleeVector = target.getForward().reverse().scale(10);
-        BlockPos fleePos = target.blockPosition().offset(Mth.floor(fleeVector.x), Mth.floor(fleeVector.y), Mth.floor(fleeVector.z));
-        owner.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(fleePos, fleeSpeed, 0));
+        setFleeWalkTarget(owner, target);
     }
 
     @Override

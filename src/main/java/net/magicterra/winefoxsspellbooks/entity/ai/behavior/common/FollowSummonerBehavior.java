@@ -2,7 +2,7 @@ package net.magicterra.winefoxsspellbooks.entity.ai.behavior.common;
 
 import com.google.common.collect.ImmutableMap;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -18,31 +18,41 @@ import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 
 /**
- * 召唤物跟随召唤者的行为
- * <p>
- * 与 MaidFollowOwnerTask 保持完全一致的行为逻辑。
+ * 召唤物跟随召唤者的行为。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-12-29
  */
 public class FollowSummonerBehavior extends Behavior<PathfinderMob> {
 
-    /** 移动速度 */
+    /**
+     * 移动速度
+     */
     private final float speedModifier;
 
-    /** 停止跟随的距离 */
+    /**
+     * 停止跟随的距离
+     */
     private final int stopDistance;
 
-    /** 开始跟随的距离 */
+    /**
+     * 开始跟随的距离
+     */
     private static final int START_DISTANCE_OFFSET = 16;
 
-    /** 传送距离偏移（基于 startDistance） */
+    /**
+     * 传送距离偏移（基于 startDistance）
+     */
     private static final int TELEPORT_DISTANCE_OFFSET = 4;
 
-    /** 最大传送尝试次数 */
+    /**
+     * 最大传送尝试次数
+     */
     private static final int MAX_TELEPORT_ATTEMPTS = 10;
 
-    /** 向下搜索地面的最大距离 */
+    /**
+     * 向下搜索地面的最大距离
+     */
     private static final int MAX_GROUND_SEARCH_DEPTH = 32;
 
     /**
@@ -88,17 +98,10 @@ public class FollowSummonerBehavior extends Behavior<PathfinderMob> {
             return;
         }
 
-        // 计算距离阈值（与原版 MaidFollowOwnerTask 一致）
-        int startDistance = START_DISTANCE_OFFSET;
-        if (startDistance < 5) {
-            startDistance = 10; // 默认值
-        }
-        int minTeleportDistance = startDistance + TELEPORT_DISTANCE_OFFSET;
+        int minTeleportDistance = START_DISTANCE_OFFSET + TELEPORT_DISTANCE_OFFSET;
 
-        // 检查是否需要跟随
-        if (!mob.closerThan(summoner, startDistance)) {
+        if (!mob.closerThan(summoner, START_DISTANCE_OFFSET)) {
             if (!mob.closerThan(summoner, minTeleportDistance)) {
-                // 距离过远，传送
                 teleportToSummoner(mob, summoner);
             } else if (!summonerIsWalkTarget(mob, summoner)) {
                 // 设置行走和看向目标
@@ -109,8 +112,6 @@ public class FollowSummonerBehavior extends Behavior<PathfinderMob> {
 
     /**
      * 检查召唤者状态是否满足条件
-     * <p>
-     * 与原版 ownerStateConditions 保持一致
      */
     private boolean summonerStateConditions(LivingEntity summoner, PathfinderMob mob) {
         return summoner != null
@@ -121,8 +122,6 @@ public class FollowSummonerBehavior extends Behavior<PathfinderMob> {
 
     /**
      * 检查召唤者是否已经是行走目标
-     * <p>
-     * 与原版 ownerIsWalkTarget 保持一致
      */
     private boolean summonerIsWalkTarget(PathfinderMob mob, LivingEntity summoner) {
         return mob.getBrain().getMemory(MemoryModuleType.WALK_TARGET).map(target -> {
@@ -175,7 +174,7 @@ public class FollowSummonerBehavior extends Behavior<PathfinderMob> {
     /**
      * 向下搜索最近的可站立地面位置
      *
-     * @param mob 需要传送的实体
+     * @param mob      需要传送的实体
      * @param startPos 开始搜索的位置
      * @return 地面位置，如果找不到则返回 null
      */
@@ -191,8 +190,6 @@ public class FollowSummonerBehavior extends Behavior<PathfinderMob> {
 
     /**
      * 尝试传送到指定位置
-     * <p>
-     * 与原版 maybeTeleportTo 保持一致
      */
     private boolean maybeTeleportTo(PathfinderMob mob, LivingEntity summoner, int x, int y, int z) {
         if (teleportTooClosed(summoner, x, z)) {
@@ -202,7 +199,6 @@ public class FollowSummonerBehavior extends Behavior<PathfinderMob> {
         } else {
             mob.moveTo(x + 0.5, y, z + 0.5, mob.getYRot(), mob.getXRot());
             mob.getNavigation().stop();
-            // 与原版一致，清除相关 Memory
             mob.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
             mob.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
             mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
@@ -213,17 +209,13 @@ public class FollowSummonerBehavior extends Behavior<PathfinderMob> {
 
     /**
      * 检查传送位置是否太近
-     * <p>
-     * 与原版 teleportTooClosed 保持一致
      */
     private boolean teleportTooClosed(LivingEntity summoner, int x, int z) {
         return Math.abs(x - summoner.getX()) < 2 && Math.abs(z - summoner.getZ()) < 2;
     }
 
     /**
-     * 检查是否可以传送到指定位置
-     * <p>
-     * 与原版 canTeleportTo 保持一致，支持 WALKABLE 和 WATER
+     * 检查是否可以传送到指定位置（WALKABLE 或 WATER）。
      */
     private boolean canTeleportTo(PathfinderMob mob, BlockPos pos) {
         PathType pathType = WalkNodeEvaluator.getPathTypeStatic(mob, pos);
@@ -236,8 +228,6 @@ public class FollowSummonerBehavior extends Behavior<PathfinderMob> {
 
     /**
      * 生成指定范围内的随机整数
-     * <p>
-     * 与原版 randomIntInclusive 保持一致
      */
     private int randomIntInclusive(RandomSource random, int min, int max) {
         return random.nextInt(max - min + 1) + min;

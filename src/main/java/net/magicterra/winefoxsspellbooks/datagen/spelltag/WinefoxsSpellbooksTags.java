@@ -3,12 +3,12 @@ package net.magicterra.winefoxsspellbooks.datagen.spelltag;
 import net.magicterra.winefoxsspellbooks.registry.WsbSpells;
 
 /**
- * 本 mod 自带法术的标签贡献。
- * 注意：本 mod 的法术已经在自己的 registry 里，不需要 {@code addOptional} 防御，可以直接 {@code add}。
+ * 本 mod 自带法术的标签贡献。 注意：本 mod 的法术已经在自己的 registry 里，不需要 {@code addOptional} 防御，可以直接 {@code add}。
  */
 public final class WinefoxsSpellbooksTags {
 
-    private WinefoxsSpellbooksTags() {}
+    private WinefoxsSpellbooksTags() {
+    }
 
     public static void contribute(SpellTagContext ctx) {
         ctx.summon().add(WsbSpells.SUMMON_MAID_SPELL.get());
@@ -19,6 +19,8 @@ public final class WinefoxsSpellbooksTags {
         ctx.attack().add(WsbSpells.FOXSHADE_WISPS_SPELL.get());
         // 酒杯狐影需要逐次 recast（共 6 发），加入 maidShouldRecast 让女仆 AI 自动逐发
         ctx.maidShouldRecast().add(WsbSpells.FOXSHADE_WISPS_SPELL.get());
+        // 狐影伏击：自挂增益标记，命中时召狐影撞咬，归入防御类
+        ctx.defense().add(WsbSpells.FOXSHADE_AMBUSH_SPELL.get());
         // 残月披风：自身+女仆吸收/隐身脱险，归入防御类
         ctx.defense().add(WsbSpells.CRESCENT_MANTLE_SPELL.get());
         // 醒酒之礼：解除/减轻自身或女仆负面效果，归入支援类

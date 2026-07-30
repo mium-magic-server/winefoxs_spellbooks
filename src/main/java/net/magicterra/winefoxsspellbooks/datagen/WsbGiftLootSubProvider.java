@@ -14,9 +14,7 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 /**
  * 模组自有"赠礼"类战利品表生成器
  * <p>
- * 仿 vanilla {@code VanillaGiftLoot}：JAVA 端只负责"是否赠送 + 哪只女仆"，物品内容交给本表。
- * 数据包覆盖：服主/包作者在 {@code data/winefoxs_spellbooks/loot_table/gameplay/maid_morning_gift.json}
- * 放同名 JSON 即可整张表替换。
+ * JAVA 端只负责"是否赠送 + 哪只女仆"，物品内容交给本表。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-05-11

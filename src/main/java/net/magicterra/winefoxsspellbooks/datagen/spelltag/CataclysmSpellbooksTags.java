@@ -4,7 +4,8 @@ import net.acetheeldritchking.cataclysm_spellbooks.registries.SpellRegistries;
 
 public final class CataclysmSpellbooksTags {
 
-    private CataclysmSpellbooksTags() {}
+    private CataclysmSpellbooksTags() {
+    }
 
     public static void contribute(SpellTagContext ctx) {
         ctx.attack().addOptional(SpellRegistries.VOID_BEAM.get().getSpellResource());

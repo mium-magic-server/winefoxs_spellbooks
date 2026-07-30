@@ -15,8 +15,8 @@ public interface ISlotPlaceableBauble extends IMaidBauble {
      * 是否能放入饰品栏中 (额外的检查)
      *
      * @param itemHandler 饰品栏物品
-     * @param index 栏位
-     * @param stack 物品
+     * @param index       栏位
+     * @param stack       物品
      * @return 是否允许放入饰品栏
      */
     default boolean canPlace(IItemHandler itemHandler, int index, ItemStack stack) {

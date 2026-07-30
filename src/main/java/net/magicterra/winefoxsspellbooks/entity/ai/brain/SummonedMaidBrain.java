@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.Config;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.FollowSummonerBehavior;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.MagicMeleeAttack;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.MobClimbTask;
@@ -25,8 +26,8 @@ import net.magicterra.winefoxsspellbooks.entity.ai.behavior.summon.SummonedMaidP
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.summon.SummonedMaidRandomFlight;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.summon.SummonedMaidRunOne;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
-import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
+import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
@@ -48,8 +49,7 @@ import net.minecraft.world.entity.schedule.Activity;
 /**
  * 召唤女仆的 Brain 配置
  * <p>
- * 简化的 Brain 系统，仅包含战斗和跟随行为。
- * 不包含拾取、乞讨、回家等不需要的行为。
+ * 简化的 Brain 系统，仅包含战斗和跟随行为。 不包含拾取、乞讨、回家等不需要的行为。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-12-29
@@ -215,10 +215,7 @@ public class SummonedMaidBrain {
     /**
      * 注册 RIDE 活动行为（扫帚女仆飞行模式）
      * <p>
-     * 模仿悦灵(Allay)的行为模式：
-     * - 使用 SummonedMaidFlyToSummoner 保持与召唤者的距离
-     * - 使用 SummonedMaidRandomFlight 进行随机飞行游走
-     * - 使用 SetEntityLookTarget 随机看向（与地面模式一致：玩家、女仆、狼、猫、鹦鹉）
+     * 模仿悦灵(Allay)的行为模式： - 使用 SummonedMaidFlyToSummoner 保持与召唤者的距离 - 使用 SummonedMaidRandomFlight 进行随机飞行游走 - 使用 SetEntityLookTarget 随机看向（与地面模式一致：玩家、女仆、狼、猫、鹦鹉）
      */
     private static void registerRideGoals(Brain<SummonedEntityMaid> brain, SummonedEntityMaid maid) {
         brain.addActivityAndRemoveMemoryWhenStopped(
@@ -277,15 +274,10 @@ public class SummonedMaidBrain {
     }
 
     /**
-     * 查找最近的敌对实体
-     *
-     * @param maid 召唤女仆
-     * @return 最近的有效目标
+     * 优先挂有残月烙印的目标，其次最近。
      */
     private static Optional<? extends LivingEntity> findNearestHostile(SummonedEntityMaid maid) {
-        return maid.getBrain()
-            .getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
-            .flatMap(entities -> entities.findClosest(target -> isValidHostileTarget(maid, target)));
+        return WinefoxHexHelper.findTargetPreferBranded(maid, target -> isValidHostileTarget(maid, target));
     }
 
     /**

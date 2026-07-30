@@ -4,8 +4,8 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedMaidBroom;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -20,10 +20,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 扫帚女仆跟随召唤者行为
  * <p>
- * 自定义实现，解决原版 StayCloseToTarget 每 tick 更新目标导致的飞行卡顿问题：
- * - 只在召唤者移动一定距离后才更新飞行目标
- * - 与召唤者保持适当距离（不会挤在头上）
- * - 距离太近时不移动，太远时才跟随
+ * 自定义实现，解决原版 StayCloseToTarget 每 tick 更新目标导致的飞行卡顿问题： - 只在召唤者移动一定距离后才更新飞行目标 - 与召唤者保持适当距离（不会挤在头上） - 距离太近时不移动，太远时才跟随
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-01-18

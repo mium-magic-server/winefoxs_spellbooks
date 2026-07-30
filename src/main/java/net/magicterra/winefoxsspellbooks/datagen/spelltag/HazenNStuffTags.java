@@ -4,7 +4,8 @@ import net.hazen.hazennstuff.Spells.HnSSpellRegistries;
 
 public final class HazenNStuffTags {
 
-    private HazenNStuffTags() {}
+    private HazenNStuffTags() {
+    }
 
     public static void contribute(SpellTagContext ctx) {
         ctx.attack().addOptional(HnSSpellRegistries.SCORCHING_SLASH.get().getSpellResource());

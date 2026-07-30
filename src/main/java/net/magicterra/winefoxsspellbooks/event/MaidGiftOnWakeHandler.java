@@ -25,9 +25,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
 /**
  * 满好感度女仆的晨间礼物：灵狐精魂
  * <p>
- * 仿 vanilla 猫的晨间礼物 ({@code Cat$CatRelaxOnOwnerGoal#giveMorningGift}) 但更"主动"：
- * 这里只负责 "选女仆 + 抽战利品 + 写入 Brain 记忆 + 写冷却"，
- * 真正的"走过去、挥手、抛出"由 {@code MaidDeliverGiftBehavior} 在 Brain tick 中完成。
+ * 选女仆 + 抽战利品 + 写入 Brain 记忆 + 写冷却；投递动作由 {@code MaidDeliverGiftBehavior} 完成。
  * <p>
  * 战利品表 {@link WsbLootTables#MAID_MORNING_GIFT} 可由数据包整张覆盖。
  *
@@ -36,12 +34,13 @@ import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
  */
 @EventBusSubscriber(modid = WinefoxsSpellbooks.MODID)
 public class MaidGiftOnWakeHandler {
-    /** TLM 好感度等级阈值：3 = 满好感度（≥384 点） */
+    /**
+     * TLM 好感度等级阈值：3 = 满好感度（≥384 点）
+     */
     private static final int MIN_FAVORABILITY_FOR_GIFT = 3;
 
     /**
-     * 赠送冷却（tick）：略小于一整日（24000 tick），允许"睡到天明后下一晚再睡"也能触发。
-     * 选 gameTime 是因为它单调递增、不受 {@code /time set} 影响，比 dayTime 可靠。
+     * 赠送冷却（tick）：略小于一整日（24000 tick），允许"睡到天明后下一晚再睡"也能触发。 选 gameTime 是因为它单调递增、不受 {@code /time set} 影响，比 dayTime 可靠。
      */
     private static final long GIFT_COOLDOWN_TICKS = 22000L;
 
@@ -87,8 +86,7 @@ public class MaidGiftOnWakeHandler {
     /**
      * 在半径内挑出"满好感度 + 玩家驯化"女仆中距离最近的一只。
      * <p>
-     * {@code SummonedEntityMaid} 是 {@code PathfinderMob}，不是 {@code EntityMaid} 子类，
-     * 所以 {@link ServerLevel#getEntitiesOfClass} 限定 {@code EntityMaid.class} 时自然不会被纳入。
+     * {@code SummonedEntityMaid} 是 {@code PathfinderMob}，不是 {@code EntityMaid} 子类， 所以 {@link ServerLevel#getEntitiesOfClass} 限定 {@code EntityMaid.class} 时自然不会被纳入。
      */
     private static EntityMaid findGifter(ServerPlayer player, ServerLevel level) {
         double radius = Config.getVulpineGiftRadius();

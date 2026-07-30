@@ -15,8 +15,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 /**
  * 酒狐巫法学派的属性
  * <p>
- * 仿 {@link io.redspace.ironsspellbooks.api.registry.AttributeRegistry} 的 power / resist 双属性范式，
- * 让 vanilla Iron's 的 SchoolType 系统能正确读出本学派的强度与抗性。
+ * 仿 {@link io.redspace.ironsspellbooks.api.registry.AttributeRegistry} 的 power / resist 双属性范式， 让 vanilla Iron's 的 SchoolType 系统能正确读出本学派的强度与抗性。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-05-11
@@ -42,8 +41,7 @@ public class WsbAttributes {
     }
 
     /**
-     * 把本学派的属性附加到所有生物身上，这样 vanilla {@code SchoolType.getPowerFor / getResistanceFor} 才能取值。
-     * 沿用 Iron's 的做法：遍历所有 EntityType 全量挂载。
+     * 把本学派的属性附加到所有生物身上，这样 {@code SchoolType.getPowerFor / getResistanceFor} 才能取值。
      */
     @SubscribeEvent
     public static void onModifyEntityAttributes(EntityAttributeModificationEvent event) {

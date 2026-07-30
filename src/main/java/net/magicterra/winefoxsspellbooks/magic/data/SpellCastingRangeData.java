@@ -6,8 +6,7 @@ import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * 法术施法范围数据
- * 定义女仆在使用某些法术时需要靠近到指定距离再施法
+ * 法术施法范围数据 定义女仆在使用某些法术时需要靠近到指定距离再施法
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-01-31

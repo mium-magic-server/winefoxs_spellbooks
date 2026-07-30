@@ -21,8 +21,8 @@ import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidLoadoutManager;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.BroomMode;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.MaidLoadout;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedMaidBroom;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -86,7 +86,7 @@ public class WsbCommand {
             .requires(source -> source.hasPermission(2))
             // ============ cast 子命令 ============
             .then(Commands.literal("cast")
-                .requires(source -> source.hasPermission(2)) // 需要 OP 权限
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.argument("targets", EntityArgument.entities())
                     .then(Commands.argument("spell", ResourceLocationArgument.id())
                         .suggests(SPELL_SUGGESTIONS)
@@ -100,28 +100,24 @@ public class WsbCommand {
                 ))
             // ============ summon 子命令 ============
             .then(Commands.literal("summon")
-                .requires(source -> source.hasPermission(2)) // 需要 OP 权限
+                .requires(source -> source.hasPermission(2))
                 // 无参数：玩家执行时召唤给自己
                 .executes(WsbCommand::executeSummonForSelf)
-                // 指定目标玩家
                 .then(Commands.argument("target", EntityArgument.player())
                     .executes(context -> executeSummon(context,
                         EntityArgument.getPlayer(context, "target"),
                         1, 1, null, DEFAULT_SUMMON_DURATION, null))
-                    // 指定数量
                     .then(Commands.argument("count", IntegerArgumentType.integer(1, 10))
                         .executes(context -> executeSummon(context,
                             EntityArgument.getPlayer(context, "target"),
                             IntegerArgumentType.getInteger(context, "count"),
                             1, null, DEFAULT_SUMMON_DURATION, null))
-                        // 指定召唤等级
                         .then(Commands.argument("summonLevel", IntegerArgumentType.integer(1, 10))
                             .executes(context -> executeSummon(context,
                                 EntityArgument.getPlayer(context, "target"),
                                 IntegerArgumentType.getInteger(context, "count"),
                                 IntegerArgumentType.getInteger(context, "summonLevel"),
                                 null, DEFAULT_SUMMON_DURATION, null))
-                            // 指定 loadout
                             .then(Commands.argument("loadout", ResourceLocationArgument.id())
                                 .suggests(LOADOUT_SUGGESTIONS)
                                 .executes(context -> executeSummon(context,
@@ -130,7 +126,6 @@ public class WsbCommand {
                                     IntegerArgumentType.getInteger(context, "summonLevel"),
                                     ResourceLocationArgument.getId(context, "loadout"),
                                     DEFAULT_SUMMON_DURATION, null))
-                                // 指定持续时间
                                 .then(Commands.argument("duration", IntegerArgumentType.integer(-1))
                                     .executes(context -> executeSummon(context,
                                         EntityArgument.getPlayer(context, "target"),
@@ -138,7 +133,6 @@ public class WsbCommand {
                                         IntegerArgumentType.getInteger(context, "summonLevel"),
                                         ResourceLocationArgument.getId(context, "loadout"),
                                         IntegerArgumentType.getInteger(context, "duration"), null))
-                                    // 指定飞行模式
                                     .then(Commands.argument("airForce", BoolArgumentType.bool())
                                         .executes(context -> executeSummon(context,
                                             EntityArgument.getPlayer(context, "target"),
@@ -197,7 +191,6 @@ public class WsbCommand {
         CommandSourceStack source = context.getSource();
         ServerLevel level = source.getLevel();
 
-        // 1. 获取装备配置
         MaidLoadout loadout = null;
         if (loadoutId != null) {
             loadout = MaidLoadoutManager.getInstance().getLoadout(loadoutId).orElse(null);
@@ -207,12 +200,11 @@ public class WsbCommand {
             }
         }
 
-        // 2. 计算持续时间（tick）。-1=永久：持续 = 目标过期 tick - 当前 tick（溢出考量见常量注释）。
+        // -1=永久：持续 = 目标过期 tick - 当前 tick（溢出考量见常量注释）
         int ticks = duration == -1
-            ? PERMANENT_EXPIRATION_TICK - level.getServer().getTickCount()
-            : duration * 20;
+                    ? PERMANENT_EXPIRATION_TICK - level.getServer().getTickCount()
+                    : duration * 20;
 
-        // 3. 计算默认飞行概率
         float defaultAirForceChance = (float) (Config.getAirForceBaseChance() + Config.getAirForceChancePerLevel() * summonLevel);
         defaultAirForceChance = Mth.clamp(defaultAirForceChance, 0.0f, 1.0f);
 
@@ -223,26 +215,23 @@ public class WsbCommand {
 
         for (int i = 0; i < count; i++) {
             try {
-                // 4. 创建女仆实体
                 SummonedEntityMaid maid = new SummonedEntityMaid(SummonedEntityMaid.TYPE, level);
                 maid.setSummonLevel(summonLevel);
 
-                // 5. 设置装备配置
                 MaidLoadout selectedLoadout = loadout != null
-                    ? loadout
-                    : MaidLoadoutManager.getInstance().selectLoadout(level.random);
+                                              ? loadout
+                                              : MaidLoadoutManager.getInstance().selectLoadout(level.random);
                 if (selectedLoadout != null) {
                     maid.setPreSelectedLoadout(selectedLoadout);
                 }
 
-                // 6. 决定飞行模式
                 boolean isAirForce = determineAirForce(selectedLoadout, forceAirForce, defaultAirForceChance, level);
                 if (isAirForce) {
                     maid.setAirForce(true);
                     maid.setSummonIndex(airForceIndex++);
                 }
 
-                // 7. 计算生成位置（围绕玩家圆形分布）
+                // 围绕玩家圆形分布
                 float yrot = (float) (2 * Math.PI) / count * i + owner.getYRot() * ((float) Math.PI / 180);
                 Vec3 spawn = Utils.moveToRelativeGroundLevel(
                     level,
@@ -257,7 +246,6 @@ public class WsbCommand {
                 maid.setPos(spawn.x, spawn.y, spawn.z);
                 maid.setYRot(owner.getYRot());
 
-                // 8. 触发 finalizeSpawn（应用装备和法术）
                 maid.finalizeSpawn(
                     level,
                     level.getCurrentDifficultyAt(maid.blockPosition()),
@@ -266,10 +254,8 @@ public class WsbCommand {
                 );
                 maid.setOldPosAndRot();
 
-                // 9. 添加到世界
                 level.addFreshEntity(maid);
 
-                // 10. 飞行处理：创建扫帚
                 if (maid.isAirForce()) {
                     SummonedMaidBroom broom = SummonedMaidBroom.createForMaid(level, maid, owner);
                     level.addFreshEntity(broom);
@@ -277,7 +263,6 @@ public class WsbCommand {
                     SummonManager.initSummon(owner, broom, ticks, castData);
                 }
 
-                // 11. 建立 Owner 关系
                 SummonManager.initSummon(owner, maid, ticks, castData);
 
                 successCount++;
@@ -289,15 +274,14 @@ public class WsbCommand {
             }
         }
 
-        // 12. 返回结果
         if (successCount > 0) {
             final int success = successCount;
             final Component loadoutText = loadoutId != null
-                ? Component.literal(loadoutId.toString())
-                : Component.translatable("commands.winefoxs_spellbooks.wsb.summon.loadout_random");
+                                          ? Component.literal(loadoutId.toString())
+                                          : Component.translatable("commands.winefoxs_spellbooks.wsb.summon.loadout_random");
             final Component durationText = duration == -1
-                ? Component.translatable("commands.winefoxs_spellbooks.wsb.summon.duration_permanent")
-                : Component.translatable("commands.winefoxs_spellbooks.wsb.summon.duration_seconds", duration);
+                                           ? Component.translatable("commands.winefoxs_spellbooks.wsb.summon.duration_permanent")
+                                           : Component.translatable("commands.winefoxs_spellbooks.wsb.summon.duration_seconds", duration);
             source.sendSuccess(() -> Component.translatable(
                 "commands.winefoxs_spellbooks.wsb.summon.success",
                 success,

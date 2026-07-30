@@ -18,7 +18,9 @@ public final class WsbDamageTypes {
     private WsbDamageTypes() {
     }
 
-    /** 酒狐巫法学派伤害 */
+    /**
+     * 酒狐巫法学派伤害
+     */
     public static final ResourceKey<DamageType> WINEFOX_HEX_MAGIC = ResourceKey.create(
         Registries.DAMAGE_TYPE,
         ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "winefox_hex_magic"));

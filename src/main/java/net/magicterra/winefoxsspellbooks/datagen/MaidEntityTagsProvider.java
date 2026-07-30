@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class MaidEntityTagsProvider extends net.minecraft.data.tags.EntityTypeTagsProvider {
     public static final TagKey<EntityType<?>> MAID_TAG = TagKey.create(Registries.ENTITY_TYPE,
-            ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "maid"));
+        ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "maid"));
 
     public MaidEntityTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider,
                                   String modId, @Nullable ExistingFileHelper existingFileHelper) {

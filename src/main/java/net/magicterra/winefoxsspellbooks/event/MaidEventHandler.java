@@ -10,15 +10,18 @@ import io.redspace.ironsspellbooks.api.spells.ISpellContainer;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.api.spells.SpellSlot;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.event.MaidSpellBookEvent;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
+import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
-import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
@@ -54,17 +57,17 @@ public class MaidEventHandler {
 
     @SubscribeEvent
     public static void onMaidEquipSpellBook(MaidSpellBookEvent.Equipment event) {
-        ItemStack stack = event.getStack();
-        if (ISpellContainer.isSpellContainer(stack)) {
-            onMaidSpellDataChanged(event.getMaid());
-        }
+        onSpellBookChanged(event.getStack(), event.getMaid());
     }
 
     @SubscribeEvent
     public static void onMaidUnEquipSpellBook(MaidSpellBookEvent.UnEquipment event) {
-        ItemStack stack = event.getStack();
+        onSpellBookChanged(event.getStack(), event.getMaid());
+    }
+
+    private static void onSpellBookChanged(ItemStack stack, EntityMaid maid) {
         if (ISpellContainer.isSpellContainer(stack)) {
-            onMaidSpellDataChanged(event.getMaid());
+            onMaidSpellDataChanged(maid);
         }
     }
 
@@ -84,17 +87,15 @@ public class MaidEventHandler {
     }
 
     public static void onMaidSpellDataChanged(EntityMaid maid) {
-        if (maid.level.isClientSide()) {
+        if (maid.level().isClientSide()) {
             return;
         }
 
-        List<SpellData> attackSpells = new ArrayList<>();
-        List<SpellData> defenseSpells = new ArrayList<>();
-        List<SpellData> movementSpells = new ArrayList<>();
-        List<SpellData> supportSpells = new ArrayList<>();
-        List<SpellData> positiveEffectSpells = new ArrayList<>();
-        List<SpellData> negativeEffectSpells = new ArrayList<>();
-        List<SpellData> supportEffectSpells = new ArrayList<>();
+        // 按行为类别分桶
+        Map<MaidSpellAction, List<SpellData>> sorted = new EnumMap<>(MaidSpellAction.class);
+        for (MaidSpellAction action : MaidSpellAction.ALL) {
+            sorted.put(action, new ArrayList<>());
+        }
         IItemHandlerModifiable curiosItems = (IItemHandlerModifiable) EmptyItemHandler.INSTANCE;
         if (CuriosCompat.isLoadedOrEnable()) {
             curiosItems = CuriosApi.getCuriosInventory(maid).map(ICuriosItemHandler::getEquippedCurios).orElse(curiosItems);
@@ -120,33 +121,17 @@ public class MaidEventHandler {
                     AbstractSpell spell = spellSlot.getSpell();
                     int level = MaidMagicManager.getLevelFor(maid, spell, spellSlot.getLevel());
                     SpellData spellData = new SpellData(spell, level);
-                    if (MaidSpellRegistry.isAttackSpell(spell)) {
-                        attackSpells.add(spellData);
-                    } else if (MaidSpellRegistry.isDefenseSpell(spell)) {
-                        defenseSpells.add(spellData);
-                    } else if (MaidSpellRegistry.isMovementSpell(spell)) {
-                        movementSpells.add(spellData);
-                    } else if (MaidSpellRegistry.isSupportSpell(spell)) {
-                        supportSpells.add(spellData);
-                    } else if (MaidSpellRegistry.isPositiveEffectSpell(spell)) {
-                        positiveEffectSpells.add(spellData);
-                    } else if (MaidSpellRegistry.isNegativeEffectSpell(spell)) {
-                        negativeEffectSpells.add(spellData);
-                    } else if (MaidSpellRegistry.isSupportEffectSpell(spell)) {
-                        supportEffectSpells.add(spellData);
+                    // 行为类别互斥，首个命中即归属；不属于任何类别的法术女仆用不了，丢弃
+                    MaidSpellAction action = MaidSpellCatalog.actionOf(spell);
+                    if (action != null) {
+                        sorted.get(action).add(spellData);
                     }
                 }
             }
         }
         MaidMagicEntity magicEntity = (MaidMagicEntity) maid;
         MaidSpellDataHolder spellDataHolder = magicEntity.winefoxsSpellbooks$getSpellDataHolder();
-        spellDataHolder.updateAttackSpells(attackSpells);
-        spellDataHolder.updateDefenseSpells(defenseSpells);
-        spellDataHolder.updateMovementSpells(movementSpells);
-        spellDataHolder.updateSupportSpells(supportSpells);
-        spellDataHolder.updatePositiveEffectSpells(positiveEffectSpells);
-        spellDataHolder.updateNegativeEffectSpells(negativeEffectSpells);
-        spellDataHolder.updateSupportEffectSpells(supportEffectSpells);
+        sorted.forEach(spellDataHolder::update);
         maid.syncData(WsbAttachments.MAID_SPELL_DATA);
     }
 }

@@ -4,7 +4,8 @@ import net.fireofpower.firesenderexpansion.registries.SpellRegistries;
 
 public final class FiresEnderExpansionTags {
 
-    private FiresEnderExpansionTags() {}
+    private FiresEnderExpansionTags() {
+    }
 
     public static void contribute(SpellTagContext ctx) {
         ctx.attack().addOptional(SpellRegistries.PARTIAL_TELEPORT.get().getSpellResource());

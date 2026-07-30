@@ -4,7 +4,8 @@ import com.snackpirate.aeromancy.spells.AASpells;
 
 public final class AeromancyAdditionsTags {
 
-    private AeromancyAdditionsTags() {}
+    private AeromancyAdditionsTags() {
+    }
 
     public static void contribute(SpellTagContext ctx) {
         ctx.attack().addOptional(AASpells.WIND_CHARGE.get().getSpellResource());

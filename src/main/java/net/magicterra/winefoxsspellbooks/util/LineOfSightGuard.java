@@ -8,7 +8,7 @@ import net.minecraft.world.level.Level;
 
 /**
  * 视线检查的安全包装。
- * 
+ *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-04-14
  */
@@ -19,8 +19,7 @@ public final class LineOfSightGuard {
     }
 
     /**
-     * 安全的视线检查。在调用 vanilla {@link LivingEntity#hasLineOfSight} 之前
-     * 检查 chunk 加载状态，未加载时直接返回 false。
+     * 安全的视线检查。在调用 vanilla {@link LivingEntity#hasLineOfSight} 之前 检查 chunk 加载状态，未加载时直接返回 false。
      */
     public static boolean hasLineOfSight(LivingEntity self, Entity target) {
         if (!isSafe(self, target)) {
@@ -30,8 +29,7 @@ public final class LineOfSightGuard {
     }
 
     /**
-     * 安全的 {@link TargetingConditions#test} 包装。
-     * 当目标处于未加载 chunk 时直接返回 false，避免内部 LOS 检查触发死锁。
+     * 安全的 {@link TargetingConditions#test} 包装。 当目标处于未加载 chunk 时直接返回 false，避免内部 LOS 检查触发死锁。
      */
     public static boolean test(TargetingConditions conditions, LivingEntity self, LivingEntity target) {
         if (!isSafe(self, target)) {

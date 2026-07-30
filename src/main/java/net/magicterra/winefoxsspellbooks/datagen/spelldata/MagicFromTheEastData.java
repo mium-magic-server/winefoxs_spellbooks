@@ -5,7 +5,8 @@ import net.warphan.iss_magicfromtheeast.registries.MFTESpellRegistries;
 
 public final class MagicFromTheEastData {
 
-    private MagicFromTheEastData() {}
+    private MagicFromTheEastData() {
+    }
 
     public static void contribute(SpellDataContext ctx) {
         // Defense

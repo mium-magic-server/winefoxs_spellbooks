@@ -6,7 +6,7 @@ import com.mojang.datafixers.kinds.OptionalBox;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import java.util.function.Function;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
-import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
+import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -34,31 +34,31 @@ public class SpellAttackWalkToTarget {
 
     public static BehaviorControl<Mob> create(Function<LivingEntity, Float> speedModifier) {
         return BehaviorBuilder.create(maidInstance -> maidInstance.group(
-                        maidInstance.registered(MemoryModuleType.WALK_TARGET),
-                        maidInstance.registered(MemoryModuleType.LOOK_TARGET),
-                        maidInstance.present(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get()),
-                        maidInstance.registered(MemoryModuleType.ATTACK_TARGET),
-                        maidInstance.registered(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()),
-                        maidInstance.registered(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES))
-                .apply(maidInstance, (
-                    walkTargetMemory,
-                    positionMemory,
-                    spellDataMemory,
-                    attackTargetMemory,
-                    supportTargetMemory,
-                    livingEntitiesMemory
-                ) -> setTarget(speedModifier, maidInstance, walkTargetMemory, positionMemory, spellDataMemory, attackTargetMemory, supportTargetMemory, livingEntitiesMemory)));
+                maidInstance.registered(MemoryModuleType.WALK_TARGET),
+                maidInstance.registered(MemoryModuleType.LOOK_TARGET),
+                maidInstance.present(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get()),
+                maidInstance.registered(MemoryModuleType.ATTACK_TARGET),
+                maidInstance.registered(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()),
+                maidInstance.registered(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES))
+            .apply(maidInstance, (
+                walkTargetMemory,
+                positionMemory,
+                spellDataMemory,
+                attackTargetMemory,
+                supportTargetMemory,
+                livingEntitiesMemory
+            ) -> setTarget(speedModifier, maidInstance, walkTargetMemory, positionMemory, spellDataMemory, attackTargetMemory, supportTargetMemory, livingEntitiesMemory)));
     }
 
     @NotNull
     private static Trigger<Mob> setTarget(Function<LivingEntity, Float> speedModifier,
-                                                 BehaviorBuilder.Instance<Mob> maidInstance,
-                                                 MemoryAccessor<OptionalBox.Mu, WalkTarget> walkTargetMemory,
-                                                 MemoryAccessor<OptionalBox.Mu, PositionTracker> positionMemory,
-                                                 MemoryAccessor<IdF.Mu, SpellData> spellDataMemory,
-                                                 MemoryAccessor<OptionalBox.Mu, LivingEntity> attackTargetMemory,
-                                                 MemoryAccessor<OptionalBox.Mu, LivingEntity> supportTargetMemory,
-                                                 MemoryAccessor<OptionalBox.Mu, NearestVisibleLivingEntities> livingEntitiesMemory) {
+                                          BehaviorBuilder.Instance<Mob> maidInstance,
+                                          MemoryAccessor<OptionalBox.Mu, WalkTarget> walkTargetMemory,
+                                          MemoryAccessor<OptionalBox.Mu, PositionTracker> positionMemory,
+                                          MemoryAccessor<IdF.Mu, SpellData> spellDataMemory,
+                                          MemoryAccessor<OptionalBox.Mu, LivingEntity> attackTargetMemory,
+                                          MemoryAccessor<OptionalBox.Mu, LivingEntity> supportTargetMemory,
+                                          MemoryAccessor<OptionalBox.Mu, NearestVisibleLivingEntities> livingEntitiesMemory) {
         return (level, mob, gameTime) -> {
             LivingEntity attackTarget = maidInstance.tryGet(attackTargetMemory).orElse(null);
             LivingEntity supportTarget = maidInstance.tryGet(supportTargetMemory).orElse(null);
@@ -78,7 +78,6 @@ public class SpellAttackWalkToTarget {
             } else {
                 shouldEraseWalkTarget = shouldEraseWalkTarget(mob, target, maidInstance.get(spellDataMemory));
             }
-            // TODO 会有卡住情况
             if (canSee && shouldEraseWalkTarget) {
                 walkTargetMemory.erase();
             } else {
@@ -102,7 +101,7 @@ public class SpellAttackWalkToTarget {
         if (checkRadius >= restrictRadius) {
             return true;
         }
-        float reachableRange = MaidSpellRegistry.getSpellRange(spellData.getSpell());
+        float reachableRange = MaidSpellCatalog.getSpellRange(spellData.getSpell());
         // 已到达施法范围内，清除目标
         return tamableAnimal.distanceTo(target) <= reachableRange;
     }
@@ -118,7 +117,7 @@ public class SpellAttackWalkToTarget {
         if (checkRadius >= restrictRadius) {
             return true;
         }
-        float reachableRange = MaidSpellRegistry.getSpellRange(spellData.getSpell());
+        float reachableRange = MaidSpellCatalog.getSpellRange(spellData.getSpell());
         // 已到达施法范围内，清除目标
         return mob.distanceTo(target) <= reachableRange;
     }

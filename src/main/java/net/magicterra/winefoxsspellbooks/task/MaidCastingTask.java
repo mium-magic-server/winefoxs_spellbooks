@@ -9,10 +9,12 @@ import com.mojang.datafixers.util.Pair;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.DrinkPotionsTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.MagicMeleeAttack;
@@ -22,8 +24,8 @@ import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellChooseTa
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellStrafingTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.StartAttacking;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
-import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
+import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.registry.WsbItems;
 import net.magicterra.winefoxsspellbooks.util.LineOfSightGuard;
 import net.minecraft.resources.ResourceLocation;
@@ -58,6 +60,14 @@ public class MaidCastingTask implements IRangedAttackTask {
         return WsbItems.CASTING_TASK_ICON.toStack();
     }
 
+    /**
+     * 索敌：挂着残月烙印的目标优先，其余取最近。
+     */
+    private static Optional<? extends LivingEntity> findAttackTargetPreferBranded(EntityMaid maid) {
+        return WinefoxHexHelper.findTargetPreferBranded(maid,
+            target -> maid.canAttack(target) && maid.isWithinRestriction(target.blockPosition()));
+    }
+
     @Override
     public @Nullable SoundEvent getAmbientSound(EntityMaid maid) {
         return SoundUtil.attackSound(maid, InitSounds.MAID_RANGE_ATTACK.get(), 0.5f);
@@ -71,7 +81,7 @@ public class MaidCastingTask implements IRangedAttackTask {
 
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
-        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
+        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, MaidCastingTask::findAttackTargetPreferBranded);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
         BehaviorControl<Mob> spellChooseTask = new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
             Set.of(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT, MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE));
@@ -100,7 +110,7 @@ public class MaidCastingTask implements IRangedAttackTask {
 
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
-        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, IRangedAttackTask::findFirstValidAttackTarget);
+        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, MaidCastingTask::findAttackTargetPreferBranded);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
         BehaviorControl<Mob> spellChooseTask = new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
             Set.of(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT, MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE));

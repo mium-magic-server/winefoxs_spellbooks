@@ -4,8 +4,8 @@ import java.util.Map;
 import java.util.Optional;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedMaidBroom;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,16 +19,16 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 扫帚女仆飞行控制行为
  * <p>
- * 负责将 Brain 的 WALK_TARGET 转换为扫帚的飞行目标。
- * 跟随和游荡行为由原版的 StayCloseToTarget 和 RandomStroll.fly() 处理，
- * 本行为仅负责驱动扫帚移动和战斗时的追击。
+ * 负责将 Brain 的 WALK_TARGET 转换为扫帚的飞行目标。 跟随和游荡行为由原版的 StayCloseToTarget 和 RandomStroll.fly() 处理， 本行为仅负责驱动扫帚移动和战斗时的追击。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-01-11
  */
 public class SummonedMaidPilotBroomTask extends Behavior<SummonedEntityMaid> {
 
-    /** 最大转向角度（度/tick） */
+    /**
+     * 最大转向角度（度/tick）
+     */
     private static final float MAX_TURN_DEGREES = 30.0f;
 
     public SummonedMaidPilotBroomTask() {
@@ -70,8 +70,7 @@ public class SummonedMaidPilotBroomTask extends Behavior<SummonedEntityMaid> {
     /**
      * 处理战斗飞行（追击和悬停攻击）
      * <p>
-     * 优先读取 {@link SummonedMaidFlyStrafingTask} 设置的 FLIGHT_TARGET memory 来驱动扫帚，
-     * 仅在 FLIGHT_TARGET 不存在时使用后备追击逻辑（直线飞向目标上方）。
+     * 优先读取 {@link SummonedMaidFlyStrafingTask} 设置的 FLIGHT_TARGET memory 来驱动扫帚， 仅在 FLIGHT_TARGET 不存在时使用后备追击逻辑（直线飞向目标上方）。
      */
     private void handleCombatFlight(SummonedEntityMaid maid, SummonedMaidBroom broom, LivingEntity target) {
         // 让女仆和扫帚看向攻击目标
@@ -124,8 +123,7 @@ public class SummonedMaidPilotBroomTask extends Behavior<SummonedEntityMaid> {
     /**
      * 处理 WALK_TARGET 转换为飞行
      * <p>
-     * 原版的 StayCloseToTarget 和 RandomStroll 会设置 WALK_TARGET，
-     * 这里将其转换为扫帚的飞行目标。
+     * 原版的 StayCloseToTarget 和 RandomStroll 会设置 WALK_TARGET， 这里将其转换为扫帚的飞行目标。
      */
     private void handleWalkTargetFlight(SummonedEntityMaid maid, SummonedMaidBroom broom) {
         Optional<WalkTarget> walkTarget = maid.getBrain().getMemory(MemoryModuleType.WALK_TARGET);

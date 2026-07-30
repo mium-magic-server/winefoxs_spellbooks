@@ -6,7 +6,8 @@ import net.ender.ess_requiem.registries.GGSpellRegistry;
 
 public final class EndersSpellsRequiemData {
 
-    private EndersSpellsRequiemData() {}
+    private EndersSpellsRequiemData() {
+    }
 
     public static void contribute(SpellDataContext ctx) {
         // ========== 近战攻击法术 ==========

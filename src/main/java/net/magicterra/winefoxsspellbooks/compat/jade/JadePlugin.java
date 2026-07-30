@@ -1,6 +1,6 @@
 package net.magicterra.winefoxsspellbooks.compat.jade;
 
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaPlugin;
 import snownee.jade.api.WailaPlugin;

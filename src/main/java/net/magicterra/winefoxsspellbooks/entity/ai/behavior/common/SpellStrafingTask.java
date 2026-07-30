@@ -4,9 +4,9 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
-import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
-import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
+import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -35,9 +35,13 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public class SpellStrafingTask extends Behavior<PathfinderMob> {
     private final float projectileRange;
+
     private final float strafeSpeed;
+
     private boolean strafingClockwise;
+
     private int fleeCooldown;
+
     private int strafingTime = -1;
 
     public SpellStrafingTask(float projectileRange, float strafeSpeed) {
@@ -96,7 +100,7 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
         float movementSpeed = (float) (strafeSpeed * owner.getAttributeValue(Attributes.MOVEMENT_SPEED));
 
         double distanceSquared = owner.distanceToSqr(target);
-        double spellRange = spellData == null ? projectileRange : MaidSpellRegistry.getSpellRange(spellData.getSpell());
+        double spellRange = spellData == null ? projectileRange : MaidSpellCatalog.getSpellRange(spellData.getSpell());
         double spellRangeSqr = spellRange * spellRange;
 
         float speed = (magicEntity.isCasting() ? .75f : 1f) * movementSpeed;
@@ -114,7 +118,6 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
             // 尝试远离敌人
             Vec3 flee = DefaultRandomPos.getPosAway(owner, Mth.clamp(Mth.floor(spellRange), 1, 10), 4, target.position());
             if (flee != null) {
-                // owner.getNavigation().moveTo(flee.x, flee.y, flee.z, speed * 1.5F);
                 owner.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(flee, speed * 1.5F, 1));
             } else {
                 float forward = -speed * ss;
@@ -164,13 +167,6 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
     @Override
     protected boolean canStillUse(ServerLevel worldIn, PathfinderMob entityIn, long gameTimeIn) {
         return this.checkExtraStartConditions(worldIn, entityIn);
-    }
-
-    private boolean checkStrafePathSafe(PathfinderMob maid, float forward, float strafe) {
-        // 略消耗性能，不检测
-        BlockPos targetBlockPos = getStrafeTargetBlockPos(maid, forward, strafe, 3);
-        PathType pathNodeType = WalkNodeEvaluator.getPathTypeStatic(maid, targetBlockPos);
-        return pathNodeType == PathType.WALKABLE;
     }
 
     private boolean checkNeedJump(PathfinderMob maid, float forward, float strafe) {

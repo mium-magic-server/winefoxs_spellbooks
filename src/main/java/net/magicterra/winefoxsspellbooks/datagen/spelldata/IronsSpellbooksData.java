@@ -5,7 +5,8 @@ import io.redspace.ironsspellbooks.registries.MobEffectRegistry;
 
 public final class IronsSpellbooksData {
 
-    private IronsSpellbooksData() {}
+    private IronsSpellbooksData() {
+    }
 
     public static void contribute(SpellDataContext ctx) {
         // ========== 近战攻击法术 ==========

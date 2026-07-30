@@ -5,7 +5,8 @@ import net.hazen.hazennstuff.Spells.HnSSpellRegistries;
 
 public final class HazenNStuffData {
 
-    private HazenNStuffData() {}
+    private HazenNStuffData() {
+    }
 
     public static void contribute(SpellDataContext ctx) {
         // ========== 近战攻击法术 ==========

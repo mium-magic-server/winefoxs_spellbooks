@@ -5,7 +5,8 @@ import net.acetheeldritchking.cataclysm_spellbooks.registries.SpellRegistries;
 
 public final class CataclysmSpellbooksData {
 
-    private CataclysmSpellbooksData() {}
+    private CataclysmSpellbooksData() {
+    }
 
     public static void contribute(SpellDataContext ctx) {
         // ========== 近战攻击法术 ==========

@@ -6,8 +6,7 @@ import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * 法术导致的药水效果数据
- * 定义法术施放后导致的主要药水效果，用于判断法术是否需要重新施放
+ * 法术导致的药水效果数据 定义法术施放后导致的主要药水效果，用于判断法术是否需要重新施放
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-01-31

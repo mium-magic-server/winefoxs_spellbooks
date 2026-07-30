@@ -4,7 +4,8 @@ import com.gametechbc.gtbcs_geomancy_plus.init.GGSpells;
 
 public final class GeomancyPlusTags {
 
-    private GeomancyPlusTags() {}
+    private GeomancyPlusTags() {
+    }
 
     public static void contribute(SpellTagContext ctx) {
         ctx.attack().addOptional(GGSpells.FISSURE_SPELL.get().getSpellResource());

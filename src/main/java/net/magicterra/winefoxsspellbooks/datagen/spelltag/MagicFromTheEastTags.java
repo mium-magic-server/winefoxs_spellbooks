@@ -4,7 +4,8 @@ import net.warphan.iss_magicfromtheeast.registries.MFTESpellRegistries;
 
 public final class MagicFromTheEastTags {
 
-    private MagicFromTheEastTags() {}
+    private MagicFromTheEastTags() {
+    }
 
     public static void contribute(SpellTagContext ctx) {
         ctx.attack().addOptional(MFTESpellRegistries.SWORD_DANCE_SPELL.get().getSpellResource());

@@ -3,7 +3,7 @@ package net.magicterra.winefoxsspellbooks.compat.jade;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import java.util.Collection;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.minecraft.network.chat.Component;
@@ -32,7 +32,6 @@ public enum SummonedMaidProvider implements IEntityComponentProvider {
             int mana = (int) maid.winefoxsSpellbooks$getMana();
             iTooltip.add(Component.translatable("top.winefoxs_spellbooks.entity_maid.mana", mana, maxMana));
             MaidSpellDataHolder maidSpellDataHolder = maid.getMagicAdapter().winefoxsSpellbooks$getSpellDataHolder();
-
 
             Collection<SpellData> spells = maidSpellDataHolder.getAllSpells();
             if (!spells.isEmpty()) {

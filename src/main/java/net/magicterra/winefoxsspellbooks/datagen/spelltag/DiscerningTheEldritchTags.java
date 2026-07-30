@@ -4,7 +4,8 @@ import net.acetheeldritchking.discerning_the_eldritch.registries.SpellRegistries
 
 public final class DiscerningTheEldritchTags {
 
-    private DiscerningTheEldritchTags() {}
+    private DiscerningTheEldritchTags() {
+    }
 
     public static void contribute(SpellTagContext ctx) {
         ctx.attack().addOptional(SpellRegistries.VEIN_RIPPER.get().getSpellResource());

@@ -4,7 +4,8 @@ import net.ender.ess_requiem.registries.GGSpellRegistry;
 
 public final class EndersSpellsRequiemTags {
 
-    private EndersSpellsRequiemTags() {}
+    private EndersSpellsRequiemTags() {
+    }
 
     public static void contribute(SpellTagContext ctx) {
         ctx.attack().addOptional(GGSpellRegistry.CLAW.get().getSpellResource());

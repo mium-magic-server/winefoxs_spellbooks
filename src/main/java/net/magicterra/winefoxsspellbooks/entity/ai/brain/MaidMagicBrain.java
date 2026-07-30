@@ -49,8 +49,7 @@ public class MaidMagicBrain implements IExtraMaidBrain {
     }
 
     /**
-     * Brain 会按 schedule 分别持有 idle/work/rest 行为实例（各自维护运行状态），
-     * 因此这里每次返回新的 Behavior 实例而不是共享单例。
+     * Brain 会按 schedule 分别持有 idle/work/rest 行为实例（各自维护运行状态）， 因此这里每次返回新的 Behavior 实例而不是共享单例。
      */
     private static List<Pair<Integer, BehaviorControl<? super EntityMaid>>> giftDeliveryBehaviors() {
         return List.of(Pair.of(GIFT_DELIVERY_PRIORITY, new MaidDeliverGiftBehavior()));

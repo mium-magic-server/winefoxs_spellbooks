@@ -16,10 +16,14 @@ public final class WsbItemTags {
     private WsbItemTags() {
     }
 
-    /** 酒狐巫法学派 Focus 物品集合 */
+    /**
+     * 酒狐巫法学派 Focus 物品集合
+     */
     public static final TagKey<Item> WINEFOX_HEX_FOCUS = create("winefox_hex_focus");
 
-    /** Iron's Spellbooks 总 Focus tag，本模组通过 additive datagen 把自家 focus 并进来 */
+    /**
+     * Iron's Spellbooks 总 Focus tag，本模组通过 additive datagen 把自家 focus 并进来
+     */
     public static final TagKey<Item> IRONS_SCHOOL_FOCUS = TagKey.create(Registries.ITEM,
         ResourceLocation.fromNamespaceAndPath("irons_spellbooks", "school_focus"));
 

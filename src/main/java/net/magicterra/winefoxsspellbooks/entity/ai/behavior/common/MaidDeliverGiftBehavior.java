@@ -22,9 +22,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 女仆晨间礼物交付行为
  * <p>
- * 仿原版猫的 {@code CatRelaxOnOwnerGoal#giveMorningGift}，
- * 但改为 Brain 驱动：监听到 {@link MaidCastingMemoryModuleTypes#GIFT_DELIVERY} 记忆后，
- * 走向目标玩家，到达后挥手并以朝向玩家的初速度投出礼物。
+ * 仿原版猫的 {@code CatRelaxOnOwnerGoal#giveMorningGift}， 但改为 Brain 驱动：监听到 {@link MaidCastingMemoryModuleTypes#GIFT_DELIVERY} 记忆后， 走向目标玩家，到达后挥手并以朝向玩家的初速度投出礼物。
  * <p>
  * 超时（{@link #MAX_DURATION_TICKS}）仍未到达时，会在女仆当前位置兜底掉落，避免礼物吞掉。
  *
@@ -32,19 +30,29 @@ import net.minecraft.world.phys.Vec3;
  * @since 2026-05-15
  */
 public class MaidDeliverGiftBehavior extends Behavior<EntityMaid> {
-    /** 视为"已到达玩家"的距离平方（约 2 格） */
+    /**
+     * 视为"已到达玩家"的距离平方（约 2 格）
+     */
     private static final double DELIVER_DISTANCE_SQR = 4.0D;
 
-    /** 移动速度 */
+    /**
+     * 移动速度
+     */
     private static final float WALK_SPEED = 0.8F;
 
-    /** 行为最长持续 tick（兜底，避免被卡住时礼物悬挂） */
+    /**
+     * 行为最长持续 tick（兜底，避免被卡住时礼物悬挂）
+     */
     private static final int MAX_DURATION_TICKS = 200;
 
-    /** 抛出方向上的初速度系数 */
+    /**
+     * 抛出方向上的初速度系数
+     */
     private static final double THROW_HORIZONTAL_VELOCITY = 0.3D;
 
-    /** 额外竖直分量，形成抛物线 */
+    /**
+     * 额外竖直分量，形成抛物线
+     */
     private static final double THROW_VERTICAL_VELOCITY = 0.18D;
 
     public MaidDeliverGiftBehavior() {
@@ -91,8 +99,8 @@ public class MaidDeliverGiftBehavior extends Behavior<EntityMaid> {
             // 用 isTargetValid 而不是裸 isAlive：玩家跨维度时 target 仍存活但坐标在另一个 world，
             // 直接相减会得到一个跨维度的怪向量，需要回退到只有竖直分量的兜底掉落。
             Vec3 throwDir = isTargetValid(target, level)
-                ? target.position().subtract(maid.position()).normalize()
-                : Vec3.ZERO;
+                            ? target.position().subtract(maid.position()).normalize()
+                            : Vec3.ZERO;
             spawnDrops(level, maid, d.drops(), throwDir);
             maid.swing(InteractionHand.MAIN_HAND);
         });
@@ -130,8 +138,8 @@ public class MaidDeliverGiftBehavior extends Behavior<EntityMaid> {
         }
         Vec3 from = maid.position().add(0, maid.getBbHeight() * 0.6D, 0);
         Vec3 velocity = throwDir.lengthSqr() > 1.0E-4D
-            ? throwDir.scale(THROW_HORIZONTAL_VELOCITY).add(0, THROW_VERTICAL_VELOCITY, 0)
-            : new Vec3(0, THROW_VERTICAL_VELOCITY, 0);
+                        ? throwDir.scale(THROW_HORIZONTAL_VELOCITY).add(0, THROW_VERTICAL_VELOCITY, 0)
+                        : new Vec3(0, THROW_VERTICAL_VELOCITY, 0);
         for (ItemStack stack : drops) {
             if (stack.isEmpty()) {
                 continue;

@@ -2,11 +2,11 @@ package net.magicterra.winefoxsspellbooks.entity.ai.behavior.summon;
 
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import java.util.Map;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
-import net.magicterra.winefoxsspellbooks.magic.MaidSpellAction;
-import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedMaidBroom;
+import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,16 +19,11 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 飞行女仆扫射/走位行为
  * <p>
- * 模仿 {@link net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellStrafingTask}，
- * 让骑乘扫帚的女仆在战斗时围绕目标进行扫射走位。
+ * 模仿 {@link net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellStrafingTask}， 让骑乘扫帚的女仆在战斗时围绕目标进行扫射走位。
  * <p>
  * 只负责设置 FLIGHT_TARGET，扫帚会在 travel() 中读取并飞向目标。
  * <p>
- * 行为逻辑：
- * - 在攻击范围内：围绕目标做圆周运动
- * - 太近：远离目标
- * - 太远：靠近目标
- * - 随机切换顺时针/逆时针方向
+ * 行为逻辑： - 在攻击范围内：围绕目标做圆周运动 - 太近：远离目标 - 太远：靠近目标 - 随机切换顺时针/逆时针方向
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-01-31
@@ -223,7 +218,7 @@ public class SummonedMaidFlyStrafingTask extends Behavior<SummonedEntityMaid> {
             .getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get())
             .orElse(null);
         if (spellData != null && spellData != SpellData.EMPTY) {
-            return MaidSpellRegistry.getSpellRange(spellData.getSpell());
+            return MaidSpellCatalog.getSpellRange(spellData.getSpell());
         }
         return DEFAULT_ATTACK_RANGE;
     }
@@ -231,10 +226,7 @@ public class SummonedMaidFlyStrafingTask extends Behavior<SummonedEntityMaid> {
     /**
      * 计算飞行目标位置
      * <p>
-     * 模仿 SpellStrafingTask 的逻辑：
-     * - 太近：远离
-     * - 太远：靠近
-     * - 在范围内：圆周运动
+     * 模仿 SpellStrafingTask 的逻辑： - 太近：远离 - 太远：靠近 - 在范围内：圆周运动
      */
     private Vec3 calculateFlightTarget(SummonedEntityMaid maid, Vec3 targetPos,
                                        double horizontalDist, float spellRange) {

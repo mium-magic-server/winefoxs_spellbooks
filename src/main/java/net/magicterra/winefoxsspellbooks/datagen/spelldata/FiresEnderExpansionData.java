@@ -6,7 +6,8 @@ import net.minecraft.world.effect.MobEffects;
 
 public final class FiresEnderExpansionData {
 
-    private FiresEnderExpansionData() {}
+    private FiresEnderExpansionData() {
+    }
 
     public static void contribute(SpellDataContext ctx) {
         // Defense

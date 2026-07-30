@@ -19,9 +19,7 @@ import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
 /**
  * 协同攻击和紧急支援行为
  * <p>
- * 参考 MaidMagicSupportTask 的设计，实现两种支援模式：
- * 1. 协同攻击：查找盟友正在攻击的敌人，设置为 ATTACK_TARGET
- * 2. 紧急支援：查找生命危急的盟友，设置为 SUPPORT_TARGET
+ * 协同攻击（设置 ATTACK_TARGET）与紧急支援（设置 SUPPORT_TARGET）两种模式。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-03-07

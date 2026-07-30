@@ -1,8 +1,8 @@
 package net.magicterra.winefoxsspellbooks.entity.ai.behavior.summon;
 
 import javax.annotation.Nullable;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedEntityMaid;
-import net.magicterra.winefoxsspellbooks.entity.spells.SummonedMaidBroom;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
+import net.magicterra.winefoxsspellbooks.entity.summon.SummonedMaidBroom;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
@@ -16,30 +16,41 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 扫帚女仆随机飞行行为
  * <p>
- * 基于原版 {@link net.minecraft.world.entity.ai.behavior.RandomStroll#fly}，
- * 但避免选择召唤者头顶正上方和前方的位置。
+ * 基于原版 {@link net.minecraft.world.entity.ai.behavior.RandomStroll#fly}， 但避免选择召唤者头顶正上方和前方的位置。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-01-19
  */
 public class SummonedMaidRandomFlight {
 
-    /** 最大水平距离 */
+    /**
+     * 最大水平距离
+     */
     private static final int MAX_XZ_DIST = 10;
 
-    /** 最大垂直距离 */
+    /**
+     * 最大垂直距离
+     */
     private static final int MAX_Y_DIST = 7;
 
-    /** 前方禁区角度（度） - 召唤者面朝方向左右各这么多度不选择 */
+    /**
+     * 前方禁区角度（度） - 召唤者面朝方向左右各这么多度不选择
+     */
     private static final double FRONT_FORBIDDEN_ANGLE = 60.0;
 
-    /** 头顶禁区水平半径 - 召唤者头顶这个水平范围内不选择 */
+    /**
+     * 头顶禁区水平半径 - 召唤者头顶这个水平范围内不选择
+     */
     private static final double TOP_FORBIDDEN_RADIUS = 6.0;
 
-    /** 头顶禁区最大高度 - 召唤者上方这个高度范围内都是禁区 */
+    /**
+     * 头顶禁区最大高度 - 召唤者上方这个高度范围内都是禁区
+     */
     private static final double TOP_FORBIDDEN_HEIGHT = 5.0;
 
-    /** 玩家碰撞禁区半径 - 距离玩家太近不选择 */
+    /**
+     * 玩家碰撞禁区半径 - 距离玩家太近不选择
+     */
     private static final double COLLISION_FORBIDDEN_RADIUS = 4.0;
 
     /**
@@ -121,10 +132,7 @@ public class SummonedMaidRandomFlight {
     /**
      * 检查位置是否在禁区内
      * <p>
-     * 禁区包括：
-     * 1. 玩家碰撞区
-     * 2. 头顶禁区
-     * 3. 前方视线禁区
+     * 禁区包括： 1. 玩家碰撞区 2. 头顶禁区 3. 前方视线禁区
      *
      * @param targetPos    目标位置
      * @param summonerPos  召唤者位置

@@ -5,7 +5,8 @@ import net.Iceforkkk.DreamlessAditions.registries.SpellRegistries;
 
 public final class DreamlessSpellsData {
 
-    private DreamlessSpellsData() {}
+    private DreamlessSpellsData() {
+    }
 
     public static void contribute(SpellDataContext ctx) {
         // Defense

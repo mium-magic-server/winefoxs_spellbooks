@@ -5,7 +5,8 @@ import net.minecraft.world.effect.MobEffects;
 
 public final class AeromancyAdditionsData {
 
-    private AeromancyAdditionsData() {}
+    private AeromancyAdditionsData() {
+    }
 
     public static void contribute(SpellDataContext ctx) {
         // Defense

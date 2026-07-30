@@ -7,7 +7,8 @@ import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
  */
 public final class IronsSpellbooksTags {
 
-    private IronsSpellbooksTags() {}
+    private IronsSpellbooksTags() {
+    }
 
     public static void contribute(SpellTagContext ctx) {
         // ========== Blood ==========

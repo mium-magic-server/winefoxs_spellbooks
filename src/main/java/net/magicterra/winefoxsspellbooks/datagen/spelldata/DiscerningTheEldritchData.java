@@ -7,7 +7,8 @@ import net.minecraft.world.effect.MobEffects;
 
 public final class DiscerningTheEldritchData {
 
-    private DiscerningTheEldritchData() {}
+    private DiscerningTheEldritchData() {
+    }
 
     public static void contribute(SpellDataContext ctx) {
         // ========== 近战攻击法术 ==========

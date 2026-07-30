@@ -3,6 +3,8 @@ package net.magicterra.winefoxsspellbooks.datagen;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import java.util.concurrent.CompletableFuture;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
+import net.magicterra.winefoxsspellbooks.api.spell.SpellFlag;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.AeromancyAdditionsTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.CataclysmSpellbooksTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.DiscerningTheEldritchTags;
@@ -16,7 +18,6 @@ import net.magicterra.winefoxsspellbooks.datagen.spelltag.MagicFromTheEastTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.SnowWaifuSpellTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.SpellTagContext;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.WinefoxsSpellbooksTags;
-import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
@@ -43,15 +44,15 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
     @Override
     protected void addTags(HolderLookup.Provider provider) {
         var ctx = new SpellTagContext(
-            tag(MaidSpellRegistry.ATTACK_SPELLS_TAG),
-            tag(MaidSpellRegistry.DEFENSE_SPELLS_TAG),
-            tag(MaidSpellRegistry.MOVEMENT_SPELLS_TAG),
-            tag(MaidSpellRegistry.SUPPORT_SPELLS_TAG),
-            tag(MaidSpellRegistry.POSITIVE_EFFECT_SPELLS_TAG),
-            tag(MaidSpellRegistry.SUPPORT_EFFECT_SPELLS_TAG),
-            tag(MaidSpellRegistry.NEGATIVE_EFFECT_SPELLS_TAG),
-            tag(MaidSpellRegistry.SUMMON_SPELLS_TAG),
-            tag(MaidSpellRegistry.MAID_SHOULD_RECAST_SPELLS_TAG)
+            tag(MaidSpellAction.ATTACK.tag()),
+            tag(MaidSpellAction.DEFENSE.tag()),
+            tag(MaidSpellAction.MOVEMENT.tag()),
+            tag(MaidSpellAction.SUPPORT.tag()),
+            tag(MaidSpellAction.POSITIVE.tag()),
+            tag(MaidSpellAction.SUPPORT_OTHER.tag()),
+            tag(MaidSpellAction.NEGATIVE.tag()),
+            tag(SpellFlag.SUMMON.tag()),
+            tag(SpellFlag.SHOULD_RECAST.tag())
         );
 
         AeromancyAdditionsTags.contribute(ctx);

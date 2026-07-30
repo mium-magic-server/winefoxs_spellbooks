@@ -4,7 +4,8 @@ import net.Iceforkkk.DreamlessAditions.registries.SpellRegistries;
 
 public final class DreamlessSpellsTags {
 
-    private DreamlessSpellsTags() {}
+    private DreamlessSpellsTags() {
+    }
 
     public static void contribute(SpellTagContext ctx) {
         ctx.defense().addOptional(SpellRegistries.JADESKIN.get().getSpellResource());
