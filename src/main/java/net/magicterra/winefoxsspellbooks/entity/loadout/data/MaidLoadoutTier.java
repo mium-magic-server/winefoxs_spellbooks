@@ -57,10 +57,15 @@ public record MaidLoadoutTier(
 
     public static class Builder {
         private final int minLevel;
+
         private final int maxLevel;
+
         private ItemPool weapon;
+
         private ArmorConfig armor;
+
         private SpellPoolConfig spells;
+
         private int spellLevelCap = DEFAULT_SPELL_LEVEL_CAP;
 
         public Builder(int minLevel, int maxLevel) {

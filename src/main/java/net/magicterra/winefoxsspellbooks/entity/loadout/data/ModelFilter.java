@@ -23,11 +23,17 @@ public record ModelFilter(Mode mode, List<ResourceLocation> models) {
      * 过滤模式枚举
      */
     public enum Mode {
-        /** 允许所有模型 */
+        /**
+         * 允许所有模型
+         */
         ALL("all"),
-        /** 仅允许列表中的模型 */
+        /**
+         * 仅允许列表中的模型
+         */
         ALLOWLIST("allowlist"),
-        /** 排除列表中的模型 */
+        /**
+         * 排除列表中的模型
+         */
         DENYLIST("denylist");
 
         private final String name;

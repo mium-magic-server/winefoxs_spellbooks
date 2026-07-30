@@ -1,5 +1,6 @@
 package net.magicterra.winefoxsspellbooks.entity.loadout;
 
+import io.redspace.ironsspellbooks.api.registry.SchoolRegistry;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import java.util.ArrayList;
@@ -8,7 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.ArmorConfig;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.ArmorSlotConfig;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.MaidLoadout;
@@ -33,6 +36,8 @@ import net.minecraft.world.item.Items;
 
 /**
  * 女仆装备随机化器，根据配置随机生成装备和法术
+ * <p>
+ * 法术一路额外受三个运行时配置约束：学派不准入（{@link Config#isSummonedMaidAllowEldritch()}） 或稀有度超标（{@link Config#getSummonedMaidMaxSpellRarity()}）的法术在展开池子时剔除， 剩下的在配装分层上限之上再压等级（{@link Config#getSummonedMaidMaxSpellLevel()}）。 三者只会往下压，压不出比数据包更强的配装。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-01-20
@@ -63,27 +68,26 @@ public final class MaidEquipmentRandomizer {
 
     /**
      * 分类的法术记录，保留从配置文件中读取的类别信息
+     *
+     * @param byAction 行为类别 → 该类随机到的法术；没随机到法术的类别不出现在 map 里
      */
-    public record CategorizedSpells(
-        List<SpellWithLevel> attack,
-        List<SpellWithLevel> defense,
-        List<SpellWithLevel> movement,
-        List<SpellWithLevel> support,
-        List<SpellWithLevel> positive,
-        List<SpellWithLevel> negativeEffect,
-        List<SpellWithLevel> supportOther
-    ) {
-        public static final CategorizedSpells EMPTY = new CategorizedSpells(
-            List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of()
-        );
+    public record CategorizedSpells(Map<MaidSpellAction, List<SpellWithLevel>> byAction) {
+        public static final CategorizedSpells EMPTY = new CategorizedSpells(Map.of());
+
+        /**
+         * 取某一类别随机到的法术，没有时返回空表。
+         */
+        public List<SpellWithLevel> get(MaidSpellAction action) {
+            return byAction.getOrDefault(action, List.of());
+        }
     }
 
     /**
      * 根据配置和召唤等级随机生成装备
      *
-     * @param loadout     装备配置
-     * @param summonLevel 召唤等级
-     * @param random      随机数生成器
+     * @param loadout         装备配置
+     * @param summonLevel     召唤等级
+     * @param random          随机数生成器
      * @param availableModels 可用模型集合
      * @return 装备结果
      */
@@ -270,30 +274,17 @@ public final class MaidEquipmentRandomizer {
         int spellLevelCap,
         RandomSource random
     ) {
-        List<SpellWithLevel> attack = new ArrayList<>();
-        List<SpellWithLevel> defense = new ArrayList<>();
-        List<SpellWithLevel> movement = new ArrayList<>();
-        List<SpellWithLevel> support = new ArrayList<>();
-        List<SpellWithLevel> positive = new ArrayList<>();
-        List<SpellWithLevel> negativeEffect = new ArrayList<>();
-        List<SpellWithLevel> supportOther = new ArrayList<>();
-
-        config.attack().ifPresent(pool ->
-            addSpellsFromPool(pool, spellLevelCap, attack, random));
-        config.defense().ifPresent(pool ->
-            addSpellsFromPool(pool, spellLevelCap, defense, random));
-        config.movement().ifPresent(pool ->
-            addSpellsFromPool(pool, spellLevelCap, movement, random));
-        config.support().ifPresent(pool ->
-            addSpellsFromPool(pool, spellLevelCap, support, random));
-        config.positiveEffect().ifPresent(pool ->
-            addSpellsFromPool(pool, spellLevelCap, positive, random));
-        config.negativeEffect().ifPresent(pool ->
-            addSpellsFromPool(pool, spellLevelCap, negativeEffect, random));
-        config.supportOther().ifPresent(pool ->
-            addSpellsFromPool(pool, spellLevelCap, supportOther, random));
-
-        return new CategorizedSpells(attack, defense, movement, support, positive, negativeEffect, supportOther);
+        Map<MaidSpellAction, List<SpellWithLevel>> byAction = new EnumMap<>(MaidSpellAction.class);
+        for (MaidSpellAction action : MaidSpellAction.ALL) {
+            config.pool(action).ifPresent(pool -> {
+                List<SpellWithLevel> rolled = new ArrayList<>();
+                addSpellsFromPool(pool, spellLevelCap, rolled, random);
+                if (!rolled.isEmpty()) {
+                    byAction.put(action, rolled);
+                }
+            });
+        }
+        return new CategorizedSpells(byAction);
     }
 
     /**
@@ -324,32 +315,92 @@ public final class MaidEquipmentRandomizer {
         for (int i = 0; i < rolls; i++) {
             AbstractSpell spell = selectWeightedSpell(expandedSpells, random);
             if (spell != null && spell != SpellRegistry.none()) {
-                // 计算实际法术等级：min(配置上限, 法术最大等级)
-                int actualLevel = Math.min(spellLevelCap, spell.getMaxLevel());
-                spells.add(new SpellWithLevel(spell, actualLevel));
+                spells.add(new SpellWithLevel(spell, resolveSpellLevel(spell, spellLevelCap)));
             }
         }
     }
 
     /**
-     * 展开法术条目
+     * 计算法术实际等级：分层上限、法术自身最大等级、全局等级上限三者取小，再逐级下探到满足稀有度上限。
+     * <p>
+     * Iron's 的 {@code getRarity} 在 {@code level >= maxLevel} 时硬返回 LEGENDARY，所以光压等级压不住
+     * 稀有度，需逐级下探；稀有度随等级单调不降，故第一个合格等级即最高合格等级。
+     *
+     * @param spell        法术
+     * @param tierSpellCap 配装数据包里该层级的等级上限
+     * @return 实际使用的法术等级（至少 1）
      */
+    private static int resolveSpellLevel(AbstractSpell spell, int tierSpellCap) {
+        int level = Math.min(Math.min(tierSpellCap, spell.getMaxLevel()), Config.getSummonedMaidMaxSpellLevel());
+        int floor = Math.max(1, spell.getMinLevel());
+        while (level > floor && !withinRarityCap(spell, level)) {
+            level--;
+        }
+        return Math.max(1, level);
+    }
+
+    /**
+     * 该法术在指定等级下是否不超过配置的稀有度上限。
+     */
+    private static boolean withinRarityCap(AbstractSpell spell, int level) {
+        return spell.getRarity(level).getValue() <= Config.getSummonedMaidMaxSpellRarity().getValue();
+    }
+
+    /**
+     * 法术能否进入召唤女仆的法术池：学派准入 + 稀有度上限，两关都过才收。
+     * <p>
+     * 剔除放在展开池子时而不是抽中之后，否则会连带削掉女仆实际拿到的法术数量。
+     */
+    private static boolean isEligible(AbstractSpell spell) {
+        return isSchoolAllowed(spell) && isRarityEligible(spell);
+    }
+
+    /**
+     * 学派准入：默认不给召唤女仆发习得制学派（Iron's 邪术）的法术。
+     * <p>
+     * 两条判据缺一不可：{@link AbstractSpell#requiresLearning()} 可被单个法术覆写（现装附属里有邪术
+     * 法术把它关掉了），而学派级的 {@code SchoolType.requiresLearning} 包私有读不到，故补一条学派 id 比对。
+     */
+    private static boolean isSchoolAllowed(AbstractSpell spell) {
+        if (Config.isSummonedMaidAllowEldritch()) {
+            return true;
+        }
+        return !spell.requiresLearning()
+            && !SchoolRegistry.ELDRITCH_RESOURCE.equals(spell.getSchoolType().getId());
+    }
+
+    /**
+     * 法术是否有任何等级满足稀有度上限；稀有度随等级单调不降，故只看最低等级。
+     */
+    private static boolean isRarityEligible(AbstractSpell spell) {
+        return withinRarityCap(spell, Math.max(1, spell.getMinLevel()));
+    }
+
     private static void expandSpellEntry(LoadoutEntry entry, List<WeightedSpell> result) {
         if (entry instanceof SpellEntry(ResourceLocation name, int weight)) {
             SpellRegistry.REGISTRY.getOptional(name)
+                .filter(MaidEquipmentRandomizer::isEligible)
                 .ifPresent(spell -> result.add(new WeightedSingleSpell(spell, weight)));
         } else if (entry instanceof SpellTagEntry(ResourceLocation name, int weight, boolean expand)) {
             TagKey<AbstractSpell> tagKey = TagKey.create(SpellRegistry.SPELL_REGISTRY_KEY, name);
             if (expand) {
                 // 展开标签
                 SpellRegistry.REGISTRY.getTag(tagKey).ifPresent(tag -> {
-                    tag.forEach(holder -> result.add(new WeightedSingleSpell(holder.value(), 1)));
+                    tag.forEach(holder -> {
+                        if (isEligible(holder.value())) {
+                            result.add(new WeightedSingleSpell(holder.value(), 1));
+                        }
+                    });
                 });
             } else {
                 // 整个标签作为一个条目
                 List<AbstractSpell> spells = new ArrayList<>();
                 SpellRegistry.REGISTRY.getTag(tagKey).ifPresent(tag -> {
-                    tag.forEach(holder -> spells.add(holder.value()));
+                    tag.forEach(holder -> {
+                        if (isEligible(holder.value())) {
+                            spells.add(holder.value());
+                        }
+                    });
                 });
                 if (!spells.isEmpty()) {
                     result.add(new WeightedSpellTag(spells, weight));
@@ -383,6 +434,7 @@ public final class MaidEquipmentRandomizer {
 
     private sealed interface WeightedItem permits WeightedSingleItem, WeightedItemTag {
         int weight();
+
         ItemStack createStack(RandomSource random);
     }
 
@@ -403,6 +455,7 @@ public final class MaidEquipmentRandomizer {
 
     private sealed interface WeightedSpell permits WeightedSingleSpell, WeightedSpellTag {
         int weight();
+
         AbstractSpell select(RandomSource random);
     }
 

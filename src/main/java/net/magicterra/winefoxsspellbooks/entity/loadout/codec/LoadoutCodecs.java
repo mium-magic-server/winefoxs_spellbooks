@@ -2,9 +2,14 @@ package net.magicterra.winefoxsspellbooks.entity.loadout.codec;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.ArmorConfig;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.ArmorSlotConfig;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.BroomMode;
@@ -33,6 +38,7 @@ public final class LoadoutCodecs {
     }
 
     // ==================== RollRange ====================
+
     /**
      * RollRange Codec - 支持整数或 {min, max} 对象
      */
@@ -48,6 +54,7 @@ public final class LoadoutCodecs {
     );
 
     // ==================== ModelFilter ====================
+
     /**
      * ModelFilter.Mode Codec
      */
@@ -65,6 +72,7 @@ public final class LoadoutCodecs {
     ).apply(instance, ModelFilter::new));
 
     // ==================== BroomMode ====================
+
     /**
      * BroomMode Codec
      */
@@ -81,13 +89,16 @@ public final class LoadoutCodecs {
     public static final Codec<LoadoutEntry> ITEM_LOADOUT_ENTRY = RecordCodecBuilder.create(instance -> instance.group(
         Codec.STRING.fieldOf("type").forGetter(LoadoutEntry::type),
         ResourceLocation.CODEC.fieldOf("name").forGetter(entry -> {
-            if (entry instanceof ItemEntry e) return e.name();
-            if (entry instanceof ItemTagEntry e) return e.name();
+            if (entry instanceof ItemEntry e)
+                return e.name();
+            if (entry instanceof ItemTagEntry e)
+                return e.name();
             throw new IllegalStateException("Unknown entry type: " + entry);
         }),
         Codec.INT.optionalFieldOf("weight", 1).forGetter(LoadoutEntry::weight),
         Codec.BOOL.optionalFieldOf("expand", false).forGetter(entry -> {
-            if (entry instanceof ItemTagEntry e) return e.expand();
+            if (entry instanceof ItemTagEntry e)
+                return e.expand();
             return false;
         })
     ).apply(instance, (type, name, weight, expand) -> {
@@ -104,13 +115,16 @@ public final class LoadoutCodecs {
     public static final Codec<LoadoutEntry> SPELL_LOADOUT_ENTRY = RecordCodecBuilder.create(instance -> instance.group(
         Codec.STRING.fieldOf("type").forGetter(LoadoutEntry::type),
         ResourceLocation.CODEC.fieldOf("name").forGetter(entry -> {
-            if (entry instanceof SpellEntry e) return e.name();
-            if (entry instanceof SpellTagEntry e) return e.name();
+            if (entry instanceof SpellEntry e)
+                return e.name();
+            if (entry instanceof SpellTagEntry e)
+                return e.name();
             throw new IllegalStateException("Unknown entry type: " + entry);
         }),
         Codec.INT.optionalFieldOf("weight", 1).forGetter(LoadoutEntry::weight),
         Codec.BOOL.optionalFieldOf("expand", false).forGetter(entry -> {
-            if (entry instanceof SpellTagEntry e) return e.expand();
+            if (entry instanceof SpellTagEntry e)
+                return e.expand();
             return false;
         })
     ).apply(instance, (type, name, weight, expand) -> switch (type) {
@@ -120,6 +134,7 @@ public final class LoadoutCodecs {
     }));
 
     // ==================== Pools ====================
+
     /**
      * ItemPool Codec
      */
@@ -137,6 +152,7 @@ public final class LoadoutCodecs {
     ).apply(instance, SpellPool::new));
 
     // ==================== Armor Config ====================
+
     /**
      * ArmorSlotConfig Codec
      */
@@ -156,44 +172,52 @@ public final class LoadoutCodecs {
     ).apply(instance, ArmorConfig::new));
 
     // ==================== Spell Pool Config ====================
+
     /**
-     * SpellPoolConfig Codec
+     * 字段名 → 行为类别的查表，避免每个条目线性扫一遍枚举。
      */
-    public static final Codec<SpellPoolConfig> SPELL_POOL_CONFIG = RecordCodecBuilder.create(instance -> instance.group(
-        SPELL_POOL.optionalFieldOf("attack").forGetter(SpellPoolConfig::attack),
-        SPELL_POOL.optionalFieldOf("defense").forGetter(SpellPoolConfig::defense),
-        SPELL_POOL.optionalFieldOf("movement").forGetter(SpellPoolConfig::movement),
-        SPELL_POOL.optionalFieldOf("support").forGetter(SpellPoolConfig::support),
-        SPELL_POOL.optionalFieldOf("positive_effect").forGetter(SpellPoolConfig::positiveEffect),
-        SPELL_POOL.optionalFieldOf("negative_effect").forGetter(SpellPoolConfig::negativeEffect),
-        SPELL_POOL.optionalFieldOf("support_other").forGetter(SpellPoolConfig::supportOther)
-    ).apply(instance, SpellPoolConfig::new));
+    private static final Map<String, MaidSpellAction> POOL_NAMES = Arrays.stream(MaidSpellAction.ALL)
+        .collect(Collectors.toUnmodifiableMap(MaidSpellAction::poolName, Function.identity()));
+
+    /**
+     * 行为类别 ↔ 配装数据包里的字段名（{@code attack} / {@code support_other} …）。
+     * <p>
+     * 用 {@code comapFlatMap} 而非 {@code xmap}：这些 JSON 是<b>用户手写</b>的，字段名打错必须 走 {@link DataResult} 报一条可读的错并跳过该条目，不能抛异常把整个数据包加载带崩。
+     */
+    private static final Codec<MaidSpellAction> SPELL_ACTION = Codec.STRING.comapFlatMap(
+        name -> {
+            MaidSpellAction action = POOL_NAMES.get(name);
+            return action != null
+                   ? DataResult.success(action)
+                   : DataResult.error(
+                () -> "Unknown spell pool category '" + name + "'; expected one of " + POOL_NAMES.keySet());
+        },
+        MaidSpellAction::poolName
+    );
+
+    /**
+     * SpellPoolConfig Codec。
+     * <p>
+     * 键集固定为枚举时，{@code unboundedMap} 在 JSON 上产出的结构与逐字段 {@code optionalFieldOf} 完全相同（缺省的类别不出现），所以现存配装数据包照读不误， 而加一类法术这里零改动。
+     */
+    public static final Codec<SpellPoolConfig> SPELL_POOL_CONFIG =
+        Codec.unboundedMap(SPELL_ACTION, SPELL_POOL).xmap(SpellPoolConfig::new, SpellPoolConfig::pools);
 
     // ==================== Tier ====================
-    /**
-     * MaidLoadoutTier Codec
-     * 注意：使用 conditions 格式来兼容 JSON schema
-     */
-    public static final Codec<MaidLoadoutTier> TIER = RecordCodecBuilder.create(instance -> instance.group(
-        Codec.INT.fieldOf("min_level").forGetter(MaidLoadoutTier::minLevel),
-        Codec.INT.fieldOf("max_level").forGetter(MaidLoadoutTier::maxLevel),
-        ITEM_POOL.optionalFieldOf("weapon").forGetter(MaidLoadoutTier::weapon),
-        ARMOR_CONFIG.optionalFieldOf("armor").forGetter(MaidLoadoutTier::armor),
-        SPELL_POOL_CONFIG.optionalFieldOf("spells").forGetter(MaidLoadoutTier::spells),
-        Codec.INT.optionalFieldOf("spell_level_cap", MaidLoadoutTier.DEFAULT_SPELL_LEVEL_CAP).forGetter(MaidLoadoutTier::spellLevelCap)
-    ).apply(instance, MaidLoadoutTier::new));
 
     /**
      * 支持 conditions 格式的 Tier Codec
      */
-    public static final Codec<MaidLoadoutTier> TIER_WITH_CONDITIONS = RecordCodecBuilder.create(instance -> instance.group(
-        levelConditionCodec().fieldOf("conditions").forGetter(tier -> new int[]{tier.minLevel(), tier.maxLevel()}),
-        ITEM_POOL.optionalFieldOf("weapon").forGetter(MaidLoadoutTier::weapon),
-        ARMOR_CONFIG.optionalFieldOf("armor").forGetter(MaidLoadoutTier::armor),
-        SPELL_POOL_CONFIG.optionalFieldOf("spells").forGetter(MaidLoadoutTier::spells),
-        Codec.INT.optionalFieldOf("spell_level_cap", MaidLoadoutTier.DEFAULT_SPELL_LEVEL_CAP).forGetter(MaidLoadoutTier::spellLevelCap)
-    ).apply(instance, (levels, weapon, armor, spells, spellLevelCap) ->
-        new MaidLoadoutTier(levels[0], levels[1], weapon, armor, spells, spellLevelCap)));
+    public static final Codec<MaidLoadoutTier> TIER_WITH_CONDITIONS = RecordCodecBuilder.create(
+        instance -> instance.group(
+            levelConditionCodec().fieldOf("conditions").forGetter(tier -> new int[] {tier.minLevel(), tier.maxLevel()}),
+            ITEM_POOL.optionalFieldOf("weapon").forGetter(MaidLoadoutTier::weapon),
+            ARMOR_CONFIG.optionalFieldOf("armor").forGetter(MaidLoadoutTier::armor),
+            SPELL_POOL_CONFIG.optionalFieldOf("spells").forGetter(MaidLoadoutTier::spells),
+            Codec.INT.optionalFieldOf("spell_level_cap", MaidLoadoutTier.DEFAULT_SPELL_LEVEL_CAP)
+                .forGetter(MaidLoadoutTier::spellLevelCap)
+        ).apply(instance, (levels, weapon, armor, spells, spellLevelCap) ->
+            new MaidLoadoutTier(levels[0], levels[1], weapon, armor, spells, spellLevelCap)));
 
     /**
      * 条件格式的等级范围 Codec
@@ -203,33 +227,36 @@ public final class LoadoutCodecs {
             Codec.STRING.fieldOf("condition").forGetter(arr -> "winefoxs_spellbooks:summon_level"),
             Codec.INT.fieldOf("min").forGetter(arr -> arr[0]),
             Codec.INT.fieldOf("max").forGetter(arr -> arr[1])
-        ).apply(instance, (condition, min, max) -> new int[]{min, max}));
+        ).apply(instance, (condition, min, max) -> new int[] {min, max}));
 
         return conditionEntry.listOf().xmap(
-            list -> list.isEmpty() ? new int[]{1, Integer.MAX_VALUE} : list.getFirst(),
+            list -> list.isEmpty() ? new int[] {1, Integer.MAX_VALUE} : list.getFirst(),
             List::of
         );
     }
 
     // ==================== MaidLoadout ====================
+
     /**
      * MaidLoadout Codec（不含 ID，ID 由文件路径决定）
      */
     public static final Codec<MaidLoadoutData> MAID_LOADOUT_DATA = RecordCodecBuilder.create(instance -> instance.group(
-        Codec.STRING.optionalFieldOf("type", "winefoxs_spellbooks:maid_loadout").forGetter(d -> "winefoxs_spellbooks:maid_loadout"),
+        Codec.STRING.optionalFieldOf("type", "winefoxs_spellbooks:maid_loadout")
+            .forGetter(d -> "winefoxs_spellbooks:maid_loadout"),
         Codec.INT.optionalFieldOf("weight", MaidLoadout.DEFAULT_WEIGHT).forGetter(MaidLoadoutData::weight),
         MODEL_FILTER.optionalFieldOf("model_filter", ModelFilter.ALL).forGetter(MaidLoadoutData::modelFilter),
         BROOM_MODE.optionalFieldOf("broom_mode", BroomMode.DEFAULT).forGetter(MaidLoadoutData::broomMode),
         TIER_WITH_CONDITIONS.listOf().fieldOf("tiers").forGetter(MaidLoadoutData::tiers)
-    ).apply(instance, (type, weight, modelFilter, broomMode, tiers) -> new MaidLoadoutData(weight, modelFilter, broomMode, tiers)));
+    ).apply(instance,
+        (type, weight, modelFilter, broomMode, tiers) -> new MaidLoadoutData(weight, modelFilter, broomMode, tiers)));
 
     /**
      * 中间数据类，用于从 JSON 解析（不含 ID）
      */
-    public record MaidLoadoutData(int weight, ModelFilter modelFilter, BroomMode broomMode, List<MaidLoadoutTier> tiers) {
+    public record MaidLoadoutData(int weight, ModelFilter modelFilter, BroomMode broomMode,
+                                  List<MaidLoadoutTier> tiers) {
         public MaidLoadout toLoadout(ResourceLocation id) {
             return new MaidLoadout(id, weight, modelFilter, broomMode, tiers);
         }
     }
-
 }

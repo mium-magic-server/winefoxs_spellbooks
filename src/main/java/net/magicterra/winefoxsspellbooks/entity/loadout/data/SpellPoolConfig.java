@@ -1,42 +1,32 @@
 package net.magicterra.winefoxsspellbooks.entity.loadout.data;
 
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Optional;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.loadout.pool.SpellPool;
 
 /**
- * 法术池配置，包含七类法术池（对应 MaidSpellAction）
+ * 法术池配置：每个 {@link MaidSpellAction} 行为类别一个池，都可缺省。
+ * <p>
+ * 数据包里的字段名取自 {@link MaidSpellAction#poolName()}（{@code attack}、{@code positive_effect}、
+ * {@code support_other} …）。
  *
- * @param attack         攻击法术池
- * @param defense        防御/自我强化法术池
- * @param movement       移动法术池
- * @param support        自我治疗法术池
- * @param positiveEffect 正面效果法术池（对队友施放）
- * @param negativeEffect 负面效果法术池（对敌人施放）
- * @param supportOther   治疗效果法术池（对队友施放）
+ * @param pools 类别 → 法术池；缺省的类别不出现在 map 里
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-01-20
  */
-public record SpellPoolConfig(
-    Optional<SpellPool> attack,
-    Optional<SpellPool> defense,
-    Optional<SpellPool> movement,
-    Optional<SpellPool> support,
-    Optional<SpellPool> positiveEffect,
-    Optional<SpellPool> negativeEffect,
-    Optional<SpellPool> supportOther
-) {
+public record SpellPoolConfig(Map<MaidSpellAction, SpellPool> pools) {
+
     /**
      * 空配置
      */
-    public static final SpellPoolConfig EMPTY = new SpellPoolConfig(
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty()
-    );
+    public static final SpellPoolConfig EMPTY = new SpellPoolConfig(Map.of());
+
+    public SpellPoolConfig {
+        // 防御性拷贝进 EnumMap：调用方可能传可变 map，而本记录会被数据包管理器长期持有
+        pools = pools.isEmpty() ? Map.of() : new EnumMap<>(pools);
+    }
 
     /**
      * 创建只有攻击法术池的配置
@@ -45,15 +35,17 @@ public record SpellPoolConfig(
      * @return SpellPoolConfig
      */
     public static SpellPoolConfig attackOnly(SpellPool attack) {
-        return new SpellPoolConfig(
-            Optional.of(attack),
-            Optional.empty(),
-            Optional.empty(),
-            Optional.empty(),
-            Optional.empty(),
-            Optional.empty(),
-            Optional.empty()
-        );
+        return new SpellPoolConfig(Map.of(MaidSpellAction.ATTACK, attack));
+    }
+
+    /**
+     * 取某一类别的法术池。
+     *
+     * @param action 行为类别
+     * @return 该类别的池，未配置时为 empty
+     */
+    public Optional<SpellPool> pool(MaidSpellAction action) {
+        return Optional.ofNullable(pools.get(action));
     }
 
     /**
@@ -62,9 +54,7 @@ public record SpellPoolConfig(
      * @return 如果有任何法术池则返回 true
      */
     public boolean hasAnyPool() {
-        return attack.isPresent() || defense.isPresent() || movement.isPresent()
-            || support.isPresent() || positiveEffect.isPresent()
-            || negativeEffect.isPresent() || supportOther.isPresent();
+        return !pools.isEmpty();
     }
 
     /**
@@ -75,59 +65,51 @@ public record SpellPoolConfig(
     }
 
     public static class Builder {
-        private SpellPool attack;
-        private SpellPool defense;
-        private SpellPool movement;
-        private SpellPool support;
-        private SpellPool positiveEffect;
-        private SpellPool negativeEffect;
-        private SpellPool supportOther;
+        private final Map<MaidSpellAction, SpellPool> pools = new EnumMap<>(MaidSpellAction.class);
+
+        /**
+         * 设置某一类别的法术池。传 {@code null} 视为不设置。
+         *
+         * @param action 行为类别
+         * @param pool   法术池
+         */
+        public Builder pool(MaidSpellAction action, SpellPool pool) {
+            if (pool != null) {
+                pools.put(action, pool);
+            }
+            return this;
+        }
 
         public Builder attack(SpellPool pool) {
-            this.attack = pool;
-            return this;
+            return pool(MaidSpellAction.ATTACK, pool);
         }
 
         public Builder defense(SpellPool pool) {
-            this.defense = pool;
-            return this;
+            return pool(MaidSpellAction.DEFENSE, pool);
         }
 
         public Builder movement(SpellPool pool) {
-            this.movement = pool;
-            return this;
+            return pool(MaidSpellAction.MOVEMENT, pool);
         }
 
         public Builder support(SpellPool pool) {
-            this.support = pool;
-            return this;
+            return pool(MaidSpellAction.SUPPORT, pool);
         }
 
         public Builder positiveEffect(SpellPool pool) {
-            this.positiveEffect = pool;
-            return this;
+            return pool(MaidSpellAction.POSITIVE, pool);
         }
 
         public Builder negativeEffect(SpellPool pool) {
-            this.negativeEffect = pool;
-            return this;
+            return pool(MaidSpellAction.NEGATIVE, pool);
         }
 
         public Builder supportOther(SpellPool pool) {
-            this.supportOther = pool;
-            return this;
+            return pool(MaidSpellAction.SUPPORT_OTHER, pool);
         }
 
         public SpellPoolConfig build() {
-            return new SpellPoolConfig(
-                Optional.ofNullable(attack),
-                Optional.ofNullable(defense),
-                Optional.ofNullable(movement),
-                Optional.ofNullable(support),
-                Optional.ofNullable(positiveEffect),
-                Optional.ofNullable(negativeEffect),
-                Optional.ofNullable(supportOther)
-            );
+            return new SpellPoolConfig(pools);
         }
     }
 }

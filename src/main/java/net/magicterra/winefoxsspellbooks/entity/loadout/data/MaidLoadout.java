@@ -30,11 +30,7 @@ public record MaidLoadout(
     public static final int DEFAULT_WEIGHT = 100;
 
     /**
-     * 根据召唤等级匹配层级
-     * 规则 (FR-024):
-     * 1. 精确匹配：min_level <= summon_level <= max_level
-     * 2. 若无精确匹配：选 min_level <= summon_level 的最高层级
-     * 3. 若 summon_level < 所有 min_level：选最小层级
+     * 根据召唤等级匹配层级：优先精确命中区间；否则取 min_level 不超过该等级的最高层；再否则取最低层。
      *
      * @param summonLevel 召唤等级
      * @return 匹配的层级
@@ -83,9 +79,13 @@ public record MaidLoadout(
 
     public static class Builder {
         private final ResourceLocation id;
+
         private int weight = DEFAULT_WEIGHT;
+
         private ModelFilter modelFilter = ModelFilter.ALL;
+
         private BroomMode broomMode = BroomMode.DEFAULT;
+
         private final List<MaidLoadoutTier> tiers = new ArrayList<>();
 
         public Builder(ResourceLocation id) {

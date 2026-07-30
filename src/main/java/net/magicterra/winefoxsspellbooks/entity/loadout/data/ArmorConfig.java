@@ -47,8 +47,11 @@ public record ArmorConfig(
 
     public static class Builder {
         private ArmorSlotConfig helmet;
+
         private ArmorSlotConfig chestplate;
+
         private ArmorSlotConfig leggings;
+
         private ArmorSlotConfig boots;
 
         public Builder helmet(float chance, ItemPool pool) {

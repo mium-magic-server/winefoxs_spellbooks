@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.loadout.codec.LoadoutCodecs;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.ArmorConfig;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.BroomMode;
@@ -18,18 +19,17 @@ import net.magicterra.winefoxsspellbooks.entity.loadout.entry.ItemTagEntry;
 import net.magicterra.winefoxsspellbooks.entity.loadout.entry.SpellTagEntry;
 import net.magicterra.winefoxsspellbooks.entity.loadout.pool.ItemPool;
 import net.magicterra.winefoxsspellbooks.entity.loadout.pool.SpellPool;
-import net.magicterra.winefoxsspellbooks.registry.MaidSpellRegistry;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 
 /**
- * 女仆装备配置数据生成器
- * 生成默认的 maid_loadouts JSON 文件
+ * 女仆装备配置数据生成器 生成默认的 maid_loadouts JSON 文件
  * <p>
- * 使用 {@link MaidLoadoutTagsProvider} 中定义的物品 tag 来引用装备，
- * 使用 {@link MaidSpellRegistry} 中定义的法术 tag 来引用法术。
+ * 装备与法术均以 tag 引用（见 {@link MaidLoadoutTagsProvider}）。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-01-20
@@ -96,26 +96,43 @@ public class MaidLoadoutDataProvider implements DataProvider {
         return ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, path);
     }
 
-    /** 创建武器池，使用 tag 引用 */
-    private static ItemPool weaponPool(int rolls, ResourceLocation tagId) {
-        return ItemPool.of(rolls, List.of(ItemTagEntry.of(tagId, 1, true)));
+    private static ItemPool weaponPool(int rolls, TagKey<Item> tag) {
+        return ItemPool.of(rolls, List.of(ItemTagEntry.of(tag.location(), 1, true)));
     }
 
-    /** 创建护甲池，使用 tag 引用 */
-    private static ItemPool armorPool(ResourceLocation tagId) {
-        return ItemPool.of(1, List.of(ItemTagEntry.of(tagId, 1, true)));
+    private static ItemPool armorPool(TagKey<Item> tag) {
+        return ItemPool.of(1, List.of(ItemTagEntry.of(tag.location(), 1, true)));
     }
 
-    /** 创建法术池，使用 tag 引用 */
-    private static SpellPool spellPool(int minRolls, int maxRolls, ResourceLocation tagId) {
-        return SpellPool.of(minRolls, maxRolls, List.of(SpellTagEntry.of(tagId, 1, true)));
+    private static SpellPool spellPool(int minRolls, int maxRolls, MaidSpellAction action) {
+        return SpellPool.of(minRolls, maxRolls, List.of(SpellTagEntry.of(action.tag().location(), 1, true)));
+    }
+
+    /**
+     * 各层通用的轻甲配置（法师 / 辅助共用）。
+     */
+    private static ArmorConfig lightArmor(int tier) {
+        return switch (tier) {
+            case 1 -> ArmorConfig.builder()
+                .helmet(0.2f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER1))
+                .build();
+            case 2 -> ArmorConfig.builder()
+                .helmet(0.4f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER2))
+                .chestplate(0.3f, armorPool(MaidLoadoutTagsProvider.MAID_CHESTPLATES_TIER2))
+                .build();
+            default -> ArmorConfig.builder()
+                .helmet(0.6f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER3))
+                .chestplate(0.5f, armorPool(MaidLoadoutTagsProvider.MAID_CHESTPLATES_TIER3))
+                .leggings(0.4f, armorPool(MaidLoadoutTagsProvider.MAID_LEGGINGS_TIER3))
+                .boots(0.5f, armorPool(MaidLoadoutTagsProvider.MAID_BOOTS_TIER3))
+                .build();
+        };
     }
 
     // ==================== 战士职业配置 ====================
 
     /**
-     * 创建战士职业配置
-     * 侧重近战武器和护甲，攻击法术为主
+     * 创建战士职业配置 侧重近战武器和护甲，攻击法术为主
      */
     private MaidLoadout createWarriorLoadout() {
         return MaidLoadout.builder(id("warrior"))
@@ -130,13 +147,13 @@ public class MaidLoadoutDataProvider implements DataProvider {
 
     private MaidLoadoutTier createWarriorTier1() {
         return MaidLoadoutTier.builder(1, 2)
-            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER1.location()))
+            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER1))
             .armor(ArmorConfig.builder()
-                .helmet(0.3f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER1.location()))
-                .boots(0.3f, armorPool(MaidLoadoutTagsProvider.MAID_BOOTS_TIER1.location()))
+                .helmet(0.3f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER1))
+                .boots(0.3f, armorPool(MaidLoadoutTagsProvider.MAID_BOOTS_TIER1))
                 .build())
             .spells(SpellPoolConfig.builder()
-                .attack(spellPool(1, 2, MaidSpellRegistry.ATTACK_SPELLS_TAG.location()))
+                .attack(spellPool(1, 2, MaidSpellAction.ATTACK))
                 .build())
             .spellLevelCap(3)
             .build();
@@ -144,16 +161,16 @@ public class MaidLoadoutDataProvider implements DataProvider {
 
     private MaidLoadoutTier createWarriorTier2() {
         return MaidLoadoutTier.builder(3, 4)
-            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER2.location()))
+            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER2))
             .armor(ArmorConfig.builder()
-                .helmet(0.5f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER2.location()))
-                .chestplate(0.4f, armorPool(MaidLoadoutTagsProvider.MAID_CHESTPLATES_TIER2.location()))
-                .leggings(0.4f, armorPool(MaidLoadoutTagsProvider.MAID_LEGGINGS_TIER2.location()))
-                .boots(0.5f, armorPool(MaidLoadoutTagsProvider.MAID_BOOTS_TIER2.location()))
+                .helmet(0.5f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER2))
+                .chestplate(0.4f, armorPool(MaidLoadoutTagsProvider.MAID_CHESTPLATES_TIER2))
+                .leggings(0.4f, armorPool(MaidLoadoutTagsProvider.MAID_LEGGINGS_TIER2))
+                .boots(0.5f, armorPool(MaidLoadoutTagsProvider.MAID_BOOTS_TIER2))
                 .build())
             .spells(SpellPoolConfig.builder()
-                .attack(spellPool(2, 3, MaidSpellRegistry.ATTACK_SPELLS_TAG.location()))
-                .defense(spellPool(1, 1, MaidSpellRegistry.DEFENSE_SPELLS_TAG.location()))
+                .attack(spellPool(2, 3, MaidSpellAction.ATTACK))
+                .defense(spellPool(1, 1, MaidSpellAction.DEFENSE))
                 .build())
             .spellLevelCap(6)
             .build();
@@ -161,16 +178,16 @@ public class MaidLoadoutDataProvider implements DataProvider {
 
     private MaidLoadoutTier createWarriorTier3() {
         return MaidLoadoutTier.builder(5, 6)
-            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER3.location()))
+            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER3))
             .armor(ArmorConfig.builder()
-                .helmet(0.8f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER3.location()))
-                .chestplate(0.7f, armorPool(MaidLoadoutTagsProvider.MAID_CHESTPLATES_TIER3.location()))
-                .leggings(0.7f, armorPool(MaidLoadoutTagsProvider.MAID_LEGGINGS_TIER3.location()))
-                .boots(0.8f, armorPool(MaidLoadoutTagsProvider.MAID_BOOTS_TIER3.location()))
+                .helmet(0.8f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER3))
+                .chestplate(0.7f, armorPool(MaidLoadoutTagsProvider.MAID_CHESTPLATES_TIER3))
+                .leggings(0.7f, armorPool(MaidLoadoutTagsProvider.MAID_LEGGINGS_TIER3))
+                .boots(0.8f, armorPool(MaidLoadoutTagsProvider.MAID_BOOTS_TIER3))
                 .build())
             .spells(SpellPoolConfig.builder()
-                .attack(spellPool(3, 4, MaidSpellRegistry.ATTACK_SPELLS_TAG.location()))
-                .defense(spellPool(1, 2, MaidSpellRegistry.DEFENSE_SPELLS_TAG.location()))
+                .attack(spellPool(3, 4, MaidSpellAction.ATTACK))
+                .defense(spellPool(1, 2, MaidSpellAction.DEFENSE))
                 .build())
             .spellLevelCap(10)
             .build();
@@ -179,8 +196,7 @@ public class MaidLoadoutDataProvider implements DataProvider {
     // ==================== 法师职业配置 ====================
 
     /**
-     * 创建法师职业配置
-     * 侧重法杖和轻甲，多种法术
+     * 创建法师职业配置 侧重法杖和轻甲，多种法术
      */
     private MaidLoadout createMageLoadout() {
         return MaidLoadout.builder(id("mage"))
@@ -195,12 +211,10 @@ public class MaidLoadoutDataProvider implements DataProvider {
 
     private MaidLoadoutTier createMageTier1() {
         return MaidLoadoutTier.builder(1, 2)
-            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER1.location()))
-            .armor(ArmorConfig.builder()
-                .helmet(0.2f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER1.location()))
-                .build())
+            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER1))
+            .armor(lightArmor(1))
             .spells(SpellPoolConfig.builder()
-                .attack(spellPool(2, 3, MaidSpellRegistry.ATTACK_SPELLS_TAG.location()))
+                .attack(spellPool(2, 3, MaidSpellAction.ATTACK))
                 .build())
             .spellLevelCap(3)
             .build();
@@ -208,16 +222,13 @@ public class MaidLoadoutDataProvider implements DataProvider {
 
     private MaidLoadoutTier createMageTier2() {
         return MaidLoadoutTier.builder(3, 4)
-            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER2.location()))
-            .armor(ArmorConfig.builder()
-                .helmet(0.4f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER2.location()))
-                .chestplate(0.3f, armorPool(MaidLoadoutTagsProvider.MAID_CHESTPLATES_TIER2.location()))
-                .build())
+            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER2))
+            .armor(lightArmor(2))
             .spells(SpellPoolConfig.builder()
-                .attack(spellPool(1, 3, MaidSpellRegistry.ATTACK_SPELLS_TAG.location()))
-                .defense(spellPool(0, 2, MaidSpellRegistry.DEFENSE_SPELLS_TAG.location()))
-                .negativeEffect(spellPool(0, 1, MaidSpellRegistry.NEGATIVE_EFFECT_SPELLS_TAG.location()))
-                .support(spellPool(0, 1, MaidSpellRegistry.SUPPORT_SPELLS_TAG.location()))
+                .attack(spellPool(1, 3, MaidSpellAction.ATTACK))
+                .defense(spellPool(0, 2, MaidSpellAction.DEFENSE))
+                .negativeEffect(spellPool(0, 1, MaidSpellAction.NEGATIVE))
+                .support(spellPool(0, 1, MaidSpellAction.SUPPORT))
                 .build())
             .spellLevelCap(6)
             .build();
@@ -225,19 +236,14 @@ public class MaidLoadoutDataProvider implements DataProvider {
 
     private MaidLoadoutTier createMageTier3() {
         return MaidLoadoutTier.builder(5, 6)
-            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER3.location()))
-            .armor(ArmorConfig.builder()
-                .helmet(0.6f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER3.location()))
-                .chestplate(0.5f, armorPool(MaidLoadoutTagsProvider.MAID_CHESTPLATES_TIER3.location()))
-                .leggings(0.4f, armorPool(MaidLoadoutTagsProvider.MAID_LEGGINGS_TIER3.location()))
-                .boots(0.5f, armorPool(MaidLoadoutTagsProvider.MAID_BOOTS_TIER3.location()))
-                .build())
+            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER3))
+            .armor(lightArmor(3))
             .spells(SpellPoolConfig.builder()
-                .attack(spellPool(1, 5, MaidSpellRegistry.ATTACK_SPELLS_TAG.location()))
-                .defense(spellPool(1, 2, MaidSpellRegistry.DEFENSE_SPELLS_TAG.location()))
-                .negativeEffect(spellPool(1, 2, MaidSpellRegistry.NEGATIVE_EFFECT_SPELLS_TAG.location()))
-                .support(spellPool(1, 2, MaidSpellRegistry.SUPPORT_SPELLS_TAG.location()))
-                .movement(spellPool(1, 1, MaidSpellRegistry.MOVEMENT_SPELLS_TAG.location()))
+                .attack(spellPool(1, 5, MaidSpellAction.ATTACK))
+                .defense(spellPool(1, 2, MaidSpellAction.DEFENSE))
+                .negativeEffect(spellPool(1, 2, MaidSpellAction.NEGATIVE))
+                .support(spellPool(1, 2, MaidSpellAction.SUPPORT))
+                .movement(spellPool(1, 1, MaidSpellAction.MOVEMENT))
                 .build())
             .spellLevelCap(10)
             .build();
@@ -246,8 +252,7 @@ public class MaidLoadoutDataProvider implements DataProvider {
     // ==================== 辅助职业配置 ====================
 
     /**
-     * 创建辅助职业配置
-     * 侧重治疗和支援法术，轻装
+     * 创建辅助职业配置 侧重治疗和支援法术，轻装
      */
     private MaidLoadout createSupportLoadout() {
         return MaidLoadout.builder(id("support"))
@@ -262,14 +267,12 @@ public class MaidLoadoutDataProvider implements DataProvider {
 
     private MaidLoadoutTier createSupportTier1() {
         return MaidLoadoutTier.builder(1, 2)
-            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER1.location()))
-            .armor(ArmorConfig.builder()
-                .helmet(0.2f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER1.location()))
-                .build())
+            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER1))
+            .armor(lightArmor(1))
             .spells(SpellPoolConfig.builder()
-                .support(spellPool(0, 1, MaidSpellRegistry.SUPPORT_SPELLS_TAG.location()))
-                .supportOther(spellPool(1, 2, MaidSpellRegistry.SUPPORT_EFFECT_SPELLS_TAG.location()))
-                .attack(spellPool(0, 1, MaidSpellRegistry.ATTACK_SPELLS_TAG.location()))
+                .support(spellPool(0, 1, MaidSpellAction.SUPPORT))
+                .supportOther(spellPool(1, 2, MaidSpellAction.SUPPORT_OTHER))
+                .attack(spellPool(0, 1, MaidSpellAction.ATTACK))
                 .build())
             .spellLevelCap(3)
             .build();
@@ -277,17 +280,14 @@ public class MaidLoadoutDataProvider implements DataProvider {
 
     private MaidLoadoutTier createSupportTier2() {
         return MaidLoadoutTier.builder(3, 4)
-            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER2.location()))
-            .armor(ArmorConfig.builder()
-                .helmet(0.4f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER2.location()))
-                .chestplate(0.3f, armorPool(MaidLoadoutTagsProvider.MAID_CHESTPLATES_TIER2.location()))
-                .build())
+            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER2))
+            .armor(lightArmor(2))
             .spells(SpellPoolConfig.builder()
-                .support(spellPool(1, 1, MaidSpellRegistry.SUPPORT_SPELLS_TAG.location()))
-                .supportOther(spellPool(0, 2, MaidSpellRegistry.SUPPORT_EFFECT_SPELLS_TAG.location()))
-                .positiveEffect(spellPool(0, 2, MaidSpellRegistry.POSITIVE_EFFECT_SPELLS_TAG.location()))
-                .defense(spellPool(1, 1, MaidSpellRegistry.DEFENSE_SPELLS_TAG.location()))
-                .attack(spellPool(1, 2, MaidSpellRegistry.ATTACK_SPELLS_TAG.location()))
+                .support(spellPool(1, 1, MaidSpellAction.SUPPORT))
+                .supportOther(spellPool(0, 2, MaidSpellAction.SUPPORT_OTHER))
+                .positiveEffect(spellPool(0, 2, MaidSpellAction.POSITIVE))
+                .defense(spellPool(1, 1, MaidSpellAction.DEFENSE))
+                .attack(spellPool(1, 2, MaidSpellAction.ATTACK))
                 .build())
             .spellLevelCap(6)
             .build();
@@ -295,19 +295,14 @@ public class MaidLoadoutDataProvider implements DataProvider {
 
     private MaidLoadoutTier createSupportTier3() {
         return MaidLoadoutTier.builder(5, 6)
-            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER3.location()))
-            .armor(ArmorConfig.builder()
-                .helmet(0.6f, armorPool(MaidLoadoutTagsProvider.MAID_HELMETS_TIER3.location()))
-                .chestplate(0.5f, armorPool(MaidLoadoutTagsProvider.MAID_CHESTPLATES_TIER3.location()))
-                .leggings(0.4f, armorPool(MaidLoadoutTagsProvider.MAID_LEGGINGS_TIER3.location()))
-                .boots(0.5f, armorPool(MaidLoadoutTagsProvider.MAID_BOOTS_TIER3.location()))
-                .build())
+            .weapon(weaponPool(1, MaidLoadoutTagsProvider.MAID_WEAPONS_TIER3))
+            .armor(lightArmor(3))
             .spells(SpellPoolConfig.builder()
-                .support(spellPool(1, 2, MaidSpellRegistry.SUPPORT_SPELLS_TAG.location()))
-                .supportOther(spellPool(1, 2, MaidSpellRegistry.SUPPORT_EFFECT_SPELLS_TAG.location()))
-                .positiveEffect(spellPool(1, 2, MaidSpellRegistry.POSITIVE_EFFECT_SPELLS_TAG.location()))
-                .defense(spellPool(1, 2, MaidSpellRegistry.DEFENSE_SPELLS_TAG.location()))
-                .attack(spellPool(1, 2, MaidSpellRegistry.ATTACK_SPELLS_TAG.location()))
+                .support(spellPool(1, 2, MaidSpellAction.SUPPORT))
+                .supportOther(spellPool(1, 2, MaidSpellAction.SUPPORT_OTHER))
+                .positiveEffect(spellPool(1, 2, MaidSpellAction.POSITIVE))
+                .defense(spellPool(1, 2, MaidSpellAction.DEFENSE))
+                .attack(spellPool(1, 2, MaidSpellAction.ATTACK))
                 .build())
             .spellLevelCap(10)
             .build();

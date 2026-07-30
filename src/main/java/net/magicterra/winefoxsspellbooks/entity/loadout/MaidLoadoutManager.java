@@ -21,26 +21,34 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 /**
- * 女仆装备配置管理器
- * 负责从数据包加载和管理所有装备配置
+ * 女仆装备配置管理器 负责从数据包加载和管理所有装备配置
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-01-20
  */
 public class MaidLoadoutManager extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
     private static final String DIRECTORY = "summoned_maid_loadouts";
 
-    /** 单例实例 */
+    /**
+     * 单例实例
+     */
     private static MaidLoadoutManager instance;
 
-    /** 所有加载的配置 */
+    /**
+     * 所有加载的配置
+     */
     private Map<ResourceLocation, MaidLoadout> loadouts = new HashMap<>();
 
-    /** 可选择的配置（权重 > 0） */
+    /**
+     * 可选择的配置（权重 > 0）
+     */
     private List<MaidLoadout> selectableLoadouts = new ArrayList<>();
 
-    /** 总权重 */
+    /**
+     * 总权重
+     */
     private int totalWeight = 0;
 
     public MaidLoadoutManager() {
@@ -48,7 +56,9 @@ public class MaidLoadoutManager extends SimpleJsonResourceReloadListener {
         instance = this;
     }
 
-    /** 获取单例实例 */
+    /**
+     * 获取单例实例
+     */
     public static MaidLoadoutManager getInstance() {
         if (instance == null) {
             instance = new MaidLoadoutManager();
