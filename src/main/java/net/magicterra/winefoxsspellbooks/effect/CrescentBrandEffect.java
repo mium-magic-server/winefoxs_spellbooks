@@ -1,5 +1,6 @@
 package net.magicterra.winefoxsspellbooks.effect;
 
+import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.magic.particle.TransferStreamOption;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
@@ -16,7 +17,7 @@ import net.minecraft.world.phys.AABB;
  * 残月烙印效果 — HARMFUL 标记效果，自然到期时触发「弱自爆」。
  * <p>
  * 平时无 tick 逻辑，仅作为引爆系统（{@link net.magicterra.winefoxsspellbooks.event.WinefoxDetonationHandler}） 的标记；到期最后一 tick（{@code duration==1}）对自身及周围小范围造成少量伤害。 被引爆（提前 {@code removeEffect}）的烙印到不了 {@code duration==1}，不会自爆， 天然区分「引爆」与「自然到期」；不用
- * {@code MobEffectEvent.Expired} 是因其触发时机不可靠。
+ * {@code MobEffectEvent.Expired} 是因其触发时机不可靠。叠印时可见层走完只是换成原版压在下面的 {@code hiddenEffect}， 整枚印并未结束，故只有链上最后一层才自爆。
  * <p>
  * 弱自爆用原版 {@code magic} 伤害而非本学派伤害：引爆监听器按学派伤害 type 识别， {@code magic} 不在其列，弱自爆便不会自引爆、也不会连锁周围带印实体。
  * <p>
@@ -64,7 +65,7 @@ public class CrescentBrandEffect extends MobEffect {
         MobEffectInstance instance = entity.getEffect(WsbEffects.CRESCENT_BRAND);
         if (instance == null || instance.isInfiniteDuration()
             || instance.getDuration() % ORBIT_RESEND_TICKS != 0) {
-            sendOrbit(serverLevel, entity, amplifier);
+            sendOrbit(serverLevel, entity, amplifier, instance);
         }
     }
 
@@ -77,10 +78,12 @@ public class CrescentBrandEffect extends MobEffect {
         if (entity.level().isClientSide) return true;
 
         MobEffectInstance instance = entity.getEffect(WsbEffects.CRESCENT_BRAND);
-        // 绕身印记补发(剩余 >1 tick 的周期触发都是补发,不是到期)
-        if (instance != null && (instance.isInfiniteDuration() || instance.getDuration() > 1)) {
+        // 绕身印记补发(剩余 >1 tick 的周期触发都是补发,不是到期)。
+        // 被更强的印覆盖时,原版把旧实例压进 hiddenEffect:可见层走完只是换层,下层会浮上来接着倒计时,
+        // 此时自爆会让「一枚印炸两次」。有下层就一并按补发处理,把自爆留给链上最后一层。
+        if (instance != null && (!instance.endsWithin(1) || instance.hiddenEffect != null)) {
             if (entity.level() instanceof ServerLevel serverLevel) {
-                sendOrbit(serverLevel, entity, amplifier);
+                sendOrbit(serverLevel, entity, amplifier, instance);
             }
             return true;
         }
@@ -101,15 +104,25 @@ public class CrescentBrandEffect extends MobEffect {
     }
 
     /**
-     * 补发一枚绕身印记粒子;time 携带当前剩余时长(客户端脉动/公转时基)。
+     * 补发一枚绕身印记粒子;带上当前剩余时长供客户端做脉动/公转时基。
      */
-    private static void sendOrbit(ServerLevel serverLevel, LivingEntity entity, int amplifier) {
-        MobEffectInstance instance = entity.getEffect(WsbEffects.CRESCENT_BRAND);
-        int remaining = instance == null ? INFINITE_REMAIN_STUB
-                                         : (instance.isInfiniteDuration() ? INFINITE_REMAIN_STUB : instance.getDuration());
+    private static void sendOrbit(ServerLevel serverLevel, LivingEntity entity, int amplifier,
+                                  @Nullable MobEffectInstance instance) {
         serverLevel.sendParticles(
-            brandOption(1, entity.getId(), remaining, amplifier),
+            brandOption(1, entity.getId(), remainingTicks(instance), amplifier),
             entity.getX(), entity.getY(), entity.getZ(), 1, 0, 0, 0, 0);
+    }
+
+    /**
+     * 这枚印真正还剩多久:可见层即将换成下层时报下层的时长,否则客户端会按 1 tick 演一遍临期脉动再被顶回去。
+     */
+    private static int remainingTicks(@Nullable MobEffectInstance instance) {
+        if (instance == null || instance.isInfiniteDuration()) {
+            return INFINITE_REMAIN_STUB;
+        }
+        return instance.endsWithin(1) && instance.hiddenEffect != null
+               ? remainingTicks(instance.hiddenEffect)
+               : instance.getDuration();
     }
 
     private static TransferStreamOption brandOption(int mode, int entityId, int remaining, int amplifier) {
