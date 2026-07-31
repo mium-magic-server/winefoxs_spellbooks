@@ -149,6 +149,15 @@ public final class MaidSpellCatalog {
     }
 
     /**
+     * 已有未完成的二段咏唱时，女仆能否继续施放该法术。
+     * <p>
+     * 召唤类即便标了逐发也不行：把 recast 次数用光会走 {@code USED_ALL_RECASTS} 分支收回刚召出来的东西， 等 recast 自然超时才安全（超时分支不收回）。选术与施法两端必须同口径，否则女仆会反复选中 一个到了施法环节必被拒绝的法术，白白空转。
+     */
+    public static boolean maidMayRepeatCast(AbstractSpell spell) {
+        return maidShouldRecast(spell) && !isSummonSpell(spell);
+    }
+
+    /**
      * 法术施法范围，数据由 {@link SpellDataManager} 从数据包加载。
      */
     public static float getSpellRange(AbstractSpell spell) {
