@@ -1,15 +1,16 @@
 package net.magicterra.winefoxsspellbooks.entity;
 
-import it.unimi.dsi.fastutil.objects.Reference2IntMap;
-import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
 import net.minecraft.world.level.Level;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 /**
  * 各维度内存活的召唤女仆计数（仅逻辑服务端维护）。
  * <p>
- * 供 AI 行为在「本维度一只召唤女仆都没有」时 O(1) 短路，省掉 AABB 实体查询。计数由
+ * 供 AI 行为在「本维度一只召唤女仆都没有」时 O(1) 短路，省掉 AABB 实体查询。计数存在
+ * {@link Level} 自己的附件上（{@link WsbAttachments#SUMMONED_MAID_COUNT}），由
  * {@link net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid} 的
- * {@code onAddedToLevel} / {@code onRemovedFromLevel} 成对增减，按 {@link Level} 实例分桶。
+ * {@code onAddedToLevel} / {@code onRemovedFromLevel} 成对增减。只在服务端主线程读写，无需同步。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-07-29
@@ -19,39 +20,33 @@ public final class SummonedMaidPresence {
     }
 
     /**
-     * 维度 → 存活召唤女仆数。按引用哈希，计数归零即摘除条目，故不会随维度卸载泄漏。 只在服务端主线程读写，无需同步。
-     */
-    private static final Reference2IntMap<Level> COUNTS = new Reference2IntOpenHashMap<>();
-
-    /**
      * 召唤女仆加入世界。客户端不计——消费方全在服务端 AI 侧。
      */
     public static void onAdded(Level level) {
         if (level.isClientSide) {
             return;
         }
-        COUNTS.mergeInt(level, 1, Integer::sum);
+        level.getData(WsbAttachments.SUMMONED_MAID_COUNT).increment();
     }
 
     /**
-     * 召唤女仆离开世界。归零时摘除条目，避免维度卸载后留下空桶。
+     * 召唤女仆离开世界。
+     * <p>
+     * 夹到 0 而不是任其变负：卸载路径不保证每只实体都补一次 {@code onRemovedFromLevel}， 计数一旦漏减又被后来的移除压成负数，短路就会对这个维度永远返回假。
      */
     public static void onRemoved(Level level) {
         if (level.isClientSide) {
             return;
         }
-        int next = COUNTS.getInt(level) - 1;
-        if (next <= 0) {
-            COUNTS.removeInt(level);
-        } else {
-            COUNTS.put(level, next);
-        }
+        MutableInt count = level.getData(WsbAttachments.SUMMONED_MAID_COUNT);
+        count.setValue(Math.max(count.intValue() - 1, 0));
     }
 
     /**
      * 该维度是否存在至少一只存活的召唤女仆。
      */
     public static boolean isPresentIn(Level level) {
-        return COUNTS.getInt(level) > 0;
+        MutableInt count = level.getExistingDataOrNull(WsbAttachments.SUMMONED_MAID_COUNT);
+        return count != null && count.intValue() > 0;
     }
 }

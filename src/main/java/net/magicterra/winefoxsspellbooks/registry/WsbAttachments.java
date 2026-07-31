@@ -15,6 +15,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 /**
  * 初始化附件对象
@@ -61,6 +62,15 @@ public class WsbAttachments {
      */
     public static final Supplier<AttachmentType<Long>> LAST_VULPINE_GIFT_TIME = ATTACHMENT_TYPES.register(
         "last_vulpine_gift_time", () -> AttachmentType.builder(() -> 0L).serialize(Codec.LONG).build()
+    );
+
+    /**
+     * 本维度内存活的召唤女仆数（仅逻辑服务端维护，不入存档）。
+     * <p>
+     * 挂在 {@link net.minecraft.world.level.Level} 上而不是另开静态表：计数随世界对象一起回收， 维度卸载后既不会留下把 {@code ServerLevel} 钉死在进程里的条目，也不用再补一路卸载事件去擦。
+     */
+    public static final Supplier<AttachmentType<MutableInt>> SUMMONED_MAID_COUNT = ATTACHMENT_TYPES.register(
+        "summoned_maid_count", () -> AttachmentType.builder(() -> new MutableInt()).build()
     );
 
     public static void register(IEventBus modBus) {
