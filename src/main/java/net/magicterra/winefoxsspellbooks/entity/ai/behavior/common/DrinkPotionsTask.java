@@ -88,11 +88,16 @@ public class DrinkPotionsTask extends Behavior<Mob> {
     }
 
     /**
-     * 朝目标的反方向设置行走目标。
+     * 从自己脚下沿「目标 → 自己」方向后撤 10 格。
+     * <p>
+     * 撤离方向要用两者的相对位置算，不能用目标的朝向取反：交战中的目标正盯着自己，反向即背离自己，
+     * 落点会落到目标的另一侧，喝药时反而径直穿过它的近战范围。
      */
     private void setFleeWalkTarget(Mob mob, LivingEntity target) {
-        Vec3 fleeVector = target.getForward().reverse().scale(10);
-        BlockPos fleePos = target.blockPosition().offset(Mth.floor(fleeVector.x), Mth.floor(fleeVector.y), Mth.floor(fleeVector.z));
+        // 只取水平分量，高度差交给寻路；完全重叠时退回自身朝向，避免归一化出 NaN
+        Vec3 away = mob.position().subtract(target.position()).multiply(1.0, 0.0, 1.0);
+        Vec3 fleeVector = (away.lengthSqr() < 1.0E-4 ? mob.getForward() : away).normalize().scale(10);
+        BlockPos fleePos = mob.blockPosition().offset(Mth.floor(fleeVector.x), 0, Mth.floor(fleeVector.z));
         mob.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(fleePos, fleeSpeed, 0));
     }
 
