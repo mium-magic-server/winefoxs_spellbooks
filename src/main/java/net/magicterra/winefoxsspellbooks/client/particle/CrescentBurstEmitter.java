@@ -1,7 +1,8 @@
 package net.magicterra.winefoxsspellbooks.client.particle;
 
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
-import net.magicterra.winefoxsspellbooks.magic.particle.TransferStreamOption;
+import net.magicterra.winefoxsspellbooks.magic.particle.CrescentBrandOption;
+import net.magicterra.winefoxsspellbooks.magic.particle.CrescentBurstOption;
 import net.magicterra.winefoxsspellbooks.registry.WsbParticles;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.NoRenderParticle;
@@ -49,20 +50,20 @@ public class CrescentBurstEmitter extends NoRenderParticle {
 
     private final double radius;
 
-    protected CrescentBurstEmitter(ClientLevel level, double x, double y, double z, TransferStreamOption option) {
+    protected CrescentBurstEmitter(ClientLevel level, double x, double y, double z, CrescentBurstOption option) {
         super(level, x, y, z);
         this.lifetime = WAVE_TICKS;
-        this.radius = Math.max(option.dist(), 1.0f);
+        this.radius = Math.max(option.radius(), 1);
 
         double chestY = y + 0.9;
         // 闪光
-        this.level.addParticle(brandOption(3), x, chestY, z, 0, 0, 0);
+        this.level.addParticle(brandOption(CrescentBrandOption.MODE_FLASH), x, chestY, z, 0, 0, 0);
         // 月牙碎片:沿随机朝向的月弧甩出,略带上抛
         double arcStart = this.random.nextDouble() * Math.PI * 2;
         for (int i = 0; i < SHARD_COUNT; i++) {
             double a = arcStart + ARC_SPAN * i / (SHARD_COUNT - 1);
             double speed = 0.26 + this.random.nextDouble() * 0.16;
-            this.level.addParticle(brandOption(2), x, chestY, z,
+            this.level.addParticle(brandOption(CrescentBrandOption.MODE_SHARD), x, chestY, z,
                 Math.cos(a) * speed, 0.12 + this.random.nextDouble() * 0.1, Math.sin(a) * speed);
         }
         // 酒泡点缀,把「酒狐」主题串起来
@@ -74,8 +75,8 @@ public class CrescentBurstEmitter extends NoRenderParticle {
         emitWave(0);
     }
 
-    private static TransferStreamOption brandOption(int mode) {
-        return new TransferStreamOption(WsbParticles.CRESCENT_BRAND.get(), mode, 0, 0, 0);
+    private static CrescentBrandOption brandOption(int mode) {
+        return new CrescentBrandOption(WsbParticles.CRESCENT_BRAND.get(), mode, 0, 0, 0);
     }
 
     @Override
@@ -104,9 +105,9 @@ public class CrescentBurstEmitter extends NoRenderParticle {
     /**
      * 无贴图,直接实例化,注册走 registerSpecial。
      */
-    public static final class Provider implements ParticleProvider<TransferStreamOption> {
+    public static final class Provider implements ParticleProvider<CrescentBurstOption> {
         @Override
-        public Particle createParticle(TransferStreamOption option, ClientLevel level,
+        public Particle createParticle(CrescentBurstOption option, ClientLevel level,
                                        double x, double y, double z, double xd, double yd, double zd) {
             return new CrescentBurstEmitter(level, x, y, z, option);
         }

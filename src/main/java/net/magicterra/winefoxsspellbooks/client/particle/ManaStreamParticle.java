@@ -139,7 +139,7 @@ public class ManaStreamParticle extends TextureSheetParticle {
         @Override
         public Particle createParticle(TransferStreamOption option, ClientLevel level,
                                        double x, double y, double z, double xd, double yd, double zd) {
-            if (option.casterId() == -1) {
+            if (option.casterId() == TransferStreamOption.DETACHED_CASTER) {
                 return new TwinkleStar(level, x, y, z, option.dist(), sprites);
             }
             return new BeamStar(level, x, y, z, option, sprites);

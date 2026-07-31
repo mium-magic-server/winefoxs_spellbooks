@@ -3,7 +3,7 @@ package net.magicterra.winefoxsspellbooks.client.particle;
 import java.util.HashMap;
 import java.util.Map;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
-import net.magicterra.winefoxsspellbooks.magic.particle.TransferStreamOption;
+import net.magicterra.winefoxsspellbooks.magic.particle.CrescentBrandOption;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
@@ -20,7 +20,7 @@ import net.neoforged.neoforge.event.level.LevelEvent;
 import org.joml.Vector3f;
 
 /**
- * 残月烙印粒子族。option.casterId 复用为形态号:
+ * 残月烙印粒子族。{@link CrescentBrandOption#mode()} 选形态:
  * <ul>
  *   <li>0 落印:胸口浮现的印记,1.5 倍快速收缩「压」上去后驻留淡出;</li>
  *   <li>1 绕身:绕目标躯干公转的常驻印记,呼吸脉动,临期(&lt;3s)脉动加速变亮,
@@ -71,19 +71,19 @@ public final class CrescentBrandParticle {
     /**
      * amplifier 尺寸微增:每级 +5%,封顶 +25%,高级印视觉更「重」但不花哨。
      */
-    private static float sizeScale(float amplifier) {
-        return 1.0f + Math.min(amplifier, 5.0f) * 0.05f;
+    private static float sizeScale(int amplifier) {
+        return 1.0f + Math.min(amplifier, 5) * 0.05f;
     }
 
-    public record Provider(SpriteSet sprites) implements ParticleProvider<TransferStreamOption> {
+    public record Provider(SpriteSet sprites) implements ParticleProvider<CrescentBrandOption> {
         @Override
-        public Particle createParticle(TransferStreamOption option, ClientLevel level,
+        public Particle createParticle(CrescentBrandOption option, ClientLevel level,
                                        double x, double y, double z, double xd, double yd, double zd) {
-            return switch (option.casterId()) {
-                case 0 -> new Stamp(level, x, y, z, option, sprites);
-                case 1 -> Orbit.spawnOrRefresh(level, x, y, z, option, sprites);
-                case 2 -> new Shard(level, x, y, z, xd, yd, zd, sprites);
-                case 3 -> new Flash(level, x, y, z, sprites);
+            return switch (option.mode()) {
+                case CrescentBrandOption.MODE_STAMP -> new Stamp(level, x, y, z, option, sprites);
+                case CrescentBrandOption.MODE_ORBIT -> Orbit.spawnOrRefresh(level, x, y, z, option, sprites);
+                case CrescentBrandOption.MODE_SHARD -> new Shard(level, x, y, z, xd, yd, zd, sprites);
+                case CrescentBrandOption.MODE_FLASH -> new Flash(level, x, y, z, sprites);
                 default -> null;
             };
         }
@@ -137,10 +137,10 @@ public final class CrescentBrandParticle {
 
         private final float baseSize;
 
-        Stamp(ClientLevel level, double x, double y, double z, TransferStreamOption option, SpriteSet sprites) {
+        Stamp(ClientLevel level, double x, double y, double z, CrescentBrandOption option, SpriteSet sprites) {
             super(level, x, y, z, sprites);
-            this.entityId = option.targetId();
-            this.baseSize = 0.42f * sizeScale(option.dist());
+            this.entityId = option.brandedEntityId();
+            this.baseSize = 0.42f * sizeScale(option.amplifier());
             this.quadSize = this.baseSize * 1.5f;
             this.lifetime = 18;
             if (level.getEntity(this.entityId) instanceof Entity entity) {
@@ -212,7 +212,7 @@ public final class CrescentBrandParticle {
          */
         private double pulsePhase;
 
-        private float remaining0;
+        private int remaining0;
 
         /**
          * 上次 tick 时的世界时刻。
@@ -236,25 +236,25 @@ public final class CrescentBrandParticle {
          * 同世界内则按「多久没刷新过 {@link #lastTickTime}」判僵尸。
          */
         static Particle spawnOrRefresh(ClientLevel level, double x, double y, double z,
-                                       TransferStreamOption option, SpriteSet sprites) {
+                                       CrescentBrandOption option, SpriteSet sprites) {
             if (activeLevel != level) {
                 ACTIVE.clear();
                 activeLevel = level;
             }
-            Orbit existing = ACTIVE.get(option.targetId());
+            Orbit existing = ACTIVE.get(option.brandedEntityId());
             if (existing != null && existing.isAlive()
                 && level.getGameTime() - existing.lastTickTime <= STALE_TICKS) {
-                existing.refresh(option.time());
+                existing.refresh(option.remainingTicks());
                 return null;
             }
             return new Orbit(level, x, y, z, option, sprites);
         }
 
-        private Orbit(ClientLevel level, double x, double y, double z, TransferStreamOption option, SpriteSet sprites) {
+        private Orbit(ClientLevel level, double x, double y, double z, CrescentBrandOption option, SpriteSet sprites) {
             super(level, x, y, z, sprites);
-            this.entityId = option.targetId();
-            this.remaining0 = option.time();
-            this.quadSize = 0.34f * sizeScale(option.dist());
+            this.entityId = option.brandedEntityId();
+            this.remaining0 = option.remainingTicks();
+            this.quadSize = 0.34f * sizeScale(option.amplifier());
             this.lifetime = ORBIT_LIFE;
             this.alpha = 0.0f;
             this.pulsePhase = this.entityId * GOLDEN_ANGLE;
@@ -269,7 +269,7 @@ public final class CrescentBrandParticle {
         /**
          * 补发续命:校准剩余时长,余命重置为 ORBIT_LIFE;服务端停发(烙印消失)则自然消亡。
          */
-        private void refresh(float remaining) {
+        private void refresh(int remaining) {
             this.remaining0 = remaining + this.age;
             this.lifetime = this.age + ORBIT_LIFE;
         }

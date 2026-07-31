@@ -2,7 +2,7 @@ package net.magicterra.winefoxsspellbooks.effect;
 
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
-import net.magicterra.winefoxsspellbooks.magic.particle.TransferStreamOption;
+import net.magicterra.winefoxsspellbooks.magic.particle.CrescentBrandOption;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
 import net.magicterra.winefoxsspellbooks.registry.WsbParticles;
 import net.minecraft.server.level.ServerLevel;
@@ -59,7 +59,7 @@ public class CrescentBrandEffect extends MobEffect {
             return;
         }
         serverLevel.sendParticles(
-            brandOption(0, entity.getId(), 0, amplifier),
+            brandOption(CrescentBrandOption.MODE_STAMP, entity.getId(), 0, amplifier),
             entity.getX(), entity.getY(), entity.getZ(), 1, 0, 0, 0, 0);
         // 时长恰为补发周期倍数时(法术挂印即是),效果 tick 马上会补发,这里不重复发
         MobEffectInstance instance = entity.getEffect(WsbEffects.CRESCENT_BRAND);
@@ -109,7 +109,7 @@ public class CrescentBrandEffect extends MobEffect {
     private static void sendOrbit(ServerLevel serverLevel, LivingEntity entity, int amplifier,
                                   @Nullable MobEffectInstance instance) {
         serverLevel.sendParticles(
-            brandOption(1, entity.getId(), remainingTicks(instance), amplifier),
+            brandOption(CrescentBrandOption.MODE_ORBIT, entity.getId(), remainingTicks(instance), amplifier),
             entity.getX(), entity.getY(), entity.getZ(), 1, 0, 0, 0, 0);
     }
 
@@ -125,7 +125,7 @@ public class CrescentBrandEffect extends MobEffect {
                : instance.getDuration();
     }
 
-    private static TransferStreamOption brandOption(int mode, int entityId, int remaining, int amplifier) {
-        return new TransferStreamOption(WsbParticles.CRESCENT_BRAND.get(), mode, entityId, remaining, amplifier);
+    private static CrescentBrandOption brandOption(int mode, int entityId, int remaining, int amplifier) {
+        return new CrescentBrandOption(WsbParticles.CRESCENT_BRAND.get(), mode, entityId, remaining, amplifier);
     }
 }

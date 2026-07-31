@@ -1,5 +1,6 @@
 package net.magicterra.winefoxsspellbooks.client.particle;
 
+import net.magicterra.winefoxsspellbooks.magic.particle.DecantCleanseOption;
 import net.magicterra.winefoxsspellbooks.magic.particle.TransferStreamOption;
 import net.magicterra.winefoxsspellbooks.registry.WsbParticles;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -59,14 +60,14 @@ public class DecantCleanseEmitter extends NoRenderParticle {
 
     private final DustParticleOptions cleanDust;
 
-    protected DecantCleanseEmitter(ClientLevel level, double x, double y, double z, TransferStreamOption option) {
+    protected DecantCleanseEmitter(ClientLevel level, double x, double y, double z, DecantCleanseOption option) {
         super(level, x, y, z);
         this.lifetime = SWEEP_TICKS;
         this.targetId = option.targetId();
-        // time 携带实际净除的效果数;一个没净掉也出 1~2 粒意思一下,不显得法术坏了
-        int cleansed = (int) option.time();
+        // 一个没净掉也出 1~2 粒意思一下,不显得法术坏了
+        int cleansed = option.cleansedCount();
         this.dripTotal = cleansed <= 0 ? 2 : Math.min(cleansed * 2, MAX_DRIPS);
-        this.purge = option.dist() >= 2;
+        this.purge = option.purge();
         this.cleanDust = new DustParticleOptions(CLEAN_COLOR, this.purge ? 1.0f : 0.7f);
         emitFrame(0);
     }
@@ -128,8 +129,8 @@ public class DecantCleanseEmitter extends NoRenderParticle {
                 double dx = i == 0 ? 0 : (this.random.nextDouble() - 0.5) * 0.6;
                 double dz = i == 0 ? 0 : (this.random.nextDouble() - 0.5) * 0.6;
                 this.level.addParticle(
-                    new TransferStreamOption(WsbParticles.GOLD_CROSS.get(), -1, 0, 0,
-                        this.purge ? 1.3f : 1.0f),
+                    new TransferStreamOption(WsbParticles.GOLD_CROSS.get(),
+                        TransferStreamOption.DETACHED_CASTER, 0, 0, this.purge ? 1.3f : 1.0f),
                     target.getX() + dx, feetY + height + 0.35, target.getZ() + dz, 0, 0, 0);
             }
         }
@@ -138,9 +139,9 @@ public class DecantCleanseEmitter extends NoRenderParticle {
     /**
      * 无贴图,直接实例化,注册走 registerSpecial。
      */
-    public static final class Provider implements ParticleProvider<TransferStreamOption> {
+    public static final class Provider implements ParticleProvider<DecantCleanseOption> {
         @Override
-        public Particle createParticle(TransferStreamOption option, ClientLevel level,
+        public Particle createParticle(DecantCleanseOption option, ClientLevel level,
                                        double x, double y, double z, double xd, double yd, double zd) {
             return new DecantCleanseEmitter(level, x, y, z, option);
         }

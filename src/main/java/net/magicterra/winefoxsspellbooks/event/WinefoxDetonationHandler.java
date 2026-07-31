@@ -2,7 +2,7 @@ package net.magicterra.winefoxsspellbooks.event;
 
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
-import net.magicterra.winefoxsspellbooks.magic.particle.TransferStreamOption;
+import net.magicterra.winefoxsspellbooks.magic.particle.CrescentBurstOption;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
 import net.magicterra.winefoxsspellbooks.registry.WsbParticles;
 import net.magicterra.winefoxsspellbooks.registry.WsbSpells;
@@ -75,7 +75,7 @@ public class WinefoxDetonationHandler {
         // 引爆视觉:一包爆发发射器,客户端铺闪光/月牙碎片/按实际半径扩散的环波
         if (target.level() instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(
-                new TransferStreamOption(WsbParticles.CRESCENT_BURST.get(), 0, target.getId(), 0, radius),
+                new CrescentBurstOption(WsbParticles.CRESCENT_BURST.get(), radius),
                 target.getX(), target.getY(), target.getZ(), 1, 0, 0, 0, 0);
         }
 

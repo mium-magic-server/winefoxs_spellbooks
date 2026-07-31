@@ -14,7 +14,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
-import net.magicterra.winefoxsspellbooks.magic.particle.TransferStreamOption;
+import net.magicterra.winefoxsspellbooks.magic.particle.DecantCleanseOption;
 import net.magicterra.winefoxsspellbooks.registry.WsbParticles;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.minecraft.resources.ResourceLocation;
@@ -136,8 +136,8 @@ public class DecantTheBindSpell extends AbstractSpell {
         // 施法者侧保留学派施法爆发作反馈;净化全套视觉(浊滴/清醒环/金星/酒泡)由发射器在目标身上铺设
         WinefoxHexHelper.spawnCastBurst(serverLevel, entity);
         serverLevel.sendParticles(
-            new TransferStreamOption(WsbParticles.DECANT_CLEANSE.get(),
-                0, target.getId(), cleansed, spellLevel >= PURGE_LEVEL ? 2 : 1),
+            new DecantCleanseOption(WsbParticles.DECANT_CLEANSE.get(),
+                target.getId(), cleansed, spellLevel >= PURGE_LEVEL),
             target.getX(), target.getY(), target.getZ(), 1, 0, 0, 0, 0);
         super.onCast(level, spellLevel, entity, castSource, playerMagicData);
     }
