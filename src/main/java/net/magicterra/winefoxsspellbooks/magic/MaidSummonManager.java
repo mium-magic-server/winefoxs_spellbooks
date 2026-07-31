@@ -61,8 +61,10 @@ public class MaidSummonManager {
             }
             summonedEntity.teleportTo(position.x, position.y, position.z);
         }
-        // 一遍——结果无害，但读起来像是在按元素累加，实际不是
-        manager.getOwnerToSummons().put(ownerUUID, summonsSet);
+        // 并入而非覆盖：整表 put 会把 SummonManager 里这只女仆名下已有的追踪抹掉（一个都没恢复出来时
+        // 尤其明显），被抹掉的召唤物从此不再被计时解除，会永久留在世界里。逐条登记的 summonToOwner
+        // 本就是并入语义，两张表在这里保持一致。
+        manager.getOwnerToSummons().computeIfAbsent(ownerUUID, key -> new HashSet<>()).addAll(summonsSet);
     }
 
     public static void onMaidRemoved(LivingEntity maid) {
