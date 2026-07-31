@@ -7,6 +7,7 @@ import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.registry.WsbSounds;
 import net.magicterra.winefoxsspellbooks.registry.WsbSpells;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -178,10 +179,12 @@ public class FoxshadeBiterEntity extends PathfinderMob implements GeoEntity {
         this.discard();
     }
 
-    // 瞬时召唤物：无敌，避免被杂兵打断扑咬；生命周期完全由 tick 的超时/咬击控制
+    // 瞬时召唤物：无敌，避免被杂兵打断扑咬；生命周期完全由 tick 的超时/咬击控制。
+    // 但 BYPASSES_INVULNERABILITY 必须放行：/kill 走的正是 hurt(genericKill, MAX_VALUE)，
+    // 一并挡掉的话管理员没有任何手段清除它，而它又不会随距离消失、还要求自定义持久化
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        return false;
+        return source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && super.hurt(source, amount);
     }
 
     @Override
