@@ -102,6 +102,9 @@ public class AddSchoolScrollLootModifier extends LootModifier {
 
     /**
      * 权重表与 Iron's {@code RandomizeSpellFunction#getWeightFromRarity} 保持一致。
+     * <p>
+     * {@code default} 分支不能省：穷举第三方枚举的 switch 表达式，javac 会补一句隐式 {@code throw new MatchException}，
+     * 运行时装的 Iron's 比编译期多出一个稀有度常量就会在生成战利品时炸掉整张表。按最稀有一档兜底。
      */
     private static int weightFromRarity(SpellRarity rarity) {
         return switch (rarity) {
@@ -110,6 +113,7 @@ public class AddSchoolScrollLootModifier extends LootModifier {
             case RARE -> 15;
             case EPIC -> 8;
             case LEGENDARY -> 4;
+            default -> 4;
         };
     }
 
