@@ -37,7 +37,8 @@ import net.minecraft.world.item.Items;
 /**
  * 女仆装备随机化器，根据配置随机生成装备和法术
  * <p>
- * 法术一路额外受三个运行时配置约束：学派不准入（{@link Config#isSummonedMaidAllowEldritch()}） 或稀有度超标（{@link Config#getSummonedMaidMaxSpellRarity()}）的法术在展开池子时剔除， 剩下的在配装分层上限之上再压等级（{@link Config#getSummonedMaidMaxSpellLevel()}）。 三者只会往下压，压不出比数据包更强的配装。
+ * 法术一路额外受三个运行时配置约束（学派准入、稀有度上限、等级上限），不合格的法术在展开池子时
+ * 就剔除，剩下的再按等级上限定级，判据见 {@link #isEligible}。三者只会往下压，压不出比数据包更强的配装。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-01-20
@@ -301,10 +302,13 @@ public final class MaidEquipmentRandomizer {
             return;
         }
 
+        // 配装分层上限与全局配置上限在这里合成一个，入池筛选与定级都按它来，两处不会各算各的
+        int levelCap = Math.min(spellLevelCap, Config.getSummonedMaidMaxSpellLevel());
+
         // 展开所有法术条目
         List<WeightedSpell> expandedSpells = new ArrayList<>();
         for (LoadoutEntry entry : pool.entries()) {
-            expandSpellEntry(entry, expandedSpells);
+            expandSpellEntry(entry, expandedSpells, levelCap);
         }
 
         if (expandedSpells.isEmpty()) {
@@ -315,7 +319,7 @@ public final class MaidEquipmentRandomizer {
         for (int i = 0; i < rolls; i++) {
             AbstractSpell spell = selectWeightedSpell(expandedSpells, random);
             if (spell != null && spell != SpellRegistry.none()) {
-                spells.add(new SpellWithLevel(spell, resolveSpellLevel(spell, spellLevelCap)));
+                spells.add(new SpellWithLevel(spell, resolveSpellLevel(spell, levelCap)));
             }
         }
     }
@@ -326,16 +330,15 @@ public final class MaidEquipmentRandomizer {
      * Iron's 的 {@code getRarity} 在 {@code level >= maxLevel} 时硬返回 LEGENDARY，所以光压等级压不住
      * 稀有度，需逐级下探；稀有度随等级单调不降，故第一个合格等级即最高合格等级。
      *
-     * @param spell        法术
-     * @param tierSpellCap 配装数据包里该层级的等级上限
+     * @param spell    法术
+     * @param levelCap 配装分层上限与全局配置上限取小后的等级上限
      * @return 实际使用的法术等级（不低于法术自身的 {@code getMinLevel}）
      */
-    private static int resolveSpellLevel(AbstractSpell spell, int tierSpellCap) {
+    private static int resolveSpellLevel(AbstractSpell spell, int levelCap) {
         int floor = Math.max(1, spell.getMinLevel());
         // 各路上限压到下限以下时以下限为准：低于 getMinLevel 的等级法术自己没定义，
         // 按等级差算时长/强度的法术会算出负数
-        int level = Math.max(floor,
-            Math.min(Math.min(tierSpellCap, spell.getMaxLevel()), Config.getSummonedMaidMaxSpellLevel()));
+        int level = Math.max(floor, Math.min(levelCap, spell.getMaxLevel()));
         while (level > floor && !withinRarityCap(spell, level)) {
             level--;
         }
@@ -350,12 +353,12 @@ public final class MaidEquipmentRandomizer {
     }
 
     /**
-     * 法术能否进入召唤女仆的法术池：学派准入 + 稀有度上限，两关都过才收。
+     * 法术能否进入召唤女仆的法术池：学派准入 + 稀有度上限 + 等级上限，三关都过才收。
      * <p>
      * 剔除放在展开池子时而不是抽中之后，否则会连带削掉女仆实际拿到的法术数量。
      */
-    private static boolean isEligible(AbstractSpell spell) {
-        return isSchoolAllowed(spell) && isRarityEligible(spell);
+    private static boolean isEligible(AbstractSpell spell, int levelCap) {
+        return isSchoolAllowed(spell) && isRarityEligible(spell) && isLevelEligible(spell, levelCap);
     }
 
     /**
@@ -379,10 +382,20 @@ public final class MaidEquipmentRandomizer {
         return withinRarityCap(spell, Math.max(1, spell.getMinLevel()));
     }
 
-    private static void expandSpellEntry(LoadoutEntry entry, List<WeightedSpell> result) {
+    /**
+     * 法术的最低等级是否还在等级上限之内。
+     * <p>
+     * {@link #resolveSpellLevel} 会把等级兜回 {@code getMinLevel}——低于下限的等级法术自身没定义——
+     * 所以下限本就高于上限的法术只能在入池时剔除，否则等级上限对它形同虚设。
+     */
+    private static boolean isLevelEligible(AbstractSpell spell, int levelCap) {
+        return Math.max(1, spell.getMinLevel()) <= levelCap;
+    }
+
+    private static void expandSpellEntry(LoadoutEntry entry, List<WeightedSpell> result, int levelCap) {
         if (entry instanceof SpellEntry(ResourceLocation name, int weight)) {
             SpellRegistry.REGISTRY.getOptional(name)
-                .filter(MaidEquipmentRandomizer::isEligible)
+                .filter(spell -> isEligible(spell, levelCap))
                 .ifPresent(spell -> result.add(new WeightedSingleSpell(spell, weight)));
         } else if (entry instanceof SpellTagEntry(ResourceLocation name, int weight, boolean expand)) {
             TagKey<AbstractSpell> tagKey = TagKey.create(SpellRegistry.SPELL_REGISTRY_KEY, name);
@@ -390,7 +403,7 @@ public final class MaidEquipmentRandomizer {
                 // 展开标签
                 SpellRegistry.REGISTRY.getTag(tagKey).ifPresent(tag -> {
                     tag.forEach(holder -> {
-                        if (isEligible(holder.value())) {
+                        if (isEligible(holder.value(), levelCap)) {
                             result.add(new WeightedSingleSpell(holder.value(), 1));
                         }
                     });
@@ -400,7 +413,7 @@ public final class MaidEquipmentRandomizer {
                 List<AbstractSpell> spells = new ArrayList<>();
                 SpellRegistry.REGISTRY.getTag(tagKey).ifPresent(tag -> {
                     tag.forEach(holder -> {
-                        if (isEligible(holder.value())) {
+                        if (isEligible(holder.value(), levelCap)) {
                             spells.add(holder.value());
                         }
                     });
