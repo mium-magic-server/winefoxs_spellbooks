@@ -1,6 +1,5 @@
 package net.magicterra.winefoxsspellbooks.effect;
 
-import io.redspace.ironsspellbooks.api.magic.MagicData;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.minecraft.world.effect.MobEffect;
@@ -27,19 +26,11 @@ public class ManaDisruptionEffect extends MobEffect {
 
     @Override
     public boolean applyEffectTick(LivingEntity entity, int amplifier) {
-        if (entity instanceof MaidMagicEntity maidMagicEntity) {
-            // 女仆侧：消耗1%最大魔力
-            float maxMana = (float) MaidMagicManager.getMaxMana(entity);
-            float drain = maxMana * 0.01f;
-            float currentMana = maidMagicEntity.winefoxsSpellbooks$getMana();
-            maidMagicEntity.winefoxsSpellbooks$setMana(Math.max(0, currentMana - drain));
-        } else if (entity instanceof Player player) {
-            // 玩家侧：消耗1%最大魔力
-            MagicData magicData = MagicData.getPlayerMagicData(player);
-            float maxMana = (float) MaidMagicManager.getMaxMana(player);
-            float drain = maxMana * 0.01f;
-            float newMana = Math.max(0, magicData.getMana() - drain);
-            magicData.setMana(newMana);
+        // 读写一律走 MaidMagicManager 的路由：女仆落到适配器，玩家落到 MagicData 并补发同步包。
+        // 自行分支写 MagicData 会漏掉那一发包，客户端魔力条从此停在旧值
+        if (entity instanceof MaidMagicEntity || entity instanceof Player) {
+            float drain = (float) MaidMagicManager.getMaxMana(entity) * 0.01f;
+            MaidMagicManager.setMana(entity, Math.max(0, MaidMagicManager.getMana(entity) - drain));
         }
         return true;
     }

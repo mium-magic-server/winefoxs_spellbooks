@@ -14,6 +14,7 @@ import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.api.util.Utils;
 import io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts;
 import io.redspace.ironsspellbooks.config.ServerConfigs;
+import io.redspace.ironsspellbooks.network.SyncManaPacket;
 import java.util.Objects;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
@@ -21,11 +22,13 @@ import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
@@ -106,7 +109,14 @@ public class MaidMagicManager {
         } else if (entity instanceof IMagicEntity magicEntity) {
             magicEntity.getMagicData().setMana(mana);
         } else {
-            MagicData.getPlayerMagicData(entity).setMana(mana);
+            MagicData magicData = MagicData.getPlayerMagicData(entity);
+            magicData.setMana(mana);
+            // MagicData 是纯服务端状态，客户端的魔力条与法术可用性判定读的是 ClientMagicData。
+            // Iron's 只在自然回魔（且未满）时每 10 tick 补一次同步包，靠它兜不住这里的外部写入：
+            // 一旦把玩家补满，客户端会永远停在写入前的旧值。
+            if (entity instanceof ServerPlayer serverPlayer) {
+                PacketDistributor.sendToPlayer(serverPlayer, new SyncManaPacket(magicData));
+            }
         }
     }
 
