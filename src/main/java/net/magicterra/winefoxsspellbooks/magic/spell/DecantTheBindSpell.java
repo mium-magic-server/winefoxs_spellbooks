@@ -98,7 +98,7 @@ public class DecantTheBindSpell extends AbstractSpell {
             .range(TARGET_RANGE)
             .checkForBlocks(true)
             .bbInflation(0.35f)
-            .filter(e -> e instanceof LivingEntity && WinefoxHexHelper.isMaidOwnedBy(e, entity))
+            .filter(WinefoxHexHelper.raycastFilter(candidate -> WinefoxHexHelper.isMaidOwnedBy(candidate, entity)))
             .build();
         if (hit instanceof EntityHitResult ehr && ehr.getEntity() instanceof LivingEntity maid) {
             target = maid;

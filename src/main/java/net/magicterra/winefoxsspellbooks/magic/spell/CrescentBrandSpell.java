@@ -72,10 +72,12 @@ public class CrescentBrandSpell extends AbstractSpell {
             return;
         }
         WinefoxHexHelper.spawnCastBurst(serverLevel, entity);
+        // 只烙敌人：不加过滤会把主人、姐妹女仆、宠物挂上印，之后任何一发学派伤害都会以他们为中心引爆
         var raycast = RaycastBuilder.begin(level, entity)
             .range(CAST_RANGE)
             .checkForBlocks(true)
             .bbInflation(0.35f)
+            .filter(WinefoxHexHelper.raycastFilter(target -> WinefoxHexHelper.isFactionHostile(target, entity)))
             .build();
         if (raycast.getType() == EntityHitResult.Type.ENTITY
             && ((EntityHitResult) raycast).getEntity() instanceof LivingEntity target) {

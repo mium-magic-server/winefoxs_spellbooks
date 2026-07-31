@@ -182,7 +182,7 @@ public class FoxshadeWispsSpell extends AbstractSpell {
                 .range((float) SEARCH_RADIUS)
                 .checkForBlocks(true)
                 .bbInflation(0.5f)
-                .filter(e -> e instanceof LivingEntity le && WinefoxHexHelper.isHostileTo(le, caster))
+                .filter(WinefoxHexHelper.raycastFilter(target -> WinefoxHexHelper.isHostileTo(target, caster)))
                 .build();
             if (hit instanceof EntityHitResult ehr && ehr.getEntity() instanceof LivingEntity locked) {
                 return locked;

@@ -3,6 +3,7 @@ package net.magicterra.winefoxsspellbooks.magic;
 import com.github.tartaricacid.touhoulittlemaid.api.entity.IMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import io.redspace.ironsspellbooks.api.spells.SchoolType;
+import io.redspace.ironsspellbooks.api.util.Utils;
 import io.redspace.ironsspellbooks.damage.DamageSources;
 import io.redspace.ironsspellbooks.damage.SpellDamageSource;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
@@ -258,6 +259,18 @@ public final class WinefoxHexHelper {
      */
     public static boolean isBranded(LivingEntity entity) {
         return entity.hasEffect(WsbEffects.CRESCENT_BRAND);
+    }
+
+    /**
+     * 构造射线检测用的实体谓词：补齐内置判定、收窄到 {@link LivingEntity}，调用方只给敌我判据。
+     * <p>
+     * {@code RaycastBuilder.filter} 是<b>替换</b>而非叠加——一旦自带谓词，内置的
+     * {@link Utils#canHitWithRaycast}（可拾取、存活、非旁观者）就没了，得自己补回来。
+     */
+    public static Predicate<Entity> raycastFilter(Predicate<LivingEntity> valid) {
+        return candidate -> Utils.canHitWithRaycast(candidate)
+            && candidate instanceof LivingEntity living
+            && valid.test(living);
     }
 
     /**
