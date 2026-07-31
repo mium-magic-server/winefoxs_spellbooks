@@ -328,15 +328,18 @@ public final class MaidEquipmentRandomizer {
      *
      * @param spell        法术
      * @param tierSpellCap 配装数据包里该层级的等级上限
-     * @return 实际使用的法术等级（至少 1）
+     * @return 实际使用的法术等级（不低于法术自身的 {@code getMinLevel}）
      */
     private static int resolveSpellLevel(AbstractSpell spell, int tierSpellCap) {
-        int level = Math.min(Math.min(tierSpellCap, spell.getMaxLevel()), Config.getSummonedMaidMaxSpellLevel());
         int floor = Math.max(1, spell.getMinLevel());
+        // 各路上限压到下限以下时以下限为准：低于 getMinLevel 的等级法术自己没定义，
+        // 按等级差算时长/强度的法术会算出负数
+        int level = Math.max(floor,
+            Math.min(Math.min(tierSpellCap, spell.getMaxLevel()), Config.getSummonedMaidMaxSpellLevel()));
         while (level > floor && !withinRarityCap(spell, level)) {
             level--;
         }
-        return Math.max(1, level);
+        return level;
     }
 
     /**
