@@ -123,6 +123,7 @@
   "commands.winefoxs_spellbooks.wsb.summon.player_only": "This command must be executed by a player or use /wsb summon <target>",
   "commands.winefoxs_spellbooks.wsb.summon.loadout_not_found": "Loadout not found: %s",
   "commands.winefoxs_spellbooks.wsb.summon.loadout_random": "Random",
+  "commands.winefoxs_spellbooks.wsb.summon.duration_zero": "Duration must be a positive number of seconds, or -1 for permanent",
   "commands.winefoxs_spellbooks.wsb.summon.duration_permanent": "Permanent",
   "commands.winefoxs_spellbooks.wsb.summon.duration_seconds": "%d seconds",
   "commands.winefoxs_spellbooks.wsb.summon.success": "Summoned %d maids (level %d, loadout: %s, duration: %s)",

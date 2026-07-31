@@ -123,6 +123,7 @@
   "commands.winefoxs_spellbooks.wsb.summon.player_only": "此命令必须由玩家执行，或使用 /wsb summon <target> 指定目标玩家",
   "commands.winefoxs_spellbooks.wsb.summon.loadout_not_found": "未找到装备配置: %s",
   "commands.winefoxs_spellbooks.wsb.summon.loadout_random": "随机",
+  "commands.winefoxs_spellbooks.wsb.summon.duration_zero": "持续时间必须是正整数秒，或用 -1 表示永久",
   "commands.winefoxs_spellbooks.wsb.summon.duration_permanent": "永久",
   "commands.winefoxs_spellbooks.wsb.summon.duration_seconds": "%d 秒",
   "commands.winefoxs_spellbooks.wsb.summon.success": "成功召唤 %d 只女仆 (等级 %d, 配置: %s, 持续: %s)",

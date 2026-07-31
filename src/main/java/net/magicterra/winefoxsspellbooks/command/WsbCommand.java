@@ -175,7 +175,7 @@ public class WsbCommand {
      * @param count         召唤数量
      * @param summonLevel   召唤等级
      * @param loadoutId     装备配置 ID（null 表示随机选择）
-     * @param duration      持续时间（秒），-1 表示永久
+     * @param duration      持续时间（秒），-1 表示永久，0 视为非法
      * @param forceAirForce 强制飞行模式（null 表示按配置决定）
      * @return 成功召唤的数量
      */
@@ -198,6 +198,13 @@ public class WsbCommand {
                 source.sendFailure(Component.translatable("commands.winefoxs_spellbooks.wsb.summon.loadout_not_found", loadoutId.toString()));
                 return 0;
             }
+        }
+
+        // 0 秒不是「立刻解除」而是操作失误：expirationServerTick 会被设成当前 tick，下一 tick 的 despawn
+        // 判定立刻成立，玩家只看到一句成功提示，女仆在看清之前就没了。brigadier 的 integer(-1) 挡不住它
+        if (duration == 0) {
+            source.sendFailure(Component.translatable("commands.winefoxs_spellbooks.wsb.summon.duration_zero"));
+            return 0;
         }
 
         // -1=永久：持续 = 目标过期 tick - 当前 tick（溢出考量见常量注释）。
