@@ -69,7 +69,7 @@ public class CrescentBrandEffect extends MobEffect {
     }
 
     /**
-     * 自然到期弱自爆：对附近小范围内的存活实体（含自身）造成少量原版 magic 伤害。 返回 {@code true} 保持原版语义（返回 {@code false} 会导致提前移除，此处无意义）。
+     * 自然到期弱自爆：对带印者本人及其小范围内的敌对实体造成少量原版 magic 伤害。 返回 {@code true} 保持原版语义（返回 {@code false} 会导致提前移除，此处无意义）。
      */
     @Override
     public boolean applyEffectTick(LivingEntity entity, int amplifier) {
@@ -89,7 +89,9 @@ public class CrescentBrandEffect extends MobEffect {
         // 传给 shouldApplyEffectTickThisTick 的是 entity.tickCount,重载后 tickCount==1 会误判到期)。
         DamageSource src = entity.damageSources().magic();
         AABB box = entity.getBoundingBox().inflate(WinefoxHexHelper.WEAK_SELF_RADIUS);
-        for (LivingEntity e : entity.level().getEntitiesOfClass(LivingEntity.class, box, LivingEntity::isAlive)) {
+        // 自爆以带印者为中心：他本人必伤，周围只波及与他不同阵营的（挂在自家人身上的印不会炸到主人和姐妹）
+        for (LivingEntity e : entity.level().getEntitiesOfClass(LivingEntity.class, box,
+            victim -> victim == entity || WinefoxHexHelper.isFactionHostile(victim, entity))) {
             e.hurt(src, WinefoxHexHelper.WEAK_SELF_DAMAGE);
         }
         return true;

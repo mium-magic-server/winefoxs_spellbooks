@@ -205,8 +205,7 @@ public final class WinefoxHexHelper {
 
     // -----------------------------------------------------------------------
     // 敌我判定：学派敌我（instanceof Enemy，用于主动选目标）与阵营敌我
-    // （isAlliedTo，用于 AoE 波及）语义不同，不可互换。isAlliedTo 已由
-    // EntityAllyMixin 织入召唤链解析，无需再叠 MaidAllyHelper。
+    // （isAlliedTo，用于 AoE 波及）语义不同，不可互换。
     // -----------------------------------------------------------------------
 
     /**
@@ -236,7 +235,22 @@ public final class WinefoxHexHelper {
     public static boolean isFactionHostile(LivingEntity candidate, @Nullable Entity attacker) {
         return candidate != attacker
             && candidate.isAlive()
-            && (attacker == null || !candidate.isAlliedTo(attacker));
+            && (attacker == null || !isSameFaction(candidate, attacker));
+    }
+
+    /**
+     * 同阵营判定，任一成立即视作自己人：
+     * <ul>
+     *   <li>同一召唤链顶层——主人、姐妹女仆、各自的召唤物之间没有记分板队伍关系，只能靠召唤链认亲；</li>
+     *   <li>两个方向的 {@code isAlliedTo}——原版实现是 {@code getTeam().isAlliedTo(other.getTeam())}，
+     *       无队伍的一侧恒返回 {@code false}，只问一个方向会漏判女仆的主人。</li>
+     * </ul>
+     * 召唤链只比对缓存的顶层 UUID，是三者里最便宜的，放最前面短路。
+     */
+    private static boolean isSameFaction(LivingEntity candidate, Entity attacker) {
+        return MaidAllyHelper.isAllied(candidate, attacker)
+            || candidate.isAlliedTo(attacker)
+            || attacker.isAlliedTo(candidate);
     }
 
     /**
