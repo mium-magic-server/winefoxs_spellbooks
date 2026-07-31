@@ -1,7 +1,6 @@
 package net.magicterra.winefoxsspellbooks.magic;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import io.netty.buffer.ByteBuf;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import java.util.ArrayList;
@@ -14,6 +13,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -51,43 +51,45 @@ public class MaidSpellDataHolder {
         .collect(Collectors.toUnmodifiableMap(MaidSpellAction::catalogName, Function.identity()));
 
     /**
-     * 行为类别 ↔ 其 {@code catalogName}（即落盘字段名）。
-     * <p>
-     * 用 {@code comapFlatMap} 而非 {@code xmap}，认不出的字段名要报错而不是抛异常： 玩家把本模组降级到还没有某个类别的版本时，存档里会留着未来版本写的字段， 那时该跳过它继续读，不能崩在实体加载上。
-     */
-    private static final Codec<MaidSpellAction> ACTION_CODEC = Codec.STRING.comapFlatMap(
-        name -> {
-            MaidSpellAction action = CATALOG_NAMES.get(name);
-            return action != null
-                   ? DataResult.success(action)
-                   : DataResult.error(() -> "Unknown maid spell category '" + name + "'");
-        },
-        MaidSpellAction::catalogName
-    );
-
-    /**
      * MaidSpellDataHolder 的 Codec。键集固定为枚举，用 {@code unboundedMap} 产出的
      * JSON/NBT 结构与逐字段写相同，加一类法术零改动。
+     * <p>
+     * 键用 {@code Codec.STRING} 而非会报错的键 Codec：{@code unboundedMap} 的解码是全有全无的， 一个不认识的键会让整张表解不出来，女仆带着空法术表加载。降级到还没有某个类别的版本时， 存档里正会留着新版本写的字段，那时只该丢掉这一类。
      */
     public static final Codec<MaidSpellDataHolder> CODEC =
-        Codec.unboundedMap(ACTION_CODEC, SPELL_LIST_CODEC).xmap(
-            map -> {
-                MaidSpellDataHolder holder = new MaidSpellDataHolder();
-                map.forEach(holder::update);
-                return holder;
-            },
-            holder -> {
-                // 空列表不写
-                Map<MaidSpellAction, List<SpellData>> map = new LinkedHashMap<>();
-                for (MaidSpellAction action : MaidSpellAction.ALL) {
-                    List<SpellData> spells = holder.get(action);
-                    if (!spells.isEmpty()) {
-                        map.put(action, spells);
-                    }
-                }
-                return map;
+        Codec.unboundedMap(Codec.STRING, SPELL_LIST_CODEC)
+            .xmap(MaidSpellDataHolder::fromCatalogMap, MaidSpellDataHolder::toCatalogMap);
+
+    /**
+     * 按落盘字段名逐条装表，认不出的字段跳过。
+     */
+    private static MaidSpellDataHolder fromCatalogMap(Map<String, List<SpellData>> map) {
+        MaidSpellDataHolder holder = new MaidSpellDataHolder();
+        map.forEach((name, spells) -> {
+            MaidSpellAction action = CATALOG_NAMES.get(name);
+            if (action == null) {
+                WinefoxsSpellbooks.LOGGER.warn("Dropping unknown maid spell category '{}' ({} spells)",
+                    name, spells.size());
+                return;
             }
-        );
+            holder.update(action, spells);
+        });
+        return holder;
+    }
+
+    /**
+     * 按 {@link MaidSpellAction} 声明顺序落盘，空列表不写。
+     */
+    private static Map<String, List<SpellData>> toCatalogMap(MaidSpellDataHolder holder) {
+        Map<String, List<SpellData>> map = new LinkedHashMap<>();
+        for (MaidSpellAction action : MaidSpellAction.ALL) {
+            List<SpellData> spells = holder.get(action);
+            if (!spells.isEmpty()) {
+                map.put(action.catalogName(), spells);
+            }
+        }
+        return map;
+    }
 
     public static final StreamCodec<ByteBuf, MaidSpellDataHolder> STREAM_CODEC = new StreamCodec<>() {
         @Nonnull
