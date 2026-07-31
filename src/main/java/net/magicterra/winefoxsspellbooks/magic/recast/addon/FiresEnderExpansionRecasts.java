@@ -43,14 +43,14 @@ public final class FiresEnderExpansionRecasts {
     private static final String EFFECT_REGISTRY = "net.fireofpower.firesenderexpansion.registries.EffectRegistry";
 
     /**
-     * 闪烁步伐结束时要摘掉的效果 id。
+     * 闪烁步伐结束时要摘掉的效果 id。注册名带 {@code _effect} 后缀（见该模组的 {@code EffectRegistry}），漏掉的话查表恒为空。
      */
-    private static final String STRIDING_EFFECT = MOD_ID + ":striding";
+    private static final String STRIDING_EFFECT = MOD_ID + ":striding_effect";
 
     /**
-     * 空心水晶的蓄力效果 id，没有它就不发射。
+     * 空心水晶的蓄力效果 id，没有它就不发射。同样带 {@code _effect} 后缀。
      */
-    private static final String HOLLOW_CRYSTAL_EFFECT = MOD_ID + ":hollow_crystal";
+    private static final String HOLLOW_CRYSTAL_EFFECT = MOD_ID + ":hollow_crystal_effect";
 
     /**
      * 向自检登记本模组的反射目标。
