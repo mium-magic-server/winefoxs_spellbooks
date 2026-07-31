@@ -23,6 +23,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -171,7 +174,7 @@ public class FoxshadeWispsSpell extends AbstractSpell {
     }
 
     /**
-     * 选取追踪目标：玩家沿准星视线锁定；女仆或未锁中时退回半径内敌对生物，挂印优先、其次最近。
+     * 选取追踪目标：玩家沿准星视线锁定；女仆认 AI 已指派的攻击目标，其次退回可见近邻表（挂印优先）。
      *
      * @return 无可锁目标时 {@code null}（弹体直线前射）
      */
@@ -187,14 +190,36 @@ public class FoxshadeWispsSpell extends AbstractSpell {
             if (hit instanceof EntityHitResult ehr && ehr.getEntity() instanceof LivingEntity locked) {
                 return locked;
             }
+        } else if (caster instanceof Mob mob) {
+            // 女仆已被 AI 指向某个目标（SpellCastingTask 也是照它转身的），弹体必须跟着打同一个，
+            // 否则会绕开当前交战对象去点更近的无关怪。
+            // hasMemoryValue 是必要的前置：记忆模块没注册时 getMemory 直接抛 ISE
+            Brain<?> brain = mob.getBrain();
+            if (brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {
+                // 交战对象由 AI 选定，这里不再套一遍敌我判定（否则被命令打玩家时反而不追踪）
+                LivingEntity assigned = brain.getMemory(MemoryModuleType.ATTACK_TARGET).get();
+                if (assigned != caster && assigned.isAlive()) {
+                    return assigned;
+                }
+            }
+            // 没有指派目标时退回可见近邻表：该表自带视线判定，不会挑中墙后的目标
+            if (brain.hasMemoryValue(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)) {
+                return WinefoxHexHelper.findVisibleTargetPreferBranded(mob,
+                        e -> WinefoxHexHelper.isHostileTo(e, caster))
+                    .orElse(null);
+            }
         }
-        // 比较器写成「未挂印(true) 排在挂印(false) 之后」再比距离，一趟 min 取完，不做二次扫描
+        // 无脑（brain 未注册相关记忆）的施法者兜底：半径内自行扫一遍，视线判定要自己补。
+        // 排序在前、视线在后：hasLineOfSight 每次都是一趟方块射线，先排好序就只用验到第一个通过的，
+        // 不必给整片候选都投一次射线。比较器写成「未挂印(true) 排在挂印(false) 之后」再比距离。
         return level.getEntitiesOfClass(LivingEntity.class,
                 caster.getBoundingBox().inflate(SEARCH_RADIUS),
                 e -> WinefoxHexHelper.isHostileTo(e, caster))
             .stream()
-            .min(Comparator.comparing((LivingEntity e) -> !WinefoxHexHelper.isBranded(e))
+            .sorted(Comparator.comparing((LivingEntity e) -> !WinefoxHexHelper.isBranded(e))
                 .thenComparingDouble(caster::distanceToSqr))
+            .filter(caster::hasLineOfSight)
+            .findFirst()
             .orElse(null);
     }
 }
