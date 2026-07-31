@@ -7,6 +7,7 @@ import io.redspace.ironsspellbooks.capabilities.magic.PlayerCooldowns;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
@@ -61,6 +62,11 @@ public class FoxfireBoostEffect extends MobEffect {
             if (toRemove > 0) {
                 instance.decrementBy(toRemove);
             }
+        }
+        // 冷却是纯服务端状态，客户端法术栏的转圈读的是自己那份副本；
+        // 不补这一发同步包，玩家会看着还在转的图标却已经能施法了
+        if (entity instanceof ServerPlayer serverPlayer) {
+            cooldowns.syncToPlayer(serverPlayer);
         }
     }
 }
