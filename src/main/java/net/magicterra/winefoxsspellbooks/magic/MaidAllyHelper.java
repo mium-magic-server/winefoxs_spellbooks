@@ -1,15 +1,16 @@
 package net.magicterra.winefoxsspellbooks.magic;
 
+import io.redspace.ironsspellbooks.capabilities.magic.SummonManager;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import net.magicterra.winefoxsspellbooks.mixin.SummonManagerAccessor;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.OwnableEntity;
-import net.minecraft.world.level.Level;
 
 /**
  * 结盟处理
@@ -22,22 +23,6 @@ public class MaidAllyHelper {
      * 递归追溯的最大深度，防止无限循环
      */
     private static final int MAX_SUMMON_DEPTH = 10;
-
-    /**
-     * 初始化并缓存实体的顶层召唤者 UUID
-     * <p>
-     * 应在召唤物创建后调用一次，后续查询直接读取缓存。
-     *
-     * @param entity 要初始化缓存的实体
-     */
-    public static void initRootSummonerCache(Entity entity) {
-        if (entity == null) {
-            return;
-        }
-        Entity root = getRootSummoner(entity);
-        UUID rootUUID = root != null ? root.getUUID() : null;
-        entity.setData(WsbAttachments.ROOT_SUMMONER_UUID.get(), Optional.ofNullable(rootUUID));
-    }
 
     /**
      * 获取顶层召唤者的 UUID（优先使用缓存）
@@ -53,18 +38,68 @@ public class MaidAllyHelper {
             return null;
         }
 
-        // 检查是否有缓存
+        // 缓存里的空值有两种来源：实体确实不是召唤物，或当初主人离线/未加载没解析出来。
+        // 后者不能当结论用，对仍然宣称有主人的实体重新解析（存档里被写坏的缓存也在这里自愈）
         if (entity.hasData(WsbAttachments.ROOT_SUMMONER_UUID.get())) {
             Optional<UUID> cached = entity.getData(WsbAttachments.ROOT_SUMMONER_UUID.get());
-            // Optional 已存在说明已初始化，直接返回（可能是 null 表示不是召唤物）
-            return cached.orElse(null);
+            if (cached.isPresent() || !claimsOwner(entity)) {
+                return cached.orElse(null);
+            }
         }
 
-        // 没有缓存，遍历召唤链并缓存
-        Entity root = getRootSummoner(entity);
-        UUID rootUUID = root != null ? root.getUUID() : null;
-        entity.setData(WsbAttachments.ROOT_SUMMONER_UUID.get(), Optional.ofNullable(rootUUID));
-        return rootUUID;
+        // 没有可信缓存，遍历召唤链
+        RootLookup lookup = lookupRootSummoner(entity);
+        // 链没走到顶就不要落盘：附件随实体存档且永不失效，一旦把"没有主人"定死，
+        // 主人回来后这只女仆就永远不再被认作自家人（护盾、酒池回魔、酒雾豁免全部失效）。
+        if (lookup.resolved()) {
+            entity.setData(WsbAttachments.ROOT_SUMMONER_UUID.get(), Optional.ofNullable(lookup.rootUUID()));
+        }
+        return lookup.rootUUID();
+    }
+
+    /**
+     * 召唤链追溯结果
+     *
+     * @param root     顶层召唤者；实体自身不是召唤物时为 null
+     * @param resolved 是否走到了真正的顶层。中途因主人离线/未加载而断链时为 false， 此时 {@code root} 只是能查到的最上一层，不可作为结论缓存
+     */
+    private record RootLookup(@Nullable Entity root, boolean resolved) {
+        @Nullable
+        UUID rootUUID() {
+            return root != null ? root.getUUID() : null;
+        }
+    }
+
+    /**
+     * 追溯召唤链并附带"是否走到顶"的判定
+     */
+    private static RootLookup lookupRootSummoner(Entity entity) {
+        Entity current = entity;
+        int depth = 0;
+
+        while (depth < MAX_SUMMON_DEPTH) {
+            Entity summoner = getSummonerOrOwner(current);
+            if (summoner == null) {
+                // current 查不出上一级：要么它本来就是顶层，要么它的主人此刻不可达
+                Entity root = current == entity ? null : current;
+                return new RootLookup(root, !claimsOwner(current));
+            }
+            current = summoner;
+            depth++;
+        }
+
+        // 达到最大深度，返回当前实体
+        return new RootLookup(current, true);
+    }
+
+    /**
+     * 实体是否仍然宣称有主人/召唤者：用来区分"确实到顶了"与"主人此刻不可达"。
+     */
+    private static boolean claimsOwner(Entity entity) {
+        if (entity instanceof OwnableEntity ownable && ownable.getOwnerUUID() != null) {
+            return true;
+        }
+        return ((SummonManagerAccessor) SummonManager.INSTANCE).getSummonToOwner().containsKey(entity.getUUID());
     }
 
     /**
@@ -80,38 +115,6 @@ public class MaidAllyHelper {
         }
         UUID rootUUID = getRootSummonerUUID(entity);
         return rootUUID != null ? rootUUID : entity.getUUID();
-    }
-
-    /**
-     * 获取顶层召唤者（递归追溯召唤链）
-     * <p>
-     * 对于嵌套召唤（玩家 → 女仆 → 召唤物），返回最顶层的召唤者（玩家）。 如果实体不是召唤物，返回 null。
-     *
-     * @param entity 要追溯的实体
-     * @return 顶层召唤者，如果不是召唤物则返回 null
-     */
-    @Nullable
-    public static Entity getRootSummoner(@Nullable Entity entity) {
-        if (entity == null) {
-            return null;
-        }
-
-        Entity current = entity;
-        int depth = 0;
-
-        while (depth < MAX_SUMMON_DEPTH) {
-            Entity summoner = getSummonerOrOwner(current);
-            if (summoner == null) {
-                // current 不是召唤物，它就是顶层
-                // 但如果 current == entity，说明 entity 本身不是召唤物
-                return current == entity ? null : current;
-            }
-            current = summoner;
-            depth++;
-        }
-
-        // 达到最大深度，返回当前实体
-        return current;
     }
 
     /**
@@ -142,16 +145,16 @@ public class MaidAllyHelper {
         if (entity == null) {
             return null;
         }
-        UUID effectiveRootUUID = getEffectiveRootUUID(entity);
-        Level level = entity.level();
-        Entity root = null;
-        if (effectiveRootUUID != null && level instanceof ServerLevel serverLevel) {
-            root = serverLevel.getEntity(effectiveRootUUID);
+        UUID rootUUID = getEffectiveRootUUID(entity);
+        if (rootUUID != null && entity.level() instanceof ServerLevel serverLevel) {
+            Entity root = serverLevel.getEntity(rootUUID);
+            if (root != null) {
+                return root;
+            }
         }
-        if (root == null) {
-            root = getRootSummoner(entity);
-        }
-        return root != null ? root : entity;
+        // 顶层 UUID 查不到实体（跨维度/未加载）时退回实体链，链上最后一个可达的祖先也好过没有
+        Entity reachable = lookupRootSummoner(entity).root();
+        return reachable != null ? reachable : entity;
     }
 
     /**

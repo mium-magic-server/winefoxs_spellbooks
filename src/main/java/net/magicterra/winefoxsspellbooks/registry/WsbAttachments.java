@@ -37,7 +37,8 @@ public class WsbAttachments {
     /**
      * 缓存的顶层召唤者 UUID
      * <p>
-     * 用于快速判断召唤链关系，避免每次都遍历召唤链。 使用 Optional 包装，空 Optional 表示未初始化，Optional.empty() 内容表示不是召唤物。
+     * 用于快速判断召唤链关系，避免每次都遍历召唤链。 附件不存在表示尚未查询过；存在但为 {@code Optional.empty()} 表示实体不是召唤物。
+     * 追溯中途主人不可达时不写入，留待下次重试。
      */
     public static final Supplier<AttachmentType<Optional<UUID>>> ROOT_SUMMONER_UUID = ATTACHMENT_TYPES.register(
         "root_summoner_uuid", () -> AttachmentType.<Optional<UUID>>builder(Optional::empty)
