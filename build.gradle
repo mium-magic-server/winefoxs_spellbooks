@@ -255,8 +255,19 @@ dependencies {
     runtimeOnly("curse.maven:placebo-283644:${placebo_version}")
     runtimeOnly("curse.maven:apothic-attributes-898963:${apothic_attributes_version}")
 
-    def agentDriverLocal = file("${System.getProperty('user.home')}/.m2/repository/net/magicterra/agent_driver-neoforge/${agent_driver_version}")
-    if (agentDriverLocal.exists()) {
+    // AgentDriver（本地开发用的自动化测试挂钩）只在显式开启时进 runtime：
+    // -PwithAgentDriver，或在 gradle.properties 里写 withAgentDriver=true。
+    // 不看 ~/.m2 里有没有这个构件：那样同一份代码在不同机器上会跑出不同的模组集合。
+    // 取值判断而非仅判存在，否则 gradle.properties 里写 withAgentDriver=false 也会照开。
+    def agentDriverFlag = project.findProperty("withAgentDriver")?.toString()
+    if (agentDriverFlag != null && agentDriverFlag != "false") {
+        def agentDriverLocal = file("${System.getProperty('user.home')}/.m2/repository" +
+                "/net/magicterra/agent_driver-neoforge/${agent_driver_version}")
+        if (!agentDriverLocal.exists()) {
+            throw new GradleException("withAgentDriver 已开启，但本地 Maven 仓库里没有 " +
+                    "net.magicterra:agent_driver-neoforge:${agent_driver_version}（${agentDriverLocal}）")
+        }
+        logger.lifecycle("AgentDriver ${agent_driver_version} 已加入 runtime（-PwithAgentDriver）")
         runtimeOnly("net.magicterra:agent_driver-neoforge:${agent_driver_version}") {
             // Rhino is already shaded into the AgentDriver jar; avoid a second copy on the classpath.
             exclude group: "dev.latvian.mods", module: "rhino"
