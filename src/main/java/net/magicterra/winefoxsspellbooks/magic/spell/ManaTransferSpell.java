@@ -221,8 +221,7 @@ public class ManaTransferSpell extends AbstractSpell {
     /**
      * 获取实体的最大魔力值。
      * <p>
-     * 走 {@link MaidMagicManager#getMaxMana}——它在 MAX_MANA 属性之上还乘了 {@code maxManaMultiplier}，
-     * 女仆的魔力条、回魔门禁都按这个上限来；这里若只读裸属性，倍率非 1 时会把女仆传满前就判成「已满」。
+     * 上限一律走 {@link MaidMagicManager#getMaxMana}，自行读属性会与魔力条、回魔门禁的口径不一致。
      * 没有该属性的实体读值会抛 IAE，故先问一句再取。
      */
     private static double getMaxMana(LivingEntity entity) {

@@ -8,7 +8,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import com.github.tartaricacid.touhoulittlemaid.util.ParseI18n;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
-import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
@@ -35,6 +34,7 @@ import net.magicterra.winefoxsspellbooks.entity.loadout.MaidEquipmentRandomizer.
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidLoadoutManager;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.MaidLoadout;
 import net.magicterra.winefoxsspellbooks.magic.MaidAllyHelper;
+import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
 import net.minecraft.nbt.CompoundTag;
@@ -724,8 +724,9 @@ public class SummonedEntityMaid extends PathfinderMob implements MagicMaidDelega
         // 应用法术
         applySpells(result.spells());
 
-        // 设置初始法力值
-        magicAdapter.winefoxsSpellbooks$setMana((float) getAttributeValue(AttributeRegistry.MAX_MANA));
+        // 设置初始法力值：上限一律走 MaidMagicManager.getMaxMana，直接读裸属性会漏掉女仆倍率，
+        // 倍率非 1 时新召唤的女仆开局就不是满蓝（魔力条、回魔门禁读的都是乘过倍率的上限）
+        magicAdapter.winefoxsSpellbooks$setMana((float) MaidMagicManager.getMaxMana(this));
     }
 
     /**

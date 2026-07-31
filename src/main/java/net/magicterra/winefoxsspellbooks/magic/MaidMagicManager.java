@@ -122,13 +122,15 @@ public class MaidMagicManager {
 
     /**
      * 获取最大魔力值 (通用方法)
+     * <p>
+     * {@code maxManaMultiplier} 的语义是「女仆魔力上限相对玩家的倍率」，只对女仆生效。 套到玩家身上会连锁改写 Iron's 的真实上限：回魔封顶、魔力条读数、法术可用性判定全跟着偏， 倍率大于 1 时甚至能把玩家的魔力写到真实上限之上（{@link MagicData} 不会自行截断）。
      *
      * @param entity 实体
      * @return 最大魔力值
      */
     public static double getMaxMana(LivingEntity entity) {
         double maxMana = entity.getAttributeValue(AttributeRegistry.MAX_MANA);
-        return Config.getMaxManaMultiplier() * maxMana;
+        return entity instanceof MaidMagicEntity ? Config.getMaxManaMultiplier() * maxMana : maxMana;
     }
 
     public static void addCooldown(LivingEntity entity, AbstractSpell spell, CastSource castSource) {
