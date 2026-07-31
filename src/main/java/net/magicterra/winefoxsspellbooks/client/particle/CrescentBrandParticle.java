@@ -179,6 +179,16 @@ public final class CrescentBrandParticle {
         private static final Map<Integer, Orbit> ACTIVE = new HashMap<>();
 
         /**
+         * 判定僵尸单例的静默阈值(tick)。
+         */
+        private static final int STALE_TICKS = 3;
+
+        /**
+         * {@link #ACTIVE} 所属的世界,换世界即整表作废。
+         */
+        private static ClientLevel activeLevel;
+
+        /**
          * 呼吸相位积分器:每 tick 按当前频率累加,变频全程连续。
          */
         private double pulsePhase;
@@ -186,12 +196,26 @@ public final class CrescentBrandParticle {
         private float remaining0;
 
         /**
+         * 上次 tick 时的世界时刻。
+         */
+        private long lastTickTime;
+
+        /**
          * 已有存活单例则续命并返回 null(不生成新粒子),否则新建。
+         * <p>
+         * 不能只看 {@link Particle#isAlive()}:{@code ParticleEngine} 在换世界
+         * ({@code setLevel} → {@code clearParticles})和队列溢出时都是直接丢引用,不调 {@code remove()},
+         * 被丢掉的粒子会永远停在「存活」上,把该实体的印记堵死。故换世界整表清空, 同世界内则按「多久没刷新过 {@link #lastTickTime}」判僵尸。
          */
         static Particle spawnOrRefresh(ClientLevel level, double x, double y, double z,
                                        TransferStreamOption option, SpriteSet sprites) {
+            if (activeLevel != level) {
+                ACTIVE.clear();
+                activeLevel = level;
+            }
             Orbit existing = ACTIVE.get(option.targetId());
-            if (existing != null && existing.isAlive()) {
+            if (existing != null && existing.isAlive()
+                && level.getGameTime() - existing.lastTickTime <= STALE_TICKS) {
                 existing.refresh(option.time());
                 return null;
             }
@@ -206,6 +230,7 @@ public final class CrescentBrandParticle {
             this.lifetime = ORBIT_LIFE;
             this.alpha = 0.0f;
             this.pulsePhase = this.entityId * GOLDEN_ANGLE;
+            this.lastTickTime = level.getGameTime();
             // 出生帧就落到轨道上,避免在脚底(sendParticles 出生点)闪现
             if (level.getEntity(this.entityId) instanceof Entity entity) {
                 snapTo(orbitPos(entity));
@@ -244,6 +269,7 @@ public final class CrescentBrandParticle {
             if (this.removed) {
                 return;
             }
+            this.lastTickTime = this.level.getGameTime();
             if (!(this.level.getEntity(this.entityId) instanceof Entity entity) || !entity.isAlive()) {
                 this.remove();
                 return;
