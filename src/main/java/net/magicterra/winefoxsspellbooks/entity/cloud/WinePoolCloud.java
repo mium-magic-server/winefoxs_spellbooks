@@ -64,14 +64,18 @@ public class WinePoolCloud extends AoeEntity {
 
     /**
      * 父类会豁免 owner 的盟友,但酒池要对自家女仆生效(回魔),故显式放行;其余仍走父类判定。
+     * <p>
+     * 自家女仆判定必须排在 owner 豁免之前:女仆自己扔的炸弹,owner 就是她本人,
+     * 先判 owner 会把造池的那个女仆挡在自己的池外(只有她一个不回魔)。
      */
     @Override
     protected boolean canHitEntity(Entity target) {
-        if (target == getOwner()) {
-            return false;
-        }
-        if (WinefoxHexHelper.isMaidOwnedBy(target, getOwner())) {
+        Entity owner = getOwner();
+        if (WinefoxHexHelper.isMaidOwnedBy(target, owner)) {
             return target.canBeHitByProjectile();
+        }
+        if (target == owner) {
+            return false;
         }
         return super.canHitEntity(target);
     }
