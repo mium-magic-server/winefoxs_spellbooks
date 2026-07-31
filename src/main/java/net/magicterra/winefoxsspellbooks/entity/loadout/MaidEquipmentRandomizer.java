@@ -366,13 +366,19 @@ public final class MaidEquipmentRandomizer {
      * <p>
      * 两条判据缺一不可：{@link AbstractSpell#requiresLearning()} 可被单个法术覆写（现装附属里有邪术
      * 法术把它关掉了），而学派级的 {@code SchoolType.requiresLearning} 包私有读不到，故补一条学派 id 比对。
+     * <p>
+     * 学派为空的法术（附属把 {@code schoolResource} 指向未注册学派）直接剔除：
+     * {@code requiresLearning()} 内部就是 {@code getSchoolType().requiresLearning}，不先兜住会在展开法术池时抛 NPE。
      */
     private static boolean isSchoolAllowed(AbstractSpell spell) {
+        var schoolType = spell.getSchoolType();
+        if (schoolType == null) {
+            return false;
+        }
         if (Config.isSummonedMaidAllowEldritch()) {
             return true;
         }
-        return !spell.requiresLearning()
-            && !SchoolRegistry.ELDRITCH_RESOURCE.equals(spell.getSchoolType().getId());
+        return !spell.requiresLearning() && !SchoolRegistry.ELDRITCH_RESOURCE.equals(schoolType.getId());
     }
 
     /**
