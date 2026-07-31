@@ -136,8 +136,13 @@ public class TipsyMistSpell extends AbstractSpell {
             super.onCast(level, spellLevel, entity, castSource, playerMagicData);
             return;
         }
-        // 落点:视线命中生物则落在其脚下,否则落在视线终点(贴地面);借用 Iron's PoisonSplashSpell 的选点写法
-        HitResult raycast = RaycastBuilder.begin(level, entity).range(CAST_RANGE).checkForBlocks(true).build();
+        // 落点:视线命中敌对生物则落在其脚下,否则落在视线终点(贴地面);借用 Iron's PoisonSplashSpell 的选点写法。
+        // 射线只认敌对目标:不过滤的话,挡在身前的自家女仆会把雾团吸到脚下,真正的敌人一点没沾上
+        HitResult raycast = RaycastBuilder.begin(level, entity)
+            .range(CAST_RANGE)
+            .checkForBlocks(true)
+            .filter(WinefoxHexHelper.hostileRaycastFilter(entity))
+            .build();
         Vec3 spawn = raycast.getType() == HitResult.Type.ENTITY
                      ? ((EntityHitResult) raycast).getEntity().position()
                      : Utils.moveToRelativeGroundLevel(level,

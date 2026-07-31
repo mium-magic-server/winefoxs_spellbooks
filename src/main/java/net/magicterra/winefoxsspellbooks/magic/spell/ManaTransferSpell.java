@@ -136,7 +136,7 @@ public class ManaTransferSpell extends AbstractSpell {
         }
 
         LivingEntity targetEntity = raycastLivingTarget(level, entity);
-        if (targetEntity == null || !isValidTarget(targetEntity)) {
+        if (targetEntity == null) {
             return;
         }
 
@@ -181,7 +181,9 @@ public class ManaTransferSpell extends AbstractSpell {
     }
 
     /**
-     * 沿施法者视线锁定一个生物；未命中生物时返回 {@code null}。
+     * 沿施法者视线锁定一个可补魔的非敌对生物；未命中时返回 {@code null}。
+     * <p>
+     * 射线必须自带敌我过滤：本法术的合法目标涵盖所有 {@link IMagicEntity}，不筛的话视线上先经过的 敌对施法怪会被当成目标，变成女仆自己扣蓝给敌人回蓝。
      */
     @Nullable
     private LivingEntity raycastLivingTarget(Level level, LivingEntity caster) {
@@ -189,6 +191,8 @@ public class ManaTransferSpell extends AbstractSpell {
             .range(RAYCAST_RANGE)
             .checkForBlocks(true)
             .bbInflation(0.35f)
+            .filter(WinefoxHexHelper.raycastFilter(
+                candidate -> isValidTarget(candidate) && !WinefoxHexHelper.isHostileTo(candidate, caster)))
             .build();
         if (raycast.getType() != EntityHitResult.Type.ENTITY) {
             return null;

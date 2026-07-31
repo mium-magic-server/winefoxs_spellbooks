@@ -78,7 +78,7 @@ public class CrescentBrandSpell extends AbstractSpell {
             .range(CAST_RANGE)
             .checkForBlocks(true)
             .bbInflation(0.35f)
-            .filter(WinefoxHexHelper.raycastFilter(target -> WinefoxHexHelper.isHostileTo(target, entity)))
+            .filter(WinefoxHexHelper.hostileRaycastFilter(entity))
             .build();
         if (raycast.getType() == EntityHitResult.Type.ENTITY
             && ((EntityHitResult) raycast).getEntity() instanceof LivingEntity target) {

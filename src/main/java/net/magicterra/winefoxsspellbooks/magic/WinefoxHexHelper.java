@@ -274,6 +274,13 @@ public final class WinefoxHexHelper {
     }
 
     /**
+     * 射线检测最常用的判据：只认 {@code self} 的敌人，自家女仆与中立生物一概穿过去。
+     */
+    public static Predicate<Entity> hostileRaycastFilter(LivingEntity self) {
+        return raycastFilter(target -> isHostileTo(target, self));
+    }
+
+    /**
      * 女仆索敌（可见表）：挂着残月烙印的目标优先，其余取最近。
      * <p>
      * {@link MemoryModuleType#NEAREST_VISIBLE_LIVING_ENTITIES} 自带视线判定，但其
