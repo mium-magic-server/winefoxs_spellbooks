@@ -200,10 +200,11 @@ public class WsbCommand {
             }
         }
 
-        // -1=永久：持续 = 目标过期 tick - 当前 tick（溢出考量见常量注释）
-        int ticks = duration == -1
-                    ? PERMANENT_EXPIRATION_TICK - level.getServer().getTickCount()
-                    : duration * 20;
+        // -1=永久：持续 = 目标过期 tick - 当前 tick（溢出考量见常量注释）。
+        // 秒数无上界，先按 long 换算再夹到永久上限，否则 duration*20 溢出成负数会让女仆一出生就被解除
+        int permanentTicks = PERMANENT_EXPIRATION_TICK - level.getServer().getTickCount();
+        long requestedTicks = duration == -1 ? permanentTicks : duration * 20L;
+        int ticks = (int) Math.min(requestedTicks, permanentTicks);
 
         float defaultAirForceChance = (float) (Config.getAirForceBaseChance() + Config.getAirForceChancePerLevel() * summonLevel);
         defaultAirForceChance = Mth.clamp(defaultAirForceChance, 0.0f, 1.0f);
