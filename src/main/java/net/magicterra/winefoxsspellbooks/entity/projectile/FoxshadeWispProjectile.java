@@ -153,8 +153,10 @@ public class FoxshadeWispProjectile extends AbstractMagicProjectile implements G
     @Override
     protected void onHitEntity(EntityHitResult result) {
         super.onHitEntity(result);
+        // 命中判定两端都会跑，但只有服务端那发说了算：本类的侧翼弧线在客户端用的是插值后的目标位置，
+        // 比服务端早一 tick 擦到包围盒时若在这里 discard，本地弹体就凭空消失，
+        // 而服务端那发还在飞——玩家会看到目标被一发看不见的狐影打中。销毁交给实体追踪同步
         if (this.level().isClientSide) {
-            this.discard();
             return;
         }
         Entity attribution = WinefoxHexHelper.projectileAttribution(this);
