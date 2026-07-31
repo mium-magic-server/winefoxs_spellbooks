@@ -65,16 +65,48 @@ public class MaidMagicManager {
                 manaRegenMultiplier = (float) entity.getAttributeValue(AttributeRegistry.MANA_REGEN);
             }
             var increment = maxMana * manaRegenMultiplier * .01f * ServerConfigs.MANA_REGEN_MULTIPLIER.get().floatValue();
-            float newMana = Mth.clamp(magicData.getMana() + increment, 0, maxMana);
-            if (entity instanceof MaidMagicEntity maidMagicEntity) {
-                maidMagicEntity.winefoxsSpellbooks$setMana(newMana);
-            } else {
-                magicData.setMana(newMana);
-            }
-
+            setMana(entity, Mth.clamp(magicData.getMana() + increment, 0, maxMana));
             return true;
         } else {
             return false;
+        }
+    }
+
+    /**
+     * 读实体当前魔力：女仆走适配器，其余走 Iron's 的 {@link MagicData}。
+     * <p>
+     * 女仆的真实魔力存在 {@link net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter} 里，
+     * {@link MagicData#getPlayerMagicData} 对女仆返回的是无人读写的孤儿附件，从那里读恒为 0。
+     *
+     * @param entity 实体
+     * @return 当前魔力值
+     */
+    public static float getMana(LivingEntity entity) {
+        if (entity instanceof MaidMagicEntity maidMagicEntity) {
+            return maidMagicEntity.winefoxsSpellbooks$getMana();
+        }
+        if (entity instanceof IMagicEntity magicEntity) {
+            return magicEntity.getMagicData().getMana();
+        }
+        return MagicData.getPlayerMagicData(entity).getMana();
+    }
+
+    /**
+     * 写实体魔力，路由同 {@link #getMana}。
+     * <p>
+     * 女仆必须走 {@code winefoxsSpellbooks$setMana}：它在写 {@link MagicData} 之外还同步
+     * {@code MAID_MANA} 附件，只写前者的话魔力条与可用性判定都不会变。
+     *
+     * @param entity 实体
+     * @param mana   目标魔力值
+     */
+    public static void setMana(LivingEntity entity, float mana) {
+        if (entity instanceof MaidMagicEntity maidMagicEntity) {
+            maidMagicEntity.winefoxsSpellbooks$setMana(mana);
+        } else if (entity instanceof IMagicEntity magicEntity) {
+            magicEntity.getMagicData().setMana(mana);
+        } else {
+            MagicData.getPlayerMagicData(entity).setMana(mana);
         }
     }
 

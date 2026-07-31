@@ -15,6 +15,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import java.util.Optional;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.magic.particle.TransferStreamOption;
 import net.magicterra.winefoxsspellbooks.registry.WsbParticles;
@@ -26,7 +27,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -141,10 +141,9 @@ public class ManaTransferSpell extends AbstractSpell {
         }
 
         double transferAmount = getTransferAmount(spellLevel);
-        MagicData targetMagicData = MagicData.getPlayerMagicData(targetEntity);
         double targetMaxMana = getMaxMana(targetEntity);
-        double newTargetMana = Math.min(targetMagicData.getMana() + transferAmount, targetMaxMana);
-        targetMagicData.setMana((float) newTargetMana);
+        MaidMagicManager.setMana(targetEntity,
+            (float) Math.min(MaidMagicManager.getMana(targetEntity) + transferAmount, targetMaxMana));
 
         super.onCast(level, spellLevel, entity, castSource, playerMagicData);
     }
@@ -209,9 +208,7 @@ public class ManaTransferSpell extends AbstractSpell {
         if (!isValidTarget(target)) {
             return false;
         }
-        MagicData targetMagicData = MagicData.getPlayerMagicData(target);
-        double targetMaxMana = getMaxMana(target);
-        return targetMagicData.getMana() < targetMaxMana;
+        return MaidMagicManager.getMana(target) < getMaxMana(target);
     }
 
     /**
@@ -222,10 +219,14 @@ public class ManaTransferSpell extends AbstractSpell {
     }
 
     /**
-     * 获取实体的最大魔力值
+     * 获取实体的最大魔力值。
+     * <p>
+     * 走 {@link MaidMagicManager#getMaxMana}——它在 MAX_MANA 属性之上还乘了 {@code maxManaMultiplier}，
+     * 女仆的魔力条、回魔门禁都按这个上限来；这里若只读裸属性，倍率非 1 时会把女仆传满前就判成「已满」。
+     * 没有该属性的实体读值会抛 IAE，故先问一句再取。
      */
-    private double getMaxMana(LivingEntity entity) {
-        AttributeInstance attribute = entity.getAttribute(AttributeRegistry.MAX_MANA);
-        return attribute != null ? attribute.getValue() : 100.0;
+    private static double getMaxMana(LivingEntity entity) {
+        return entity.getAttributes().hasAttribute(AttributeRegistry.MAX_MANA)
+            ? MaidMagicManager.getMaxMana(entity) : 100.0;
     }
 }
