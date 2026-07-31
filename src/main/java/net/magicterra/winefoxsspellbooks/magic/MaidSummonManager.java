@@ -61,10 +61,16 @@ public class MaidSummonManager {
             }
             summonedEntity.teleportTo(position.x, position.y, position.z);
         }
-        // 并入而非覆盖：整表 put 会把 SummonManager 里这只女仆名下已有的追踪抹掉（一个都没恢复出来时
-        // 尤其明显），被抹掉的召唤物从此不再被计时解除，会永久留在世界里。逐条登记的 summonToOwner
-        // 本就是并入语义，两张表在这里保持一致。
-        manager.getOwnerToSummons().computeIfAbsent(ownerUUID, key -> new HashSet<>()).addAll(summonsSet);
+        // 并入而非覆盖：整表 put 会把这只女仆名下已有的追踪抹掉，被抹掉的召唤物不再被计时解除，
+        // 会永久留在世界里；逐条登记的 summonToOwner 本就是并入语义，两张表在这里保持一致。
+        // 一个都没恢复出来时也不建空条目：空 Set 会让这只女仆被当成"有召唤物的召唤者"带进
+        // IronsDataStorage 的离线召唤表，还会让 SummonManager.onSummonerLogin 失去 isEmpty 快速返回。
+        if (!summonsSet.isEmpty()) {
+            manager.getOwnerToSummons().computeIfAbsent(ownerUUID, key -> new HashSet<>()).addAll(summonsSet);
+        }
+        // 附件只是一次性的搬运凭证，用完即弃。留着的话：召唤物到期解除后追踪表已空，女仆下次卸载时
+        // onMaidRemoved 会提前返回而不覆盖附件，再加载就照着旧 NBT 把早该消失的召唤物重新生成出来。
+        maid.removeData(WsbAttachments.SAVED_SUMMONS);
     }
 
     public static void onMaidRemoved(LivingEntity maid) {
