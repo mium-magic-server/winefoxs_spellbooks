@@ -181,16 +181,17 @@ public class FoxshadeWispsSpell extends AbstractSpell {
     @Nullable
     private LivingEntity acquireTarget(ServerLevel level, LivingEntity caster) {
         if (caster instanceof Player) {
+            // 玩家只认准星：没套住就直线前射，不走下面的兜底扫描（那会平白多出 16 格自动瞄准，
+            // 连身后侧面的怪都能锁上）
             HitResult hit = RaycastBuilder.begin(level, caster)
                 .range((float) SEARCH_RADIUS)
                 .checkForBlocks(true)
                 .bbInflation(0.5f)
-                .filter(WinefoxHexHelper.raycastFilter(target -> WinefoxHexHelper.isHostileTo(target, caster)))
+                .filter(WinefoxHexHelper.hostileRaycastFilter(caster))
                 .build();
-            if (hit instanceof EntityHitResult ehr && ehr.getEntity() instanceof LivingEntity locked) {
-                return locked;
-            }
-        } else if (caster instanceof Mob mob) {
+            return hit instanceof EntityHitResult ehr && ehr.getEntity() instanceof LivingEntity locked ? locked : null;
+        }
+        if (caster instanceof Mob mob) {
             // 女仆已被 AI 指向某个目标（SpellCastingTask 也是照它转身的），弹体必须跟着打同一个，
             // 否则会绕开当前交战对象去点更近的无关怪。
             // hasMemoryValue 是必要的前置：记忆模块没注册时 getMemory 直接抛 ISE
