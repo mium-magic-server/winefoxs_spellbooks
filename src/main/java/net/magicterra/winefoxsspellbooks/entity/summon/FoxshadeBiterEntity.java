@@ -181,7 +181,7 @@ public class FoxshadeBiterEntity extends PathfinderMob implements GeoEntity {
 
     // 瞬时召唤物：无敌，避免被杂兵打断扑咬；生命周期完全由 tick 的超时/咬击控制。
     // 但 BYPASSES_INVULNERABILITY 必须放行：/kill 走的正是 hurt(genericKill, MAX_VALUE)，
-    // 一并挡掉的话管理员没有任何手段清除它，而它又不会随距离消失、还要求自定义持久化
+    // 一并挡掉的话管理员没有任何手段清除它，而它又不会随距离消失
     @Override
     public boolean hurt(DamageSource source, float amount) {
         return source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && super.hurt(source, amount);
@@ -195,6 +195,15 @@ public class FoxshadeBiterEntity extends PathfinderMob implements GeoEntity {
     @Override
     public boolean requiresCustomPersistence() {
         return true;
+    }
+
+    /**
+     * 不写进存档：owner / biteTarget / biteDamage 都只活在内存里，读档后 {@code biteTarget == null}，
+     * 第一帧就走 {@link #poof()}——玩家重进世界会在早已结束的战斗点看到一簇凭空冒出的粒子。 一次伏击总共只有 {@link #MAX_LIFETIME} tick，本就活不过一次存档，索性不存。
+     */
+    @Override
+    public boolean shouldBeSaved() {
+        return false;
     }
 
     @Override
@@ -231,6 +240,17 @@ public class FoxshadeBiterEntity extends PathfinderMob implements GeoEntity {
         @Override
         public boolean canContinueToUse() {
             return canUse();
+        }
+
+        /**
+         * 每次激活都重新给一次起跳机会。
+         * <p>
+         * {@code leaped} 是「本次接近只跳一次」的闸门，不复位的话被同优先级组的 {@link FloatGoal} 抢过 一次 {@code JUMP}（趟过水/岩浆）后，本目标重新激活时它还是 {@code true}，狐从此只能贴地走——
+         * 而 {@code STEP_HEIGHT} 只有 1.0，遇到矮台或水沟对岸就再也够不着目标。
+         */
+        @Override
+        public void start() {
+            this.leaped = false;
         }
 
         @Override
