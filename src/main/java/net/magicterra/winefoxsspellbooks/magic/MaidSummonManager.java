@@ -1,6 +1,7 @@
 package net.magicterra.winefoxsspellbooks.magic;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.google.common.collect.Lists;
 import io.redspace.ironsspellbooks.capabilities.magic.SummonManager;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -118,7 +119,10 @@ public class MaidSummonManager {
 
     public static void onServerStopping(ServerStoppingEvent event) {
         for (ServerLevel level : event.getServer().getAllLevels()) {
-            for (Entity entity : level.getAllEntities()) {
+            // getAllEntities() 是实体表的活视图，而 saveSummons 会经 onMaidRemoved 把召唤物 setRemoved，
+            // 直接从这张表里摘节点。边遍历边删会跳过排在后面的女仆（她们的召唤物就此丢失），
+            // 先快照再处理。
+            for (Entity entity : Lists.newArrayList(level.getAllEntities())) {
                 if (entity instanceof LivingEntity livingEntity) {
                     saveSummons(level, livingEntity);
                 }
