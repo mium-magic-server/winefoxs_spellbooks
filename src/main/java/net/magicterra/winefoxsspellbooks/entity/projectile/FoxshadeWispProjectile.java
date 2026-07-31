@@ -80,6 +80,11 @@ public class FoxshadeWispProjectile extends AbstractMagicProjectile implements G
      */
     private int flankSign = 0;
 
+    /**
+     * 客户端侧：上一次撒出螺旋粒子的 tickCount。
+     */
+    private int lastSparkTick = Integer.MIN_VALUE;
+
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "rotate", 0, state -> {
@@ -95,6 +100,19 @@ public class FoxshadeWispProjectile extends AbstractMagicProjectile implements G
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return this.cache;
+    }
+
+    /**
+     * 本 tick 是否还没撒过螺旋粒子；是则记账并放行，否则拒绝。
+     * <p>
+     * 渲染层实例是同型弹体共用的，去重状态必须逐弹体保存，否则同屏多发时状态互相顶掉， 粒子会退化成「每渲染帧一发」。
+     */
+    public boolean tryEmitSpark() {
+        if (this.tickCount == this.lastSparkTick) {
+            return false;
+        }
+        this.lastSparkTick = this.tickCount;
+        return true;
     }
 
     public static final EntityType<FoxshadeWispProjectile> TYPE =

@@ -31,10 +31,6 @@ public class FoxshadeWispOrbitLayer extends GeoRenderLayer<FoxshadeWispProjectil
 
     private static final double HIGHLIGHT_MARKER = -1.0e-4;
 
-    private int lastEntityId = Integer.MIN_VALUE;
-
-    private int lastEmissionTick = Integer.MIN_VALUE;
-
     public FoxshadeWispOrbitLayer(GeoRenderer<FoxshadeWispProjectile> renderer) {
         super(renderer);
     }
@@ -51,10 +47,7 @@ public class FoxshadeWispOrbitLayer extends GeoRenderLayer<FoxshadeWispProjectil
     public void render(PoseStack poseStack, FoxshadeWispProjectile animatable, BakedGeoModel bakedModel,
                        RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer,
                        float partialTick, int packedLight, int packedOverlay) {
-        if (buffer == null || !animatable.isAlive()) {
-            return;
-        }
-        if (animatable.getId() == this.lastEntityId && animatable.tickCount == this.lastEmissionTick) {
+        if (buffer == null || !animatable.isAlive() || !animatable.tryEmitSpark()) {
             return;
         }
 
@@ -64,8 +57,6 @@ public class FoxshadeWispOrbitLayer extends GeoRenderLayer<FoxshadeWispProjectil
             return;
         }
 
-        this.lastEntityId = animatable.getId();
-        this.lastEmissionTick = animatable.tickCount;
         addParticle(animatable, position(primary), PRIMARY_MARKER);
         addParticle(animatable, position(highlight), HIGHLIGHT_MARKER);
     }
