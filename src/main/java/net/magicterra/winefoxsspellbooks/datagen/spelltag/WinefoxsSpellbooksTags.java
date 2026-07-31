@@ -17,7 +17,7 @@ public final class WinefoxsSpellbooksTags {
         ctx.negativeEffect().add(WsbSpells.CRESCENT_BRAND_SPELL.get());
         // 酒杯狐影：放出追踪弹打出酒狐巫法学派伤害，归入攻击类（女仆 AI 据此选用为攻击法术）
         ctx.attack().add(WsbSpells.FOXSHADE_WISPS_SPELL.get());
-        // 酒杯狐影需要逐次 recast（共 6 发），加入 maidShouldRecast 让女仆 AI 自动逐发
+        // 酒杯狐影需要逐次 recast（共 3 发），加入 maidShouldRecast 让女仆 AI 自动逐发
         ctx.maidShouldRecast().add(WsbSpells.FOXSHADE_WISPS_SPELL.get());
         // 狐影伏击：自挂增益标记，命中时召狐影撞咬，归入防御类
         ctx.defense().add(WsbSpells.FOXSHADE_AMBUSH_SPELL.get());

@@ -12,7 +12,7 @@
 
    新学派迎来 6 个战斗法术，围绕「烙印引爆」与「微醺控场」两条主线：
    - **残月烙印**：单体标记法术。烙印期间（12 秒 + 每级 1 秒）目标一旦受到任意酒狐巫法伤害即引爆，引爆伤害 = 基础 6 点 + 挂印时的法术强度；由自家女仆引爆时伤害 ×1.5、范围更大且可连锁引爆下一个带印目标；烙印自然到期只发生小范围弱自爆。
-   - **酒杯狐影**：逐发施法，最多 6 发追踪狐影从侧翼包抄；第 6 发为终结弹，命中时额外触发一次残月爆发。女仆 AI 支持自动逐发施放。
+   - **酒杯狐影**：逐发施法，最多 3 发追踪狐影从侧翼包抄；三发等价，打出的酒狐巫法伤害命中带印目标即引爆残月烙印。女仆 AI 支持自动逐发施放。
    - **残月披风**：为自己与附近自家女仆披上伤害吸收（6 级起提升至吸收 III）与短暂真实隐身（Iron's 效果：装备一并隐去、脱离仇恨），两者时长每级 +0.5 秒，紧急脱险。
    - **醒酒之礼**：将自身或视线所指自家女仆的负面效果剩余时长减半，满级（5 级）直接尽数清除。
    - **醉狐之雾**：咏唱 1 秒后在落点铺开半径 5 格的紫粉酒雾（持续 6 秒 + 每级 0.5 秒），雾中生物持续微醺，自家女仆免疫；5 级起施加微醺 II。
@@ -28,7 +28,7 @@
 
    The new school gains six combat spells, built around two pillars — brand detonation and tipsy crowd control:
    - **Crescent Brand**: single-target mark. While branded (12 seconds, +1s per level), any Winefox Hex damage taken by the target detonates the brand into an AoE burst dealing a base of 6 plus the spell power at branding time; detonations by your own maids deal ×1.5 damage with a larger radius and can chain to the next branded target. A brand that expires naturally only weakly self-detonates in a small radius.
-   - **Foxshade Wisps**: recast spell — up to 6 homing wisps flank in from the sides; the 6th is a finisher that additionally triggers a Crescent burst on hit. Maid AI can chain the recasts automatically.
+   - **Foxshade Wisps**: recast spell — up to 3 homing wisps flank in from the sides; all three are identical, and their Winefox Hex damage detonates a Crescent Brand on hit. Maid AI can chain the recasts automatically.
    - **Crescent Mantle**: veils you and nearby owned maids in absorption (Absorption III from level 6) and brief True Invisibility (Iron's effect: gear vanishes too, mobs lose aggro) for emergency escapes; both durations gain +0.5s per level.
    - **Decant the Bind**: halves the remaining duration of harmful effects on you or an owned maid in your gaze; at max level (5) they are purged outright.
    - **Tipsy Mist**: after a 1-second cast, rolls out a 5-block-radius plum-pink fog (6 seconds, +0.5s per level) that keeps creatures inside tipsy; your own maids are immune. From level 5 it applies Tipsy II.
