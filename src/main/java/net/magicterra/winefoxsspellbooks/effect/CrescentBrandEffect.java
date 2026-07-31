@@ -89,9 +89,12 @@ public class CrescentBrandEffect extends MobEffect {
         // 传给 shouldApplyEffectTickThisTick 的是 entity.tickCount,重载后 tickCount==1 会误判到期)。
         DamageSource src = entity.damageSources().magic();
         AABB box = entity.getBoundingBox().inflate(WinefoxHexHelper.WEAK_SELF_RADIUS);
-        // 自爆以带印者为中心：他本人必伤，周围只波及与他不同阵营的（挂在自家人身上的印不会炸到主人和姐妹）
+        // 自爆以带印者为中心：他本人必伤，周围只波及「敌对生物且与他不同阵营」的。
+        // 阵营判定必须再叠一层敌对判定：印通常挂在敌人身上，而站在敌人旁边的玩家/女仆
+        // 相对这个敌人正是「不同阵营」，只用阵营谓词会炸到上印的人自己。
         for (LivingEntity e : entity.level().getEntitiesOfClass(LivingEntity.class, box,
-            victim -> victim == entity || WinefoxHexHelper.isFactionHostile(victim, entity))) {
+            victim -> victim == entity
+                || (WinefoxHexHelper.isHexEnemy(victim) && WinefoxHexHelper.isFactionHostile(victim, entity)))) {
             e.hurt(src, WinefoxHexHelper.WEAK_SELF_DAMAGE);
         }
         return true;
