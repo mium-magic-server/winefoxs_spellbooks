@@ -37,11 +37,14 @@ public class MaidSummonManager {
 
         SummonManagerAccessor manager = (SummonManagerAccessor) SummonManager.INSTANCE;
         Set<UUID> summonsSet = new HashSet<>();
+        // 这一轮没能反序列化出来的原样留着,下次加载再试
+        var unrestored = new ArrayList<CompoundTag>();
         UUID ownerUUID = maid.getUUID();
         Vec3 position = maid.position();
         for (CompoundTag summon : savedSummons) {
             var summonedEntity = EntityType.create(summon, serverLevel).orElse(null);
             if (summonedEntity == null) {
+                unrestored.add(summon);
                 continue;
             }
             if (summonedEntity instanceof SummonedMaidBroom) {
@@ -69,9 +72,14 @@ public class MaidSummonManager {
         if (!summonsSet.isEmpty()) {
             manager.getOwnerToSummons().computeIfAbsent(ownerUUID, key -> new HashSet<>()).addAll(summonsSet);
         }
-        // 附件只是一次性的搬运凭证，用完即弃。留着的话：召唤物到期解除后追踪表已空，女仆下次卸载时
+        // 附件只是一次性的搬运凭证，恢复出来的用完即弃。留着的话：召唤物到期解除后追踪表已空，女仆下次卸载时
         // onMaidRemoved 会提前返回而不覆盖附件，再加载就照着旧 NBT 把早该消失的召唤物重新生成出来。
-        maid.removeData(WsbAttachments.SAVED_SUMMONS);
+        // 但没恢复出来的不能跟着删：实体 id 认不出来多半是附属被临时禁用，直接清掉等于把召唤物永久丢弃。
+        if (unrestored.isEmpty()) {
+            maid.removeData(WsbAttachments.SAVED_SUMMONS);
+        } else {
+            maid.setData(WsbAttachments.SAVED_SUMMONS, unrestored);
+        }
     }
 
     public static void onMaidRemoved(LivingEntity maid) {
@@ -84,6 +92,12 @@ public class MaidSummonManager {
             return;
         }
         var savedSummons = new ArrayList<CompoundTag>();
+        // 附件此刻只可能剩上次没恢复出来的条目(onAddedToLevel 必先于 onRemovedFromLevel,恢复成功的已被摘掉),
+        // 带上它们一起写回，否则这只女仆期间新召唤的东西一存档就把它们顶掉
+        var unrestored = maid.getExistingDataOrNull(WsbAttachments.SAVED_SUMMONS);
+        if (unrestored != null) {
+            savedSummons.addAll(unrestored);
+        }
         for (UUID uuid : summons) {
             Entity entity = serverLevel.getEntity(uuid);
             if (entity != null) {
