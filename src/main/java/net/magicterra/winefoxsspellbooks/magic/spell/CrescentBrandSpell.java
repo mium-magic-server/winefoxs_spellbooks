@@ -72,12 +72,13 @@ public class CrescentBrandSpell extends AbstractSpell {
             return;
         }
         WinefoxHexHelper.spawnCastBurst(serverLevel, entity);
-        // 只烙敌人：不加过滤会把主人、姐妹女仆、宠物挂上印，之后任何一发学派伤害都会以他们为中心引爆
+        // 只烙敌人：主动选取用学派敌我，挂印才不会落到村民、牲畜、铁傀儡这些非敌对生物身上
+        // （阵营谓词 isFactionHostile 是给 AoE 波及用的，凡不同队即算敌，这里不能用）
         var raycast = RaycastBuilder.begin(level, entity)
             .range(CAST_RANGE)
             .checkForBlocks(true)
             .bbInflation(0.35f)
-            .filter(WinefoxHexHelper.raycastFilter(target -> WinefoxHexHelper.isFactionHostile(target, entity)))
+            .filter(WinefoxHexHelper.raycastFilter(target -> WinefoxHexHelper.isHostileTo(target, entity)))
             .build();
         if (raycast.getType() == EntityHitResult.Type.ENTITY
             && ((EntityHitResult) raycast).getEntity() instanceof LivingEntity target) {
