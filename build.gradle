@@ -254,6 +254,14 @@ dependencies {
     runtimeOnly("curse.maven:mowzies-mobs-250498:${mowzies_mobs_version}")
     runtimeOnly("curse.maven:placebo-283644:${placebo_version}")
     runtimeOnly("curse.maven:apothic-attributes-898963:${apothic_attributes_version}")
+
+    def agentDriverLocal = file("${System.getProperty('user.home')}/.m2/repository/net/magicterra/agent_driver-neoforge/${agent_driver_version}")
+    if (agentDriverLocal.exists()) {
+        runtimeOnly("net.magicterra:agent_driver-neoforge:${agent_driver_version}") {
+            // Rhino is already shaded into the AgentDriver jar; avoid a second copy on the classpath.
+            exclude group: "dev.latvian.mods", module: "rhino"
+        }
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
