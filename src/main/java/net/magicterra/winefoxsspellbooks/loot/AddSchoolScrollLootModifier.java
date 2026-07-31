@@ -55,8 +55,7 @@ public class AddSchoolScrollLootModifier extends LootModifier {
         // 这里每次即时枚举注册表,并按学派注册 id 比较(getSchoolType 的引用相等在
         // 配置未就绪时会失配),开销可忽略。
         List<AbstractSpell> spells = SpellRegistry.REGISTRY.stream()
-            .filter(spell -> spell.isEnabled() && spell.allowLooting()
-                && spell.getSchoolType() != null && school.equals(spell.getSchoolType().getId()))
+            .filter(spell -> spell.isEnabled() && matchesSchool(spell) && spell.allowLooting())
             .toList();
         if (spells.isEmpty()) {
             return loot;
@@ -72,6 +71,17 @@ public class AddSchoolScrollLootModifier extends LootModifier {
         ISpellContainer.createScrollContainer(spell, level, scroll);
         loot.add(scroll);
         return loot;
+    }
+
+    /**
+     * 法术是否属于本修改器的学派；顺带兜住空学派。
+     * <p>
+     * {@code allowLooting()} 内部就是 {@code getSchoolType().allowLooting}，某个附属把 {@code schoolResource}
+     * 指向未注册的学派时会抛 NPE。过滤链里把本判定排在它前面，短路后 {@code allowLooting()} 只会在学派非空时执行。
+     */
+    private boolean matchesSchool(AbstractSpell spell) {
+        var schoolType = spell.getSchoolType();
+        return schoolType != null && school.equals(schoolType.getId());
     }
 
     private static AbstractSpell pickWeightedByRarity(List<AbstractSpell> spells, RandomSource random) {
