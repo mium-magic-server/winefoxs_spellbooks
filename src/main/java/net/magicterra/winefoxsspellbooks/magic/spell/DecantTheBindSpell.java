@@ -11,6 +11,7 @@ import io.redspace.ironsspellbooks.api.util.AnimationHolder;
 import io.redspace.ironsspellbooks.api.util.RaycastBuilder;
 import io.redspace.ironsspellbooks.util.ModTags;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.magic.particle.TransferStreamOption;
@@ -122,12 +123,13 @@ public class DecantTheBindSpell extends AbstractSpell {
                 if (inst.isInfiniteDuration()) {
                     continue;
                 }
+                // 整条链一起搬:removeEffect 连被压住的低等级实例一并删掉,只补回可见层等于在低酒龄
+                // 白送满级才有的整列净除
+                MobEffectInstance halved = halveChain(inst);
                 target.removeEffect(inst.getEffect());
                 cleansed++;
-                int half = inst.getDuration() / 2;
-                if (half > 0) {
-                    target.addEffect(new MobEffectInstance(inst.getEffect(), half, inst.getAmplifier(),
-                        inst.isAmbient(), inst.isVisible(), inst.showIcon()));
+                if (halved != null) {
+                    target.addEffect(halved);
                 }
             }
         }
@@ -138,5 +140,26 @@ public class DecantTheBindSpell extends AbstractSpell {
                 0, target.getId(), cleansed, spellLevel >= PURGE_LEVEL ? 2 : 1),
             target.getX(), target.getY(), target.getZ(), 1, 0, 0, 0, 0);
         super.onCast(level, spellLevel, entity, castSource, playerMagicData);
+    }
+
+    /**
+     * 把一条效果链逐层减半后原样重建。
+     * <p>
+     * 同一效果被更高等级覆盖时,原版会把旧实例压进 {@code hiddenEffect} 排队(字段由 AT 放开),可见层走完它就浮上来。 减半必须连这些下层一起算:只处理可见层的话,下层浮上来时仍是原时长,玩家看到的是「减半没生效」;
+     * 而只补回可见层则等于把整条链清掉。原版七参构造器可以直接把下层挂回去,重挂后链形不变。
+     *
+     * @return 减半后的可见层;整条链都不足 1 tick 时为 {@code null}
+     */
+    @Nullable
+    private static MobEffectInstance halveChain(MobEffectInstance instance) {
+        MobEffectInstance hidden = instance.hiddenEffect == null ? null : halveChain(instance.hiddenEffect);
+        // 下层可能是无限时长(被更高等级的有限实例压住),照原样搬,不参与减半
+        int duration = instance.isInfiniteDuration() ? instance.getDuration() : instance.getDuration() / 2;
+        if (duration == 0) {
+            // 本层已耗尽,让下层顶上,别把整条链跟着丢了
+            return hidden;
+        }
+        return new MobEffectInstance(instance.getEffect(), duration, instance.getAmplifier(),
+            instance.isAmbient(), instance.isVisible(), instance.showIcon(), hidden);
     }
 }
