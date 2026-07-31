@@ -36,11 +36,11 @@ import org.apache.commons.lang3.reflect.FieldUtils;
  * @since 2025-07-27 18:26
  */
 public class MaidRecasts extends PlayerRecasts {
-    private static final Field RECAST_LOOKUP_FIELD =
-        FieldUtils.getDeclaredField(PlayerRecasts.class, "recastLookup", true);
+    private static final Field RECAST_LOOKUP_FIELD = requireField(
+        FieldUtils.getDeclaredField(PlayerRecasts.class, "recastLookup", true), "PlayerRecasts#recastLookup");
 
-    private static final Field REMAINING_TICKS_FIELD =
-        FieldUtils.getDeclaredField(RecastInstance.class, "remainingTicks", true);
+    private static final Field REMAINING_TICKS_FIELD = requireField(
+        FieldUtils.getDeclaredField(RecastInstance.class, "remainingTicks", true), "RecastInstance#remainingTicks");
 
     protected final LivingEntity maid;
 
@@ -139,5 +139,20 @@ public class MaidRecasts extends PlayerRecasts {
         } catch (IllegalAccessException e) {
             throw new IllegalStateException("Iron's Spellbooks changed RecastInstance#remainingTicks", e);
         }
+    }
+
+    /**
+     * 字段没解析出来时给出可读的诊断，在类加载解析句柄时就地校验。
+     * <p>
+     * {@link FieldUtils#getDeclaredField} 找不到字段是返回 {@code null} 而非抛异常，直接把 {@code null} 交给
+     * {@code readField}/{@code writeField} 只会抛出 commons-lang 的 {@code NullPointerException: field}——
+     * 它不是 {@link IllegalAccessException}，接不住；而读写发生在女仆构造与逐 tick 计时期间，
+     * 玩家看到的就是一句没头没尾的空指针崩溃。
+     */
+    private static Field requireField(Field field, String description) {
+        if (field == null) {
+            throw new IllegalStateException("Iron's Spellbooks changed " + description);
+        }
+        return field;
     }
 }
