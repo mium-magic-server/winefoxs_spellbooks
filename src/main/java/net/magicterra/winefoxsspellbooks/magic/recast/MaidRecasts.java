@@ -75,6 +75,18 @@ public class MaidRecasts extends PlayerRecasts {
         triggerRecastComplete(recastInstance, recastResult);
     }
 
+    /**
+     * 清空所有 recast。
+     * <p>
+     * 必须重写：父类的实现走的是自己那个私有三参 {@code removeRecast}，绕过本类的收尾派发—— 冷却挂不上、召唤类 recast 不收召唤物，还会以 {@code serverPlayer == null} 调
+     * {@code spell.onRecastFinished}，附属里直接解引用它的实现会在服务端 tick 里抛 NPE。
+     */
+    @Override
+    public void removeAll(RecastResult recastResult) {
+        // getAllRecasts 返回的已是快照，可以边遍历边让 removeRecast 改动 recastLookup
+        getAllRecasts().forEach(instance -> removeRecast(instance, recastResult));
+    }
+
     private void triggerRecastComplete(RecastInstance recastInstance, RecastResult recastResult) {
         AbstractSpell spell = SpellRegistry.getSpell(recastInstance.getSpellId());
         if (!(maid.level() instanceof ServerLevel serverLevel)) {
