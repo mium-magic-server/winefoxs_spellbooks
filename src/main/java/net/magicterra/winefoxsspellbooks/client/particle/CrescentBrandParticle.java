@@ -2,6 +2,7 @@ package net.magicterra.winefoxsspellbooks.client.particle;
 
 import java.util.HashMap;
 import java.util.Map;
+import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.particle.TransferStreamOption;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -12,6 +13,10 @@ import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.level.LevelEvent;
 import org.joml.Vector3f;
 
 /**
@@ -28,6 +33,7 @@ import org.joml.Vector3f;
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-07-21
  */
+@EventBusSubscriber(value = Dist.CLIENT, modid = WinefoxsSpellbooks.MODID)
 public final class CrescentBrandParticle {
 
     /**
@@ -47,6 +53,19 @@ public final class CrescentBrandParticle {
         new DustParticleOptions(new Vector3f(200 / 255f, 32 / 255f, 58 / 255f), 0.6f);
 
     private CrescentBrandParticle() {
+    }
+
+    /**
+     * 世界卸载（退回主菜单、切维度）时清空绕身单例表。
+     * <p>
+     * {@link Orbit#ACTIVE} 与 {@link Orbit#activeLevel} 都是静态的，只在「另一个世界又来了绕身包」
+     * 时才换表；不清的话断线后旧 {@code ClientLevel} 会一直被静态字段吊住不回收。
+     */
+    @SubscribeEvent
+    public static void onLevelUnload(LevelEvent.Unload event) {
+        if (event.getLevel() instanceof ClientLevel) {
+            Orbit.forget();
+        }
     }
 
     /**
@@ -201,11 +220,20 @@ public final class CrescentBrandParticle {
         private long lastTickTime;
 
         /**
+         * 丢掉整张表与世界引用：世界卸载时调用，避免静态字段吊住已弃用的 {@link ClientLevel}。
+         */
+        static void forget() {
+            ACTIVE.clear();
+            activeLevel = null;
+        }
+
+        /**
          * 已有存活单例则续命并返回 null(不生成新粒子),否则新建。
          * <p>
          * 不能只看 {@link Particle#isAlive()}:{@code ParticleEngine} 在换世界
          * ({@code setLevel} → {@code clearParticles})和队列溢出时都是直接丢引用,不调 {@code remove()},
-         * 被丢掉的粒子会永远停在「存活」上,把该实体的印记堵死。故换世界整表清空, 同世界内则按「多久没刷新过 {@link #lastTickTime}」判僵尸。
+         * 被丢掉的粒子会永远停在「存活」上,把该实体的印记堵死。故换世界整表清空,
+         * 同世界内则按「多久没刷新过 {@link #lastTickTime}」判僵尸。
          */
         static Particle spawnOrRefresh(ClientLevel level, double x, double y, double z,
                                        TransferStreamOption option, SpriteSet sprites) {
