@@ -63,6 +63,9 @@ public class DataGenerateMod {
         // Entity tags provider (maid tag)
         generator.addProvider(event.includeServer(), new MaidEntityTagsProvider(output, lookupProvider, WinefoxsSpellbooks.MODID, existingFileHelper));
 
+        // Damage type tags provider (school damage -> neoforge:is_magic)
+        generator.addProvider(event.includeServer(), new WsbDamageTypeTagsProvider(output, lookupProvider, WinefoxsSpellbooks.MODID, existingFileHelper));
+
         // Loot tables
         generator.addProvider(event.includeServer(), new LootTableProvider(
             output,
