@@ -105,11 +105,12 @@ public class SummonMaidSpell extends AbstractSpell {
     }
 
     /**
-     * 到场音：衣袍翻动在先，0.55 s 后落一记单击钟。
+     * 到场音由 {@link #onCast} 在服务端广播：旁人也听得到，且只在真的召唤出女仆时响
+     * （二次施法是遣散，那时喊「到场」是错的）。此处留空，否则每次施法都会在施法者客户端上再响一遍。
      */
     @Override
     public Optional<SoundEvent> getCastFinishSound() {
-        return Optional.of(WsbSounds.SUMMON_MAID_ARRIVE.get());
+        return Optional.empty();
     }
 
     /**
@@ -234,7 +235,8 @@ public class SummonMaidSpell extends AbstractSpell {
             recasts.addRecast(recastInstance, playerMagicData);
 
             WinefoxHexHelper.spawnCastBurst(serverWorld, entity);
-            // 到场音由 getCastFinishSound() 统一播放，不在此手写
+            world.playSound(null, entity, WsbSounds.SUMMON_MAID_ARRIVE.get(), entity.getSoundSource(),
+                2.0f, 0.9f + world.random.nextFloat() * 0.2f);
         }
     }
 
