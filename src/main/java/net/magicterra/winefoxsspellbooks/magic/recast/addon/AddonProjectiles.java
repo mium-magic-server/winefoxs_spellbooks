@@ -1,5 +1,6 @@
 package net.magicterra.winefoxsspellbooks.magic.recast.addon;
 
+import java.util.List;
 import java.util.Optional;
 import net.magicterra.winefoxsspellbooks.magic.recast.AddonReflection;
 import net.minecraft.server.level.ServerLevel;
@@ -20,9 +21,42 @@ final class AddonProjectiles {
     }
 
     /**
-     * 追踪弹体的构造器签名，供各模组在自己的静态块里向自检登记。
+     * 追踪弹体的构造器签名。
      */
     static final Class<?>[] CTOR_SIGNATURE = {net.minecraft.world.level.Level.class, LivingEntity.class};
+
+    /**
+     * 一个单参 setter 的反射坐标：登记自检与实际调用共用同一份，改名时不会只改到一边。
+     */
+    private record Setter(String name, Class<?> paramType) {
+        Class<?>[] signature() {
+            return new Class<?>[] {paramType};
+        }
+    }
+
+    private static final Setter SHOOT = new Setter("shoot", Vec3.class);
+
+    private static final Setter SET_DAMAGE = new Setter("setDamage", float.class);
+
+    private static final Setter SET_HOMING_TARGET = new Setter("setHomingTarget", LivingEntity.class);
+
+    private static final Setter SET_DURATION = new Setter("setDuration", int.class);
+
+    private static final List<Setter> HOMING_SETTERS = List.of(SHOOT, SET_DAMAGE, SET_HOMING_TARGET, SET_DURATION);
+
+    /**
+     * 把一枚追踪弹体用到的全部反射成员登记进自检：构造器 + {@link #shootHoming} 会调的四个 setter。
+     * <p>
+     * 各模组的 {@code declareReflection} 对每个弹体类调一次。只登记类是不够的——
+     * 类还在、setter 改了名的话自检照样报「通过」，而弹体会以零伤害、不追踪的样子飞出去。
+     */
+    static void declareHoming(String modId, String className) {
+        AddonReflection.declareClass(modId, className);
+        AddonReflection.declareMethod(modId, className, "<init>", CTOR_SIGNATURE);
+        for (Setter setter : HOMING_SETTERS) {
+            AddonReflection.declareMethod(modId, className, setter.name(), setter.signature());
+        }
+    }
 
     /**
      * 造一枚追踪弹体并射向目标。
@@ -44,11 +78,15 @@ final class AddonProjectiles {
         entity.setPos(origin);
 
         Vec3 vec = target.getBoundingBox().getCenter().subtract(caster.getEyePosition()).normalize();
-        AddonReflection.invoke(projectile, "shoot", new Class<?>[] {Vec3.class}, vec.scale(0.75));
-        AddonReflection.invoke(projectile, "setDamage", new Class<?>[] {float.class}, damage);
-        AddonReflection.invoke(projectile, "setHomingTarget", new Class<?>[] {LivingEntity.class}, target);
-        AddonReflection.invoke(projectile, "setDuration", new Class<?>[] {int.class}, duration);
+        invoke(projectile, SHOOT, vec.scale(0.75));
+        invoke(projectile, SET_DAMAGE, damage);
+        invoke(projectile, SET_HOMING_TARGET, target);
+        invoke(projectile, SET_DURATION, duration);
 
         level.addFreshEntity(entity);
+    }
+
+    private static void invoke(Object projectile, Setter setter, Object value) {
+        AddonReflection.invoke(projectile, setter.name(), setter.signature(), value);
     }
 }

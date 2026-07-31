@@ -56,11 +56,11 @@ public final class FiresEnderExpansionRecasts {
      * 向自检登记本模组的反射目标。
      */
     public static void declareReflection() {
-        AddonReflection.declareClass(MOD_ID, NOVA_STAR);
-        AddonReflection.declareClass(MOD_ID, OBSIDIAN_STAR);
+        // 双星走 AddonProjectiles.shootHoming，构造器与四个 setter 都要登记，只登记类查不出 setter 改名
+        AddonProjectiles.declareHoming(MOD_ID, NOVA_STAR);
+        AddonProjectiles.declareHoming(MOD_ID, OBSIDIAN_STAR);
         AddonReflection.declareClass(MOD_ID, HOLLOW_CRYSTAL);
-        AddonReflection.declareMethod(MOD_ID, HOLLOW_CRYSTAL, "<init>",
-            net.minecraft.world.level.Level.class, LivingEntity.class);
+        AddonReflection.declareMethod(MOD_ID, HOLLOW_CRYSTAL, "<init>", AddonProjectiles.CTOR_SIGNATURE);
         AddonReflection.declareMethod(MOD_ID, HOLLOW_CRYSTAL, "setDamage", float.class);
         AddonReflection.declareMethod(MOD_ID, HOLLOW_CRYSTAL, "shoot", Vec3.class);
         AddonReflection.declareClass(MOD_ID, EFFECT_REGISTRY);
@@ -167,7 +167,7 @@ public final class FiresEnderExpansionRecasts {
         Vec3 lookDir = caster.getLookAngle();
 
         Optional<Object> created = AddonReflection.construct(HOLLOW_CRYSTAL,
-            new Class<?>[] {net.minecraft.world.level.Level.class, LivingEntity.class}, level, caster);
+            AddonProjectiles.CTOR_SIGNATURE, level, caster);
         if (created.isEmpty()) {
             return;
         }
