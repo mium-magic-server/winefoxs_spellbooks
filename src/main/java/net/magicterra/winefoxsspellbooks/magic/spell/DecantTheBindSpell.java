@@ -9,6 +9,7 @@ import io.redspace.ironsspellbooks.api.spells.SpellAnimations;
 import io.redspace.ironsspellbooks.api.spells.SpellRarity;
 import io.redspace.ironsspellbooks.api.util.AnimationHolder;
 import io.redspace.ironsspellbooks.api.util.RaycastBuilder;
+import io.redspace.ironsspellbooks.util.ModTags;
 import java.util.List;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
@@ -104,8 +105,10 @@ public class DecantTheBindSpell extends AbstractSpell {
             target = maid;
         }
 
+        // 与 Iron's CleanseSpell 同口径：净化免疫 tag 里的负面效果不碰，减半也不行
         List<MobEffectInstance> harmful = target.getActiveEffects().stream()
-            .filter(inst -> inst.getEffect().value().getCategory() == MobEffectCategory.HARMFUL)
+            .filter(inst -> inst.getEffect().value().getCategory() == MobEffectCategory.HARMFUL
+                && !inst.getEffect().is(ModTags.CLEANSE_IMMUNE))
             .toList();
         int cleansed = 0;
         if (spellLevel >= PURGE_LEVEL) {
