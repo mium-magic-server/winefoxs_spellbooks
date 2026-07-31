@@ -50,6 +50,8 @@ import org.jetbrains.annotations.Nullable;
 public class MaidCastingTask implements IRangedAttackTask {
     private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "casting_task");
 
+    private static final TargetingConditions TARGET_CONDITIONS = TargetingConditions.forCombat();
+
     @Override
     public ResourceLocation getUid() {
         return UID;
@@ -61,11 +63,18 @@ public class MaidCastingTask implements IRangedAttackTask {
     }
 
     /**
-     * 索敌：挂着残月烙印的目标优先，其余取最近。
+     * 索敌：在 TLM {@link IRangedAttackTask#findFirstValidAttackTarget} 的基础上加一条挂印优先。
+     * <p>
+     * 先反击最近打自己的怪，再从近邻表里挑「挂印优先、其次最近」的目标。近邻表按
+     * {@link #searchRadius} 填充，换成可见表会把索敌距离压回原版 16 格，够不着远程法术射程。
      */
     private static Optional<? extends LivingEntity> findAttackTargetPreferBranded(EntityMaid maid) {
-        return WinefoxHexHelper.findTargetPreferBranded(maid,
-            target -> maid.canAttack(target) && maid.isWithinRestriction(target.blockPosition()));
+        LivingEntity lastAttacker = maid.getLastHurtByMob();
+        if (lastAttacker != null && maid.canAttack(lastAttacker) && maid.canSee(lastAttacker)) {
+            return Optional.of(lastAttacker);
+        }
+        return WinefoxHexHelper.findNearbyTargetPreferBranded(maid,
+            target -> maid.canAttack(target) && maid.canSee(target));
     }
 
     @Override
@@ -135,9 +144,10 @@ public class MaidCastingTask implements IRangedAttackTask {
 
     @Override
     public boolean canSee(EntityMaid maid, LivingEntity target) {
-        TargetingConditions targetingConditions = TargetingConditions.forCombat();
-        targetingConditions.range(Config.getMaxSpellRange());
-        return LineOfSightGuard.test(targetingConditions, maid, target);
+        // 与 TLM 的 IRangedAttackTask.TARGET_CONDITIONS 同法：复用单例、每次只改射程，
+        // 索敌时每个候选都会走这里，不能逐个新建
+        TARGET_CONDITIONS.range(Config.getMaxSpellRange());
+        return LineOfSightGuard.test(TARGET_CONDITIONS, maid, target);
     }
 
     @Override

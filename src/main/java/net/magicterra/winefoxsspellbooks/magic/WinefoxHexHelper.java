@@ -274,30 +274,59 @@ public final class WinefoxHexHelper {
     }
 
     /**
-     * 女仆索敌：挂着残月烙印的目标优先，其余取最近。
+     * 女仆索敌（可见表）：挂着残月烙印的目标优先，其余取最近。
      * <p>
-     * {@link MemoryModuleType#NEAREST_VISIBLE_LIVING_ENTITIES} 已按距离排序，故单趟遍历即可：
-     * 第一个通过 {@code valid} 的是最近有效目标，遇到挂印目标立即短路返回。
+     * {@link MemoryModuleType#NEAREST_VISIBLE_LIVING_ENTITIES} 自带视线判定，但其
+     * {@code Sensor.isEntityTargetable} 把距离锁死在 16 格。索敌半径可配置的场合请改用
+     * {@link #findNearbyTargetPreferBranded}。
      *
      * @param mob   索敌的女仆（真·TLM 女仆或召唤女仆均可）
      * @param valid 目标有效性判定（各调用点不同）
      * @return 优先挂印、其次最近的有效目标；都没有时 empty
      */
-    public static Optional<? extends LivingEntity> findTargetPreferBranded(
+    public static Optional<? extends LivingEntity> findVisibleTargetPreferBranded(
         Mob mob, Predicate<LivingEntity> valid) {
         return mob.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
-            .flatMap(entities -> {
-                LivingEntity nearest = null;
-                for (LivingEntity candidate : entities.findAll(valid)) {
-                    if (isBranded(candidate)) {
-                        return Optional.of(candidate);
-                    }
-                    if (nearest == null) {
-                        nearest = candidate;
-                    }
-                }
-                return Optional.ofNullable(nearest);
-            });
+            // findAll 在自己的谓词之外还叠一层记忆化视线判定，故传恒真取「可见候选」，
+            // 有效性判定交给 pickPreferBranded 按需求值
+            .flatMap(entities -> pickPreferBranded(entities.findAll(candidate -> true), valid));
+    }
+
+    /**
+     * 女仆索敌（近邻表）：挂着残月烙印的目标优先，其余取最近。
+     * <p>
+     * 候选取自 {@link MemoryModuleType#NEAREST_LIVING_ENTITIES}——该表按任务自报的搜索半径填充，
+     * 不带视线判定，故 {@code valid} 需自行包含可见性检查。
+     *
+     * @param mob   索敌的女仆
+     * @param valid 目标有效性判定（含可见性）
+     * @return 优先挂印、其次最近的有效目标；都没有时 empty
+     */
+    public static Optional<? extends LivingEntity> findNearbyTargetPreferBranded(
+        Mob mob, Predicate<LivingEntity> valid) {
+        return mob.getBrain().getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES)
+            .flatMap(entities -> pickPreferBranded(entities, valid));
+    }
+
+    /**
+     * 从「已按距离排序」的候选序列里挑目标：单趟遍历，第一个通过的是最近的， 遇到挂印目标立即短路返回。
+     * <p>
+     * 定下最近目标之后就只有挂印者还能改变结果，故此后只对挂印者求值 {@code valid}—— 调用方的谓词可能带射线视线判定，逐个扫完整张近邻表会很贵。
+     */
+    private static Optional<LivingEntity> pickPreferBranded(Iterable<LivingEntity> ordered,
+                                                            Predicate<LivingEntity> valid) {
+        LivingEntity nearest = null;
+        for (LivingEntity candidate : ordered) {
+            boolean branded = isBranded(candidate);
+            if ((nearest != null && !branded) || !valid.test(candidate)) {
+                continue;
+            }
+            if (branded) {
+                return Optional.of(candidate);
+            }
+            nearest = candidate;
+        }
+        return Optional.ofNullable(nearest);
     }
 
     /**

@@ -277,7 +277,7 @@ public class SummonedMaidBrain {
      * 优先挂有残月烙印的目标，其次最近。
      */
     private static Optional<? extends LivingEntity> findNearestHostile(SummonedEntityMaid maid) {
-        return WinefoxHexHelper.findTargetPreferBranded(maid, target -> isValidHostileTarget(maid, target));
+        return WinefoxHexHelper.findVisibleTargetPreferBranded(maid, target -> isValidHostileTarget(maid, target));
     }
 
     /**
