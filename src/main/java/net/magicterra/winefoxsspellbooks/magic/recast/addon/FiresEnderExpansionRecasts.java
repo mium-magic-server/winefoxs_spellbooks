@@ -192,7 +192,8 @@ public final class FiresEnderExpansionRecasts {
     @SuppressWarnings("unchecked")
     private static float hollowCrystalDamage(RecastContext ctx) {
         LivingEntity caster = ctx.caster();
-        float base = ctx.spell().getSpellPower(1, caster);
+        // 用真实施法等级，附属自己的 HollowCrystalSpell#getDamage 也是这么算的
+        float base = ctx.spellPower();
         Optional<Object> holder = AddonReflection.staticField(EFFECT_REGISTRY, "HOLLOW_CRYSTAL_EFFECT");
         if (holder.isPresent() && holder.get() instanceof Holder<?>) {
             var effect = caster.getEffect((Holder<MobEffect>) holder.get());
