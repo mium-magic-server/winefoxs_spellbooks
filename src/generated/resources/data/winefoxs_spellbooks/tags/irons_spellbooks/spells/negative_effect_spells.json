@@ -25,6 +25,10 @@
       "required": false
     },
     {
+      "id": "discerning_the_eldritch:conjure_gaoler",
+      "required": false
+    },
+    {
       "id": "discerning_the_eldritch:crystalline_carver",
       "required": false
     },

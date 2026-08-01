@@ -43,6 +43,8 @@ public final class HazenNStuffTags {
         ctx.positiveEffect().addOptional(HnSSpellRegistries.MOONKISSED.get().getSpellResource());
         ctx.attack().addOptional(HnSSpellRegistries.RAZORBLADE_TYPHOON.get().getSpellResource());
         ctx.attack().addOptional(HnSSpellRegistries.SHADOW_REAVER.get().getSpellResource());
+        ctx.attack().addOptional(HnSSpellRegistries.SOUL_FLAME_BOLT.get().getSpellResource());
+        ctx.attack().addOptional(HnSSpellRegistries.SOUL_FLAMING_STRIKE.get().getSpellResource());
         ctx.attack().addOptional(HnSSpellRegistries.TRIDENT_JETSTREAM.get().getSpellResource());
         ctx.attack().addOptional(HnSSpellRegistries.VIOLENT_REGURGITATION.get().getSpellResource());
         ctx.attack().addOptional(HnSSpellRegistries.WATER_BOLT.get().getSpellResource());

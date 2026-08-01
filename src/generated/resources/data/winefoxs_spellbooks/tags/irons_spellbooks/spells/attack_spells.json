@@ -181,6 +181,14 @@
       "required": false
     },
     {
+      "id": "discerning_the_eldritch:call_ascended_one",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:conjure_gaoler",
+      "required": false
+    },
+    {
       "id": "discerning_the_eldritch:crystalline_carver",
       "required": false
     },
@@ -234,6 +242,14 @@
     },
     {
       "id": "ess_requiem:lord_of_the_final_frost",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:cataphract_slam",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:cataphract_tackle",
       "required": false
     },
     {
@@ -305,7 +321,7 @@
       "required": false
     },
     {
-      "id": "firesenderexpansion:partial_teleport",
+      "id": "firesenderexpansion:arcane_slice",
       "required": false
     },
     {
@@ -481,6 +497,14 @@
       "required": false
     },
     {
+      "id": "hazennstuff:soul_flame_bolt",
+      "required": false
+    },
+    {
+      "id": "hazennstuff:soul_flaming_strike",
+      "required": false
+    },
+    {
       "id": "hazennstuff:trident_jetstream",
       "required": false
     },
@@ -537,11 +561,19 @@
       "required": false
     },
     {
+      "id": "irons_spellbooks:arcane_shackle",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:black_hole",
       "required": false
     },
     {
       "id": "irons_spellbooks:dragon_breath",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:gravity_fissure",
       "required": false
     },
     {
@@ -574,6 +606,10 @@
     },
     {
       "id": "irons_spellbooks:fang_strike",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:fang_swirl",
       "required": false
     },
     {
@@ -666,6 +702,10 @@
     },
     {
       "id": "irons_spellbooks:wisp",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:blizzard",
       "required": false
     },
     {

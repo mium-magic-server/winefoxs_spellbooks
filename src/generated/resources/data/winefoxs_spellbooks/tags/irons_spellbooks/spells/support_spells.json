@@ -5,6 +5,10 @@
       "required": false
     },
     {
+      "id": "irons_spellbooks:counterspell",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:greater_heal",
       "required": false
     },

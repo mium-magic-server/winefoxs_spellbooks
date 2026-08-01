@@ -11,6 +11,12 @@ public final class IronsSpellbooksTags {
     }
 
     public static void contribute(SpellTagContext ctx) {
+        // 以下法术是纯玩家向工具，不参与战斗，故意不给女仆分类。
+        // audit-mods.sh 认 audit:ignore 标记，不会再把它们报成漏分类。
+        // audit:ignore ANGEL_WINGS_SPELL, PLANAR_SIGHT_SPELL, POCKET_DIMENSION_SPELL
+        // audit:ignore PORTAL_SPELL, RECALL_SPELL, TELEKINESIS_SPELL, TOUCH_DIG
+        // audit:ignore SPECTRAL_HAMMER_SPELL, SUMMON_ENDER_CHEST_SPELL, SUMMON_HORSE_SPELL
+
         // ========== Blood ==========
         ctx.attack().addOptional(SpellRegistry.ACUPUNCTURE_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.BLOOD_NEEDLES_SPELL.get().getSpellResource());
@@ -31,8 +37,10 @@ public final class IronsSpellbooksTags {
         ctx.defense().addOptional(SpellRegistry.ABYSSAL_SHROUD_SPELL.get().getSpellResource());
 
         // ========== Ender ==========
+        ctx.attack().addOptional(SpellRegistry.ARCANE_SHACKLE_SPELL.get().getSpellResource()); // 锁链拉拽，自身不造成伤害
         ctx.attack().addOptional(SpellRegistry.BLACK_HOLE_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.DRAGON_BREATH_SPELL.get().getSpellResource());
+        ctx.attack().addOptional(SpellRegistry.GRAVITY_FISSURE.get().getSpellResource()); // 黑洞吸附，自身不造成伤害
         ctx.attack().addOptional(SpellRegistry.MAGIC_ARROW_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.MAGIC_MISSILE_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.SHADOW_SLASH.get().getSpellResource());
@@ -40,6 +48,9 @@ public final class IronsSpellbooksTags {
         ctx.defense().addOptional(SpellRegistry.ECHOING_STRIKES_SPELL.get().getSpellResource());
         ctx.defense().addOptional(SpellRegistry.EVASION_SPELL.get().getSpellResource());
         ctx.movement().addOptional(SpellRegistry.TELEPORT_SPELL.get().getSpellResource());
+        // COUNTERSPELL: 80 格射线反魔法，打断施法、驱散敌方召唤物、剥离目标魔法增益。
+        // 不造成伤害，按控制法术归类，与同为"对敌人施放的控制"的 ICE_TOMB 一致。
+        ctx.support().addOptional(SpellRegistry.COUNTERSPELL_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.SUMMON_SWORDS.get().getSpellResource());
         ctx.summon().addOptional(SpellRegistry.SUMMON_SWORDS.get().getSpellResource());
 
@@ -47,6 +58,7 @@ public final class IronsSpellbooksTags {
         ctx.attack().addOptional(SpellRegistry.ARROW_VOLLEY_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.CHAIN_CREEPER_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.FANG_STRIKE_SPELL.get().getSpellResource());
+        ctx.attack().addOptional(SpellRegistry.FANG_SWIRL_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.FANG_WARD_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.FIRECRACKER_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.GUST_SPELL.get().getSpellResource());
@@ -58,6 +70,9 @@ public final class IronsSpellbooksTags {
         ctx.attack().addOptional(SpellRegistry.WOLOLO_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.SUMMON_VEX_SPELL.get().getSpellResource());
         ctx.summon().addOptional(SpellRegistry.SUMMON_VEX_SPELL.get().getSpellResource());
+        // SCAPEGOAT: 召唤只会拉仇恨的替身山羊，本身不攻击，等同保命手段
+        ctx.summon().addOptional(SpellRegistry.SCAPEGOAT_SPELL.get().getSpellResource());
+        ctx.defense().addOptional(SpellRegistry.SCAPEGOAT_SPELL.get().getSpellResource());
 
         // ========== Fire ==========
         ctx.attack().addOptional(SpellRegistry.BLAZE_STORM_SPELL.get().getSpellResource());
@@ -90,6 +105,8 @@ public final class IronsSpellbooksTags {
         ctx.supportEffect().addOptional(SpellRegistry.HEALING_CIRCLE_SPELL.get().getSpellResource());
 
         // ========== Ice ==========
+        // BLIZZARD: 持续 AOE，附带原版冰冻计时而非 MobEffect，所以不进 negativeEffect
+        ctx.attack().addOptional(SpellRegistry.BLIZZARD_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.CONE_OF_COLD_SPELL.get().getSpellResource());
         ctx.positiveEffect().addOptional(SpellRegistry.FROSTBITE_SPELL.get().getSpellResource());
         ctx.negativeEffect().addOptional(SpellRegistry.FROSTWAVE_SPELL.get().getSpellResource());

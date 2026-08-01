@@ -21,6 +21,10 @@
       "required": false
     },
     {
+      "id": "ess_requiem:cataphract_tackle",
+      "required": false
+    },
+    {
       "id": "ess_requiem:disappearing_act",
       "required": false
     },

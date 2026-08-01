@@ -33,6 +33,9 @@ public final class DiscerningTheEldritchData {
         // Negative Effect
         ctx.effect().add(SpellRegistries.SILENCE.get().getSpellResource(),
             DTEPotionEffectRegistry.SILENCE_POTION_EFFECT.getId());
+        // CONJURE_GAOLER 施法前给 15 格内所有生物挂原版黑暗
+        ctx.effect().add(SpellRegistries.CONJURE_GAOLER.get().getSpellResource(),
+            MobEffects.DARKNESS.getKey().location());
 
         // Movement（带 MobEffect 的移动法术）
         ctx.effect().add(SpellRegistries.BOOGIE_WOOGIE.get().getSpellResource(),

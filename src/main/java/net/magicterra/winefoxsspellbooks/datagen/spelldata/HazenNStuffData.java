@@ -14,6 +14,8 @@ public final class HazenNStuffData {
         ctx.range().add(HnSSpellRegistries.SCORCHING_SLASH.get().getSpellResource(), 2F);
         // NIGHTS_EDGE_STRIKE: 在施法者前方 1.9 格位置触发，检测距离 3.25 格（同时发射投射物）
         ctx.range().add(HnSSpellRegistries.NIGHTS_EDGE_STRIKE.get().getSpellResource(), 2F);
+        // SOUL_FLAMING_STRIKE: 前方 3.25 格锥形 AABB 扫击，与铁魔法本体的 FLAMING_STRIKE 同构
+        ctx.range().add(HnSSpellRegistries.SOUL_FLAMING_STRIKE.get().getSpellResource(), 2F);
 
         // Negative Effect
         // GOLDEN_SHOWER 发射 IchorStream 弹射物，命中目标施加 ICHOR 效果（降低护甲、护甲韧性、法术抗性）

@@ -3,6 +3,7 @@ package net.magicterra.winefoxsspellbooks.datagen.spelldata;
 import io.redspace.ironsspellbooks.registries.MobEffectRegistry;
 import net.ender.ess_requiem.registries.GGEffectRegistry;
 import net.ender.ess_requiem.registries.GGSpellRegistry;
+import net.minecraft.world.effect.MobEffects;
 
 public final class EndersSpellsRequiemData {
 
@@ -13,6 +14,10 @@ public final class EndersSpellsRequiemData {
         // ========== 近战攻击法术 ==========
         // CLAW (Rip and Tear): 在施法者前方 1.9 格位置触发，检测距离 3.25 格
         ctx.range().add(GGSpellRegistry.CLAW.get().getSpellResource(), 2F);
+        // CATAPHRACT_SLAM: 前方 1.7 格落点 + 4.4 格宽 AABB 砸击
+        ctx.range().add(GGSpellRegistry.CATAPHRACT_SLAM.get().getSpellResource(), 2F);
+        // CATAPHRACT_TACKLE: 冲锋撞击，接触判定贴着自身碰撞箱
+        ctx.range().add(GGSpellRegistry.CATAPHRACT_TACKLE.get().getSpellResource(), 2F);
 
         // Defense
         ctx.effect().add(GGSpellRegistry.UNDEAD_PACT.get().getSpellResource(),
@@ -31,6 +36,9 @@ public final class EndersSpellsRequiemData {
             GGEffectRegistry.EBONY_CATAPHRACT.getId());
         ctx.effect().add(GGSpellRegistry.BASTION_OF_LIGHT.get().getSpellResource(),
             GGEffectRegistry.BASTION_OF_LIGHT.getId());
+        // CATAPHRACT_HEAL 回血同时给自己挂原版再生
+        ctx.effect().add(GGSpellRegistry.CATAPHRACT_HEAL.get().getSpellResource(),
+            MobEffects.REGENERATION.getKey().location());
 
         // Negative Effect
         ctx.effect().add(GGSpellRegistry.FINALITY_OF_DECAY.get().getSpellResource(),

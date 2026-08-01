@@ -8,7 +8,7 @@ public final class FiresEnderExpansionTags {
     }
 
     public static void contribute(SpellTagContext ctx) {
-        ctx.attack().addOptional(SpellRegistries.PARTIAL_TELEPORT.get().getSpellResource());
+        ctx.attack().addOptional(SpellRegistries.ARCANE_SLICE.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistries.HOLLOW_CRYSTAL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistries.OBSIDIAN_ROD.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistries.DRAGONS_FURY.get().getSpellResource());

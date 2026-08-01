@@ -27,6 +27,15 @@ public final class EndersSpellsRequiemTags {
         ctx.defense().addOptional(GGSpellRegistry.CURSED_IMMORTALITY.get().getSpellResource());
         ctx.defense().addOptional(GGSpellRegistry.EBONY_CATAPHRACT.get().getSpellResource());
         ctx.defense().addOptional(GGSpellRegistry.BASTION_OF_LIGHT.get().getSpellResource());
+        // 黑铁重甲套装的三个内置技能：不可合成/掉落，只由 EBONY_CATAPHRACT 效果驱动，
+        // 但仍按行为归类，保持与 ARM_OF_DECAY_PASSIVE 一致。
+        // CATAPHRACT_HEAL 只作用于自己，归 defense（该档查 mob 自身有无该效果）；
+        // support/positiveEffect 查的是队友身上的效果，自我增益放进去会让判定恒真。
+        ctx.defense().addOptional(GGSpellRegistry.CATAPHRACT_HEAL.get().getSpellResource());
+        ctx.attack().addOptional(GGSpellRegistry.CATAPHRACT_SLAM.get().getSpellResource());
+        // CATAPHRACT_TACKLE: 冲锋位移，伤害由施加在自己身上的同名效果在接触时结算
+        ctx.movement().addOptional(GGSpellRegistry.CATAPHRACT_TACKLE.get().getSpellResource());
+        ctx.attack().addOptional(GGSpellRegistry.CATAPHRACT_TACKLE.get().getSpellResource());
         ctx.negativeEffect().addOptional(GGSpellRegistry.FINALITY_OF_DECAY.get().getSpellResource());
         ctx.negativeEffect().addOptional(GGSpellRegistry.ETERNAL_BATTLEFIELD.get().getSpellResource());
         ctx.attack().addOptional(GGSpellRegistry.SKULLS.get().getSpellResource());
@@ -53,6 +62,8 @@ public final class EndersSpellsRequiemTags {
 
         // ARM_OF_DECAY_PASSIVE / FIELD_OF_MOURNING / MAGGOT_BURST: 召唤类
         ctx.summon().addOptional(GGSpellRegistry.ARM_OF_DECAY_PASSIVE.get().getSpellResource());
+        // 0.1.6 把腐朽之臂拆成强/弱两档，弱档同样是纯召唤（不可合成，只由武器被动触发）
+        ctx.summon().addOptional(GGSpellRegistry.ARM_OF_DECAY_WEAK_PASSIVE.get().getSpellResource());
         ctx.summon().addOptional(GGSpellRegistry.FIELD_OF_MOURNING.get().getSpellResource());
         ctx.summon().addOptional(GGSpellRegistry.MAGGOT_BURST.get().getSpellResource());
         // CORPSE_EXPLOSION / GLACIAL_SCULPTING: 引爆己方召唤物造成 AOE 伤害

@@ -18,11 +18,23 @@
     },
     {
       "range": 2.0,
+      "spell": "ess_requiem:cataphract_slam"
+    },
+    {
+      "range": 2.0,
+      "spell": "ess_requiem:cataphract_tackle"
+    },
+    {
+      "range": 2.0,
       "spell": "hazennstuff:scorching_slash"
     },
     {
       "range": 2.0,
       "spell": "hazennstuff:nights_edge_strike"
+    },
+    {
+      "range": 2.0,
+      "spell": "hazennstuff:soul_flaming_strike"
     },
     {
       "range": 2.0,

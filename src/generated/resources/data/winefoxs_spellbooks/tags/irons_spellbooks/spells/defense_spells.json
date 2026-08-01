@@ -65,6 +65,10 @@
       "required": false
     },
     {
+      "id": "ess_requiem:cataphract_heal",
+      "required": false
+    },
+    {
       "id": "ess_requiem:sword_stance",
       "required": false
     },
@@ -102,6 +106,10 @@
     },
     {
       "id": "irons_spellbooks:shield",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:scapegoat",
       "required": false
     },
     {

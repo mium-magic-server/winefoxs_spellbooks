@@ -53,6 +53,10 @@
       "spell": "discerning_the_eldritch:silence"
     },
     {
+      "effect": "minecraft:darkness",
+      "spell": "discerning_the_eldritch:conjure_gaoler"
+    },
+    {
       "effect": "minecraft:nausea",
       "spell": "discerning_the_eldritch:boogie_woogie"
     },
@@ -107,6 +111,10 @@
     {
       "effect": "ess_requiem:bastion_of_light",
       "spell": "ess_requiem:bastion_of_light"
+    },
+    {
+      "effect": "minecraft:regeneration",
+      "spell": "ess_requiem:cataphract_heal"
     },
     {
       "effect": "ess_requiem:finality_of_decay",
