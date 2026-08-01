@@ -368,7 +368,11 @@ public class WsbCommand {
 
             MagicMaidAdapter adapter = entity instanceof MaidMagicEntity maid
                                        ? maid.winefoxsSpellbooks$getMagicMaidAdapter() : null;
+            boolean previousBypassCastCheck = false;
             if (adapter != null) {
+                // 存原值而不是默认 false：法术测试任务运行期间这只女仆的开关本来就是 true，
+                // 硬置 false 会只关掉前置检查放行、留下不扣蓝，落到两个开关都不该出现的中间态
+                previousBypassCastCheck = adapter.isBypassCastCheck();
                 adapter.setBypassCastCheck(true);
             }
             try {
@@ -382,7 +386,7 @@ public class WsbCommand {
                 // 复位必须走 finally：施法抛异常时标志会永久停在 true，而适配器用它整体短路
                 // 蓝量/冷却/前置检查，一次失败的指令就把这只女仆变成永久无消耗的施法者
                 if (adapter != null) {
-                    adapter.setBypassCastCheck(false);
+                    adapter.setBypassCastCheck(previousBypassCastCheck);
                 }
             }
         }

@@ -74,6 +74,11 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
     private boolean bypassCastCheck = false;
 
+    /**
+     * 施法时是否跳过扣蓝。与 {@link #bypassCastCheck} 分开两个开关：前置检查放行只是让蓝量不足也能起手，
+     * 扣蓝仍在 {@link #castSpell} 里照扣，指令施法要的正是这个语义。
+     */
+    private boolean bypassManaCost = false;
 
     public MagicMaidAdapter(LivingEntity delegatedEntity) {
         this.delegatedEntity = delegatedEntity;
@@ -395,7 +400,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             } else if (spell.getCastType() == CastType.CONTINUOUS) {
                 if ((maidMagicData.getCastDurationRemaining() + 1) % MaidMagicManager.CONTINUOUS_CAST_TICK_INTERVAL == 0) {
                     if (maidMagicData.getCastDurationRemaining() < MaidMagicManager.CONTINUOUS_CAST_TICK_INTERVAL ||
-                        (maidMagicData.getCastSource().consumesMana() &&
+                        (!bypassManaCost && maidMagicData.getCastSource().consumesMana() &&
                             maidMagicData.getMana() - getManaCost(spell, maidMagicData.getCastingSpellLevel()) * 2 < 0)) {
                         castSpell(spell, maidMagicData.getCastingSpellLevel(), true);
                         castComplete();
@@ -446,6 +451,8 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
     /**
      * 执行法术
+     * <p>
+     * 法术实现抛出的任何异常都会被捕获并记录，本次施法中止、该法术强制进冷却，蓝量不退还。
      *
      * @param spell           要执行的法术
      * @param spellLevel      法术等级
@@ -460,13 +467,25 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         var mobRecasts = maidMagicData.getPlayerRecasts();
         var mobAlreadyHasRecast = mobRecasts.hasRecastForSpell(spell.getSpellId());
 
-        if (!mobAlreadyHasRecast) {
+        if (!mobAlreadyHasRecast && !bypassManaCost) {
             float manaCost = getManaCost(spell, spellLevel);
             var newMana = Math.max(maidMagicData.getMana() - manaCost, 0);
             winefoxsSpellbooks$setMana(newMana);
         }
 
-        spell.onCast(delegatedEntity.level(), spellLevel, delegatedEntity, CastSource.MOB, maidMagicData);
+        try {
+            spell.onCast(delegatedEntity.level(), spellLevel, delegatedEntity, CastSource.MOB, maidMagicData);
+        } catch (Throwable t) {
+            // 附属 mod 的法术实现出错不该把服务端一起带走：女仆是在实体 tick 里施法的，
+            // 异常冒泡到 guardEntityTick 就是一份崩溃报告。捕 Throwable 而非 Exception，
+            // 是因为附属与 Iron's 版本漂移抛的往往是 NoSuchMethodError 这类 Error。
+            WinefoxsSpellbooks.LOGGER.error("Spell {}({}) threw while being cast by maid {} at {}; cast aborted. " +
+                    "This is usually a bug in the spell's own mod, not in Winefox's Spellbooks",
+                spell.getSpellId(), spellLevel, delegatedEntity.getName().getString(), delegatedEntity.blockPosition(), t);
+            // 强制进冷却，免得 AI 下一 tick 又挑中同一个坏法术反复报错
+            MaidMagicManager.addCooldown(delegatedEntity, spell, CastSource.MOB);
+            return;
+        }
 
         var mobHasRecastsLeft = mobRecasts.hasRecastForSpell(spell);
         if (mobAlreadyHasRecast && mobHasRecastsLeft) {
@@ -490,6 +509,10 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
     public boolean isBypassCastCheck() {
         return bypassCastCheck;
+    }
+
+    public void setBypassManaCost(boolean bypassManaCost) {
+        this.bypassManaCost = bypassManaCost;
     }
 
     protected final LivingEntity getTargetFromBrain() {
