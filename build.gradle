@@ -213,6 +213,8 @@ dependencies {
     // Hazen 'N Stuff
     implementation("curse.maven:hazen-n-stuff-1231627:${hazen_n_stuff_version}")
     runtimeOnly("maven.modrinth:hazentouvelib:${hazentouvelib_version}")
+    // hazentouvelib 1.0.8 起硬依赖 caelus，缺了会在 mod 加载阶段直接报错
+    runtimeOnly("maven.modrinth:caelus:${caelus_version}-neoforge")
     // Discerning The Eldritch
     implementation("curse.maven:discerning-the-eldritch-1143065:${discerning_the_eldritch_version}")
     implementation("curse.maven:aces-spell-utils-1299492:${aces_spell_utils_version}")
