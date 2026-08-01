@@ -18,6 +18,7 @@ import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.LittleMaidSpellbooksCompat;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter;
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidLoadoutManager;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.BroomMode;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.MaidLoadout;
@@ -365,19 +366,24 @@ public class WsbCommand {
                 continue;
             }
 
+            MagicMaidAdapter adapter = entity instanceof MaidMagicEntity maid
+                                       ? maid.winefoxsSpellbooks$getMagicMaidAdapter() : null;
+            if (adapter != null) {
+                adapter.setBypassCastCheck(true);
+            }
             try {
-                if (entity instanceof MaidMagicEntity maid) {
-                    maid.winefoxsSpellbooks$getMagicMaidAdapter().setBypassCastCheck(true);
-                }
                 magicEntity.initiateCastSpell(spell, level);
-                if (entity instanceof MaidMagicEntity maid) {
-                    maid.winefoxsSpellbooks$getMagicMaidAdapter().setBypassCastCheck(false);
-                }
                 successCount++;
                 WinefoxsSpellbooks.LOGGER.debug("Entity {} cast spell {} (level {})", entity.getUUID(), spellId, level);
             } catch (Exception e) {
                 WinefoxsSpellbooks.LOGGER.error("Entity {} failed to cast spell {}: {}", entity.getUUID(), spellId, e.getMessage());
                 failCount++;
+            } finally {
+                // 复位必须走 finally：施法抛异常时标志会永久停在 true，而适配器用它整体短路
+                // 蓝量/冷却/前置检查，一次失败的指令就把这只女仆变成永久无消耗的施法者
+                if (adapter != null) {
+                    adapter.setBypassCastCheck(false);
+                }
             }
         }
 
