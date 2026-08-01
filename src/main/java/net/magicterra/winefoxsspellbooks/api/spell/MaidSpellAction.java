@@ -39,22 +39,22 @@ public enum MaidSpellAction implements SpellCategory {
      * 自我治疗法术：所有模式下对自身施放。
      */
     SUPPORT("support", "support_spells", "extraSupportSpells",
-        "extra_support_spells", "Extra support spell ids"),
+        "extra_support_spells", "Extra self-heal spell ids"),
     /**
-     * 正面效果法术：法术支援模式下对队友施放。
+     * 增益队友法术：法术支援模式下对队友施放。
      */
     POSITIVE("positive_effect", "positive_effect_spells", "extraPositiveEffectSpells",
-        "extra_positive_effect_spells", "Extra positive effect spell ids"),
+        "extra_positive_effect_spells", "Extra ally buff spell ids"),
     /**
      * 负面效果法术：所有模式下对敌人施放。
      */
     NEGATIVE("negative_effect", "negative_effect_spells", "extraNegativeEffectSpells",
         "extra_negative_effect_spells", "Extra negative effect spell ids"),
     /**
-     * 治疗效果法术：法术支援模式下对队友施放。
+     * 治疗队友法术：法术支援模式下对队友施放。
      */
     SUPPORT_OTHER("support_other", "support_effect_spells", "extraSupportEffectSpells",
-        "extra_support_effect_spells", "Extra restoration effect spell ids");
+        "extra_support_effect_spells", "Extra ally heal spell ids");
 
     /**
      * 固定顺序的只读视图。热路径上遍历用它，避免 {@code values()} 每次拷贝数组。

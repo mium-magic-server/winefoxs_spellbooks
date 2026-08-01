@@ -102,21 +102,21 @@ public class RegisterSpellTypeEvent extends Event {
     }
 
     /**
-     * 支援法术集合，可直接修改。
+     * 自我治疗法术集合，可直接修改。
      */
     public Set<AbstractSpell> getSupportSpells() {
         return spellsOf(MaidSpellAction.SUPPORT);
     }
 
     /**
-     * 正面效果法术集合，可直接修改。
+     * 增益队友法术集合，可直接修改。
      */
     public Set<AbstractSpell> getPositiveEffectSpells() {
         return spellsOf(MaidSpellAction.POSITIVE);
     }
 
     /**
-     * 支援效果法术集合，可直接修改。
+     * 治疗队友法术集合，可直接修改。
      */
     public Set<AbstractSpell> getSupportEffectSpells() {
         return spellsOf(MaidSpellAction.SUPPORT_OTHER);
@@ -137,7 +137,7 @@ public class RegisterSpellTypeEvent extends Event {
     }
 
     /**
-     * 需要二重咏唱的法术集合，可直接修改。
+     * 需要多次咏唱的法术集合，可直接修改。
      */
     public Set<AbstractSpell> getRecastSpells() {
         return spellsOf(SpellFlag.SHOULD_RECAST);
