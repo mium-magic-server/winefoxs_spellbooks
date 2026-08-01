@@ -51,6 +51,40 @@ This mod introduces a new "Magic Attack Mode" and supports the GeckoLib animatio
 5. Strike the maid with lightning to enable infinite mana.
 
 ---
+## 🚫 Excluding Spells
+
+Which spells a maid may cast is decided by spell tags. The `[spell_compat]` options in `winefoxs_spellbooks-server.toml` can only **add** spells, so to keep maids away from a spell (a friendly-fire heavy AoE, say) remove it from its tag with a data pack.
+
+Create `<world>/datapacks/<your-pack>/pack.mcmeta`:
+
+```json
+{ "pack": { "pack_format": 48, "description": "Maid spell blacklist" } }
+```
+
+Then `<your-pack>/data/winefoxs_spellbooks/tags/irons_spellbooks/spells/attack_spells.json`:
+
+```json
+{
+  "values": [],
+  "remove": [
+    { "id": "irons_spellbooks:fireball" }
+  ]
+}
+```
+
+Run `/reload` — the maid spell catalog rebuilds right away, and any spell that belongs to none of the behaviour tags is skipped when the maid reads her spellbook.
+
+**Behaviour tags** (a spell belongs to exactly one; removing it from that one is enough):
+
+`attack_spells` · `defense_spells` · `movement_spells` · `support_spells` · `positive_effect_spells` · `negative_effect_spells` · `support_effect_spells`
+
+To find out which tag holds a given spell, open this mod's jar with any archiver and look in `data/winefoxs_spellbooks/tags/irons_spellbooks/spells/` — the seven behaviour tags and the two marker tags are all there as json, holding the mod's default classification. Copy one as the starting point for your own pack.
+
+**Marker tags** — `summon_spells` and `maid_should_recast_spells` do not control availability. Removing an entry there only drops the summon / recast marker; the maid still casts the spell.
+
+> ⚠️ Config extras are merged **after** tags, so do not list the same spell id in `extraAttackSpells` and friends — it would be added straight back.
+
+---
 ## 🛠️ Development & Contributions
 This mod is open to developers and mod enthusiasts. If you find bugs, have optimization suggestions, or want to add new features, please submit an issue or pull request.
 
