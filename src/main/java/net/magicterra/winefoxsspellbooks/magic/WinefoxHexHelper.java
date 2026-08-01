@@ -364,23 +364,28 @@ public final class WinefoxHexHelper {
      * </ul>
      * 两类均归玩家所有，故引爆时都应走女仆分支（×1.5 / AoE+1 / 连锁）。
      * 只判定「有没有主人」，不判定主人是谁；需要区分归属时用 {@link #isMaidOwnedBy}。
+     * <p>
+     * 归属判定走 {@link MaidAllyHelper#claimsOwner} 的 UUID 口径而非解析主人实体： 主人下线时实体解析必然返回 null，而女仆在强加载区块里还在打，那时不该被当成野生生物。
      */
     public static boolean isOwnedMaid(Entity attacker) {
-        return maidOwner(attacker) != null;
+        return isMaid(attacker) && MaidAllyHelper.claimsOwner(attacker);
     }
 
     /**
-     * 取女仆的主人：雇佣女仆（{@link EntityMaid}）取 {@code getOwner()}， 召唤女仆（{@link IMaid} + {@link IMagicSummon}）取 {@code getSummoner()}； 非女仆或无主时返回 {@code null}。两类女仆的判定统一收口于此。
+     * 是否为本模组认的女仆：TLM 雇佣女仆，或法术召唤的战斗女仆。
+     */
+    private static boolean isMaid(@Nullable Entity entity) {
+        return entity instanceof EntityMaid || (entity instanceof IMaid && entity instanceof IMagicSummon);
+    }
+
+    /**
+     * 取女仆的主人：雇佣女仆（{@link EntityMaid}）取 {@code getOwner()}， 召唤女仆（{@link IMaid} + {@link IMagicSummon}）取 {@code getSummoner()}； 非女仆或无主时返回 {@code null}。
+     * <p>
+     * 返回的是主人<b>实体</b>，主人下线或未加载时为 {@code null}——调用方拿它是为了对主人施加效果， 主人不在场本就无从施加。只问「有没有主人」请用 {@link #isOwnedMaid}。
      */
     @Nullable
     private static Entity maidOwner(Entity maid) {
-        if (maid instanceof EntityMaid m) {
-            return m.getOwner();
-        }
-        if (maid instanceof IMaid && maid instanceof IMagicSummon summon) {
-            return summon.getSummoner();
-        }
-        return null;
+        return isMaid(maid) ? MaidAllyHelper.getSummonerOrOwner(maid) : null;
     }
 
     /**

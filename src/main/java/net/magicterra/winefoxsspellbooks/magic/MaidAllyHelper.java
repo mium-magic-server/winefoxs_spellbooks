@@ -94,8 +94,10 @@ public class MaidAllyHelper {
 
     /**
      * 实体是否仍然宣称有主人/召唤者：用来区分"确实到顶了"与"主人此刻不可达"。
+     * <p>
+     * 只查 UUID 与召唤表，不解析主人实体，因此主人下线或未加载时依然给出正确答案—— 凡是"有没有主人"这类判定都该走这里，而不是 {@code getOwner() != null}。
      */
-    private static boolean claimsOwner(Entity entity) {
+    public static boolean claimsOwner(Entity entity) {
         if (entity instanceof OwnableEntity ownable && ownable.getOwnerUUID() != null) {
             return true;
         }
@@ -124,7 +126,7 @@ public class MaidAllyHelper {
      * @return 召唤者或主人，如果没有则返回 null
      */
     @Nullable
-    private static Entity getSummonerOrOwner(@Nullable Entity entity) {
+    public static Entity getSummonerOrOwner(@Nullable Entity entity) {
         return switch (entity) {
             case IMagicSummon summon -> summon.getSummoner();
             case OwnableEntity ownable -> ownable.getOwner();
