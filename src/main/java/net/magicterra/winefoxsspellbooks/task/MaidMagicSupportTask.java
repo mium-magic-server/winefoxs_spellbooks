@@ -11,6 +11,7 @@ import java.util.Set;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
+import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellAttackWalkToTarget;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellCastingTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellChooseTask;
@@ -47,6 +48,15 @@ public class MaidMagicSupportTask extends MaidCastingTask {
     @Override
     public ItemStack getIcon() {
         return WsbItems.MAGIC_SUPPORT_TASK_ICON.toStack();
+    }
+
+    /**
+     * 支援任务能用的法术集与施法任务不同：多 POSITIVE / SUPPORT_OTHER，无 ATTACK / MOVEMENT。 沿用父类那套会让只带治疗与强化的女仆被判成「没法术」，索敌永不触发、任务整个空转。
+     */
+    @Override
+    protected Set<MaidSpellAction> allowedActions() {
+        return Set.of(MaidSpellAction.DEFENSE, MaidSpellAction.SUPPORT, MaidSpellAction.POSITIVE,
+            MaidSpellAction.NEGATIVE, MaidSpellAction.SUPPORT_OTHER);
     }
 
     @Override
@@ -86,8 +96,7 @@ public class MaidMagicSupportTask extends MaidCastingTask {
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, MaidMagicSupportTask::findNearbyFriendsAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
-        BehaviorControl<Mob> spellChooseTask = new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
-            Set.of(MaidSpellAction.DEFENSE, MaidSpellAction.SUPPORT, MaidSpellAction.POSITIVE, MaidSpellAction.NEGATIVE, MaidSpellAction.SUPPORT_OTHER));
+        BehaviorControl<Mob> spellChooseTask = new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid, allowedActions());
         BehaviorControl<Mob> moveToTargetTask = SpellAttackWalkToTarget.create((float) Config.getBattleWalkSpeed());
         BehaviorControl<PathfinderMob> maidAttackStrafingTask = new SpellStrafingTask(Config.getStartSpellRange(), (float) Config.getBattleWalkSpeed());
         BehaviorControl<Mob> shootTargetTask = new SpellCastingTask(((IMagicEntity) maid));
@@ -106,8 +115,7 @@ public class MaidMagicSupportTask extends MaidCastingTask {
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
         BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, MaidMagicSupportTask::findNearbyFriendsAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
-        BehaviorControl<Mob> spellChooseTask = new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
-            Set.of(MaidSpellAction.DEFENSE, MaidSpellAction.SUPPORT, MaidSpellAction.POSITIVE, MaidSpellAction.NEGATIVE, MaidSpellAction.SUPPORT_OTHER));
+        BehaviorControl<Mob> spellChooseTask = new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid, allowedActions());
         BehaviorControl<Mob> shootTargetTask = new SpellCastingTask(((IMagicEntity) maid));
 
         return Lists.newArrayList(

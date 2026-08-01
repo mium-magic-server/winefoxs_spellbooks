@@ -92,8 +92,7 @@ public class MaidCastingTask implements IRangedAttackTask {
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, MaidCastingTask::findAttackTargetPreferBranded);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
-        BehaviorControl<Mob> spellChooseTask = new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
-            Set.of(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT, MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE));
+        BehaviorControl<Mob> spellChooseTask = new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid, allowedActions());
         BehaviorControl<Mob> moveToTargetTask = SpellAttackWalkToTarget.create((float) Config.getBattleWalkSpeed());
         BehaviorControl<Mob> drinkPotionTask = new DrinkPotionsTask((float) Config.getBattleWalkSpeed(), 100);
         BehaviorControl<PathfinderMob> maidAttackStrafingTask = new SpellStrafingTask(Config.getStartSpellRange(), (float) Config.getBattleWalkSpeed());
@@ -121,8 +120,7 @@ public class MaidCastingTask implements IRangedAttackTask {
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
         BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, MaidCastingTask::findAttackTargetPreferBranded);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
-        BehaviorControl<Mob> spellChooseTask = new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid,
-            Set.of(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT, MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE));
+        BehaviorControl<Mob> spellChooseTask = new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid, allowedActions());
         BehaviorControl<Mob> drinkPotionTask = new DrinkPotionsTask((float) Config.getBattleWalkSpeed(), 100);
         BehaviorControl<Mob> shootTargetTask = new SpellCastingTask(((IMagicEntity) maid));
 
@@ -171,10 +169,18 @@ public class MaidCastingTask implements IRangedAttackTask {
             && maid.getBrain().checkMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get(), MemoryStatus.VALUE_ABSENT);
     }
 
+    /**
+     * 本任务用得上的行为类别。既喂给 {@link SpellChooseTask} 选术，也用来判定女仆「有没有法术」—— 两处必须同口径，否则会出现「判定说有、选术选不出」的空转，或者反过来索敌永不触发。
+     */
+    protected Set<MaidSpellAction> allowedActions() {
+        return Set.of(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT,
+            MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE);
+    }
+
     protected boolean hasSpells(EntityMaid maid) {
         MaidMagicEntity magicEntity = (MaidMagicEntity) maid;
         MaidSpellDataHolder spellDataHolder = magicEntity.winefoxsSpellbooks$getSpellDataHolder();
-        return spellDataHolder.hasAnyCastingTaskSpells();
+        return spellDataHolder.hasAnyOf(allowedActions());
     }
 
     protected boolean farAway(LivingEntity target, EntityMaid maid) {

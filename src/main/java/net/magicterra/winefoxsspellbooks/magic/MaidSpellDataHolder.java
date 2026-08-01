@@ -149,26 +149,15 @@ public class MaidSpellDataHolder {
      * 是否持有任意可用法术。
      */
     public boolean hasAnySpells() {
-        return hasAnyOf(MaidSpellAction.ALL);
+        return hasAnyOf(Arrays.asList(MaidSpellAction.ALL));
     }
 
     /**
-     * 施法任务（{@code MaidCastingTask}）用得上的法术是否至少有一个。
+     * 给定的若干行为类别里是否至少有一个法术。
+     * <p>
+     * 调用方传自己那套「用得上的类别」（施法任务与支援任务各不相同），本类不替具体 AI 任务 记这份名单——那会让同一套类别在任务侧与这里各写一遍，改一处漏一处。
      */
-    public boolean hasAnyCastingTaskSpells() {
-        return hasAnyOf(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT,
-            MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE);
-    }
-
-    /**
-     * 支援任务（{@code MaidMagicSupportTask}）用得上的法术是否至少有一个。
-     */
-    public boolean hasAnyMagicSupportTaskSpells() {
-        return hasAnyOf(MaidSpellAction.DEFENSE, MaidSpellAction.SUPPORT, MaidSpellAction.POSITIVE,
-            MaidSpellAction.NEGATIVE, MaidSpellAction.SUPPORT_OTHER);
-    }
-
-    private boolean hasAnyOf(MaidSpellAction... actions) {
+    public boolean hasAnyOf(Collection<MaidSpellAction> actions) {
         for (MaidSpellAction action : actions) {
             if (!spells.get(action).isEmpty()) {
                 return true;
