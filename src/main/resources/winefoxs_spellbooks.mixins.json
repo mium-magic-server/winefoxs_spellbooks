@@ -9,7 +9,10 @@
     "DamageSourcesMixin",
     "EntityAllyMixin",
     "IMagicSummonMixin",
+    "MagicDataAccessor",
     "MaidEntityMixin",
+    "PlayerRecastsAccessor",
+    "RecastInstanceAccessor",
     "SummonManagerAccessor",
     "TargetGoalMixin",
     "ali.ConfigUtilsMixin"
