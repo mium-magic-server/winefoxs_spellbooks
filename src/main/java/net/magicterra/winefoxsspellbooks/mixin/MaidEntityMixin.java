@@ -131,12 +131,10 @@ public abstract class MaidEntityMixin extends PathfinderMob implements MagicMaid
         }
     }
 
+    // 两个钩子都不在这里判端：MaidSummonManager 里各自的入口已经先要一个 ServerLevel 才动召唤表，
+    // 而召唤女仆走的是另一条调用路径（SummonedEntityMaid.onRemovedFromLevel），只有被调方拦得住两边
     @Inject(method = "onAddedToLevel", at = @At("TAIL"))
     public void afterAddedToLevel(CallbackInfo ci) {
-        if (level.isClientSide) {
-            return;
-        }
-
         MaidSummonManager.onMaidPlaced(self());
     }
 

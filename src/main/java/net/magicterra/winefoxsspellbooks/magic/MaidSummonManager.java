@@ -83,12 +83,14 @@ public class MaidSummonManager {
     }
 
     public static void onMaidRemoved(LivingEntity maid) {
+        // 服务端判定必须在读召唤表之前：单人模式下客户端女仆与服务端同 UUID，
+        // 客户端线程去读服务端线程正在改的普通 HashMap，并发扩容时会自旋
+        if (!(maid.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
         SummonManagerAccessor manager = (SummonManagerAccessor) SummonManager.INSTANCE;
         Set<UUID> summons = manager.getOwnerToSummons().get(maid.getUUID());
         if (summons == null) {
-            return;
-        }
-        if (!(maid.level() instanceof ServerLevel serverLevel)) {
             return;
         }
         var savedSummons = new ArrayList<CompoundTag>();

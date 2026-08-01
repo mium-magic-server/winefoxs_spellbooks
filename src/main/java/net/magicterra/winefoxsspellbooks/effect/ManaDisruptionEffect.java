@@ -26,6 +26,10 @@ public class ManaDisruptionEffect extends MobEffect {
 
     @Override
     public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+        // tickEffects 双端都跑：客户端自己也扣一遍的话，读数会持续低于服务端直到下一个同步包
+        if (entity.level().isClientSide) {
+            return true;
+        }
         // 读写一律走 MaidMagicManager 的路由：女仆落到适配器，玩家落到 MagicData 并补发同步包。
         // 自行分支写 MagicData 会漏掉那一发包，客户端魔力条从此停在旧值
         if (entity instanceof MaidMagicEntity || entity instanceof Player) {
