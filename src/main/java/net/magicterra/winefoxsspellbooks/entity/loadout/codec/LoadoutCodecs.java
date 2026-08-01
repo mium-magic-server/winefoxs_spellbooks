@@ -5,10 +5,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.ArmorConfig;
 import net.magicterra.winefoxsspellbooks.entity.loadout.data.ArmorSlotConfig;
@@ -180,28 +182,34 @@ public final class LoadoutCodecs {
         .collect(Collectors.toUnmodifiableMap(MaidSpellAction::poolName, Function.identity()));
 
     /**
-     * 行为类别 ↔ 配装数据包里的字段名（{@code attack} / {@code support_other} …）。
-     * <p>
-     * 用 {@code comapFlatMap} 而非 {@code xmap}：这些 JSON 是<b>用户手写</b>的，字段名打错必须 走 {@link DataResult} 报一条可读的错并跳过该条目，不能抛异常把整个数据包加载带崩。
-     */
-    private static final Codec<MaidSpellAction> SPELL_ACTION = Codec.STRING.comapFlatMap(
-        name -> {
-            MaidSpellAction action = POOL_NAMES.get(name);
-            return action != null
-                   ? DataResult.success(action)
-                   : DataResult.error(
-                () -> "Unknown spell pool category '" + name + "'; expected one of " + POOL_NAMES.keySet());
-        },
-        MaidSpellAction::poolName
-    );
-
-    /**
      * SpellPoolConfig Codec。
      * <p>
      * 键集固定为枚举时，{@code unboundedMap} 在 JSON 上产出的结构与逐字段 {@code optionalFieldOf} 完全相同（缺省的类别不出现），所以现存配装数据包照读不误， 而加一类法术这里零改动。
+     * <p>
+     * 键用 {@code Codec.STRING} 解而不是把校验塞进键的 Codec：{@code unboundedMap} 是全有全无的， 键的 Codec 一旦返回 {@link DataResult#error}，整个 {@code spells} 块乃至整份配装都会被丢掉—— 这些 JSON 是<b>用户手写</b>的，一个字段名打错不该连累其余条目。认不出的类别在这里 警告一条后跳过。
      */
     public static final Codec<SpellPoolConfig> SPELL_POOL_CONFIG =
-        Codec.unboundedMap(SPELL_ACTION, SPELL_POOL).xmap(SpellPoolConfig::new, SpellPoolConfig::pools);
+        Codec.unboundedMap(Codec.STRING, SPELL_POOL).xmap(LoadoutCodecs::decodePools, LoadoutCodecs::encodePools);
+
+    private static SpellPoolConfig decodePools(Map<String, SpellPool> raw) {
+        Map<MaidSpellAction, SpellPool> pools = new EnumMap<>(MaidSpellAction.class);
+        for (Map.Entry<String, SpellPool> entry : raw.entrySet()) {
+            MaidSpellAction action = POOL_NAMES.get(entry.getKey());
+            if (action == null) {
+                WinefoxsSpellbooks.LOGGER.warn(
+                    "Unknown spell pool category '{}' in maid loadout; expected one of {}. Entry skipped.",
+                    entry.getKey(), POOL_NAMES.keySet());
+                continue;
+            }
+            pools.put(action, entry.getValue());
+        }
+        return new SpellPoolConfig(pools);
+    }
+
+    private static Map<String, SpellPool> encodePools(SpellPoolConfig config) {
+        return config.pools().entrySet().stream()
+            .collect(Collectors.toMap(e -> e.getKey().poolName(), Map.Entry::getValue));
+    }
 
     // ==================== Tier ====================
 
