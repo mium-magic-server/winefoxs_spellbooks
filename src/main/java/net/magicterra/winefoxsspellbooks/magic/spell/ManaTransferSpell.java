@@ -47,7 +47,7 @@ public class ManaTransferSpell extends AbstractSpell {
         "mana_transfer");
 
     /**
-     * 传输效率：目标获得的魔力 = 系统扣除的魔力 / 此系数 1.2 表示 20% 损耗
+     * 传输效率：目标获得的魔力 = 系统扣除的魔力 / 此系数。1.2 即扣除的比送达的多 20%（送达约为扣除的 83%）
      */
     private static final double TRANSFER_EFFICIENCY_DIVISOR = 1.2;
 
