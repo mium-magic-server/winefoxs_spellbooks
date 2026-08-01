@@ -73,6 +73,8 @@ public class SpellDataManager extends SimpleJsonResourceReloadListener {
         newRangeMap.put(SpellRegistry.none(), 15.0F);
 
         var ops = this.makeConditionalOps();
+        // 条目覆盖全部受支持的附属，未安装的附属自然解析不到，只统计不逐条打日志
+        int[] skipped = {0};
 
         for (var entry : jsons.entrySet()) {
             ResourceLocation id = entry.getKey();
@@ -81,11 +83,11 @@ public class SpellDataManager extends SimpleJsonResourceReloadListener {
             if (id.getPath().contains("casting_range")) {
                 SpellCastingRangeData.CODEC.parse(ops, json)
                     .resultOrPartial(err -> WinefoxsSpellbooks.LOGGER.warn("Failed to parse casting range {}: {}", id, err))
-                    .ifPresent(data -> processCastingRangeData(data, newRangeMap));
+                    .ifPresent(data -> skipped[0] += processCastingRangeData(data, newRangeMap));
             } else if (id.getPath().contains("caused_effect")) {
                 SpellCausedEffectData.CODEC.parse(ops, json)
                     .resultOrPartial(err -> WinefoxsSpellbooks.LOGGER.warn("Failed to parse caused effect {}: {}", id, err))
-                    .ifPresent(data -> processCausedEffectData(data, newEffectMap));
+                    .ifPresent(data -> skipped[0] += processCausedEffectData(data, newEffectMap));
             }
         }
 
@@ -94,8 +96,9 @@ public class SpellDataManager extends SimpleJsonResourceReloadListener {
         applyConfigOverrides();
 
         long elapsed = System.currentTimeMillis() - startTime;
-        WinefoxsSpellbooks.LOGGER.info("Loaded {} spell range entries and {} spell effect entries in {}ms",
-            spellRangeMap.size(), spellEffectMap.size(), elapsed);
+        WinefoxsSpellbooks.LOGGER.info(
+            "Loaded {} spell range entries and {} spell effect entries in {}ms ({} skipped: spell or effect not present)",
+            spellRangeMap.size(), spellEffectMap.size(), elapsed, skipped[0]);
     }
 
     /**
@@ -112,16 +115,28 @@ public class SpellDataManager extends SimpleJsonResourceReloadListener {
         this.spellEffectMap = effectMap;
     }
 
-    private void processCastingRangeData(SpellCastingRangeData data, Map<AbstractSpell, Float> rangeMap) {
+    /**
+     * @return 因法术未注册而跳过的条目数
+     */
+    private int processCastingRangeData(SpellCastingRangeData data, Map<AbstractSpell, Float> rangeMap) {
+        int skipped = 0;
         for (var entry : data.entries()) {
-            SpellRegistry.REGISTRY.getOptional(entry.spellId()).ifPresentOrElse(
-                spell -> rangeMap.put(spell, entry.range()),
-                () -> WinefoxsSpellbooks.LOGGER.warn("Unknown spell id in casting range data: {}", entry.spellId())
-            );
+            var spellOpt = SpellRegistry.REGISTRY.getOptional(entry.spellId());
+            if (spellOpt.isPresent()) {
+                rangeMap.put(spellOpt.get(), entry.range());
+            } else {
+                skipped++;
+                WinefoxsSpellbooks.LOGGER.debug("Unknown spell id in casting range data: {}", entry.spellId());
+            }
         }
+        return skipped;
     }
 
-    private void processCausedEffectData(SpellCausedEffectData data, Map<AbstractSpell, Holder<MobEffect>> effectMap) {
+    /**
+     * @return 因法术或效果未注册而跳过的条目数
+     */
+    private int processCausedEffectData(SpellCausedEffectData data, Map<AbstractSpell, Holder<MobEffect>> effectMap) {
+        int skipped = 0;
         for (var entry : data.entries()) {
             var spellOpt = SpellRegistry.REGISTRY.getOptional(entry.spellId());
             var effectOpt = BuiltInRegistries.MOB_EFFECT.getOptional(entry.effectId());
@@ -129,14 +144,16 @@ public class SpellDataManager extends SimpleJsonResourceReloadListener {
             if (spellOpt.isPresent() && effectOpt.isPresent()) {
                 effectMap.put(spellOpt.get(), Holder.direct(effectOpt.get()));
             } else {
+                skipped++;
                 if (spellOpt.isEmpty()) {
-                    WinefoxsSpellbooks.LOGGER.warn("Unknown spell id in caused effect data: {}", entry.spellId());
+                    WinefoxsSpellbooks.LOGGER.debug("Unknown spell id in caused effect data: {}", entry.spellId());
                 }
                 if (effectOpt.isEmpty()) {
-                    WinefoxsSpellbooks.LOGGER.warn("Unknown effect id in caused effect data: {}", entry.effectId());
+                    WinefoxsSpellbooks.LOGGER.debug("Unknown effect id in caused effect data: {}", entry.effectId());
                 }
             }
         }
+        return skipped;
     }
 
     private void loadExtraFromConfig(Map<AbstractSpell, Float> rangeMap, Map<AbstractSpell, Holder<MobEffect>> effectMap) {
