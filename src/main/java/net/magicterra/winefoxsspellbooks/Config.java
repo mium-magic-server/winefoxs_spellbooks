@@ -12,7 +12,6 @@ import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.api.spell.SpellCategory;
 import net.magicterra.winefoxsspellbooks.api.spell.SpellFlag;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**

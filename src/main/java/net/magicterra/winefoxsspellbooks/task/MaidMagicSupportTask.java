@@ -11,7 +11,6 @@ import java.util.Set;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
-import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellAttackWalkToTarget;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellCastingTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellChooseTask;

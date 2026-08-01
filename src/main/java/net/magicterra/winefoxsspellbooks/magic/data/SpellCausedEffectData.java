@@ -2,6 +2,7 @@ package net.magicterra.winefoxsspellbooks.magic.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 
@@ -38,7 +39,7 @@ public record SpellCausedEffectData(List<Entry> entries) {
     }
 
     public static class Builder {
-        private final java.util.ArrayList<Entry> entries = new java.util.ArrayList<>();
+        private final ArrayList<Entry> entries = new ArrayList<>();
 
         public Builder add(String spellId, String effectId) {
             entries.add(new Entry(ResourceLocation.parse(spellId), ResourceLocation.parse(effectId)));

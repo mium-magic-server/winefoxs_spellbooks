@@ -7,16 +7,17 @@ import com.github.tartaricacid.touhoulittlemaid.entity.info.ServerCustomPackLoad
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import com.github.tartaricacid.touhoulittlemaid.util.ParseI18n;
+import com.mojang.serialization.Dynamic;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
-import io.redspace.ironsspellbooks.entity.mobs.SummonedSkeleton;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.Config;
@@ -181,7 +182,7 @@ public class SummonedEntityMaid extends PathfinderMob implements MagicMaidDelega
     @Nonnull
     @Override
     @SuppressWarnings("unchecked")
-    protected Brain<SummonedEntityMaid> makeBrain(@Nonnull com.mojang.serialization.Dynamic<?> dynamic) {
+    protected Brain<SummonedEntityMaid> makeBrain(@Nonnull Dynamic<?> dynamic) {
         Brain<SummonedEntityMaid> brain = (Brain<SummonedEntityMaid>) super.makeBrain(dynamic);
         SummonedMaidBrain.registerBrainGoals(brain, this);
         return brain;
@@ -689,7 +690,7 @@ public class SummonedEntityMaid extends PathfinderMob implements MagicMaidDelega
             Set<String> modelIds = serverModels.getModelIdSet();
             return modelIds.stream()
                 .map(ResourceLocation::parse)
-                .collect(java.util.stream.Collectors.toSet());
+                .collect(Collectors.toSet());
         } catch (Exception e) {
             WinefoxsSpellbooks.LOGGER.warn("SummonedEntityMaid: Failed to get available models", e);
             return Set.of();

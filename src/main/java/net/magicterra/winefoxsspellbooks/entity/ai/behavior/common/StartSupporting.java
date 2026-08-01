@@ -8,6 +8,7 @@ import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModul
 import net.magicterra.winefoxsspellbooks.util.LineOfSightGuard;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -92,7 +93,7 @@ public class StartSupporting {
      */
     private static Optional<? extends LivingEntity> findAllyAttackTarget(Mob mob) {
         // 检查主人正在攻击的敌人
-        LivingEntity owner = mob instanceof net.minecraft.world.entity.TamableAnimal tamable ? tamable.getOwner() : null;
+        LivingEntity owner = mob instanceof TamableAnimal tamable ? tamable.getOwner() : null;
         if (owner != null) {
             LivingEntity ownerTarget = owner.getLastHurtByMob();
             if (ownerTarget != null && ownerTarget.isAlive() && mob.canAttack(ownerTarget) && LineOfSightGuard.hasLineOfSight(mob, ownerTarget)) {
@@ -143,7 +144,7 @@ public class StartSupporting {
      */
     private static Optional<? extends LivingEntity> findCriticalAlly(Mob mob) {
         // 检查主人是否生命危急
-        LivingEntity owner = mob instanceof net.minecraft.world.entity.TamableAnimal tamable ? tamable.getOwner() : null;
+        LivingEntity owner = mob instanceof TamableAnimal tamable ? tamable.getOwner() : null;
         if (owner != null && isCritical(owner, OWNER_CRITICAL_HEALTH_THRESHOLD) && LineOfSightGuard.hasLineOfSight(mob, owner)) {
             return Optional.of(owner);
         }
