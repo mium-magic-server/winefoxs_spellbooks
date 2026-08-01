@@ -1,0 +1,24 @@
+{
+  "name": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.faq.name",
+  "icon": "minecraft:paper",
+  "category": "touhou_little_maid:winefoxs_spellbooks",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.faq.pages.0.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.faq.pages.1.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.faq.pages.2.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.faq.pages.3.text"
+    }
+  ],
+  "sortnum": 6
+}

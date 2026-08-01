@@ -6,7 +6,15 @@
     {
       "type": "patchouli:text",
       "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spellbook.pages.0.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spellbook.pages.1.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spellbook.pages.2.text"
     }
   ],
-  "sortnum": 3
+  "sortnum": 2
 }
