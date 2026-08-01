@@ -323,13 +323,11 @@
 
 执行 `/reload` 即可生效：法术目录立即重建，已加载的女仆也会重新扫描法术表。
 
-**行为标签**（一个法术只属于其中一类，从它所在的标签中移除即可；对照见[七个行为分类](#七个行为分类)）：
-
-`attack_spells` · `defense_spells` · `movement_spells` · `support_spells` · `positive_effect_spells` · `negative_effect_spells` · `support_effect_spells`
+**行为标签**（一个法术只属于其中一类，从它所在的标签中移除即可；各分类对应的标签名见[七个行为分类](#七个行为分类)）。
 
 要查某个法术属于哪个标签，用压缩软件打开本模组的 jar，进入 `data/winefoxs_spellbooks/tags/irons_spellbooks/spells/` 目录——七个行为标签与两个标记标签的 json 都在其中，内容即默认分类，照此改写为自己的数据包即可。
 
-**标记标签**——`summon_spells` 与 `maid_should_recast_spells` 不控制可用性，从中移除只会去掉召唤 / 多段咏唱标记，女仆仍会施放该法术。
+**标记标签**——从 `summon_spells` 或 `maid_should_recast_spells` 中移除只会去掉召唤 / 多次咏唱标记，女仆仍会施放该法术。
 
 > ⚠️ 配置项在标签之后合并，因此不要把同一个法术 ID 再写入 `extraAttackSpells` 之类的列表，否则会被重新加回。
 

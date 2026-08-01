@@ -321,13 +321,11 @@ Then `<your-pack>/data/winefoxs_spellbooks/tags/irons_spellbooks/spells/attack_s
 
 Run `/reload` and it takes effect: the spell catalog rebuilds at once and loaded maids rescan their spell lists.
 
-**Behaviour tags** (a spell belongs to exactly one; removing it from that one is enough — see [Seven Behaviour Categories](#seven-behaviour-categories) for the mapping):
-
-`attack_spells` · `defense_spells` · `movement_spells` · `support_spells` · `positive_effect_spells` · `negative_effect_spells` · `support_effect_spells`
+**Behaviour tags** (a spell belongs to exactly one; removing it from that one is enough — see [Seven Behaviour Categories](#seven-behaviour-categories) for the tag name of each category).
 
 To find out which tag holds a given spell, open this mod's jar with any archiver and look in `data/winefoxs_spellbooks/tags/irons_spellbooks/spells/` — the seven behaviour tags and the two marker tags are all there as json, holding the mod's default classification. Copy one as the starting point for your own pack.
 
-**Marker tags** — `summon_spells` and `maid_should_recast_spells` do not control availability. Removing an entry there only drops the summon / multi-cast marker; the maid still casts the spell.
+**Marker tags** — removing an entry from `summon_spells` or `maid_should_recast_spells` only drops the summon / multi-cast marker; the maid still casts the spell.
 
 > ⚠️ Config extras are merged **after** tags, so do not list the same spell id in `extraAttackSpells` and friends — it would be added straight back.
 
