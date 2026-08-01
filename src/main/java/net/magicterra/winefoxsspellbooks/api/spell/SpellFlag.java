@@ -21,7 +21,7 @@ public enum SpellFlag implements SpellCategory {
     SUMMON("summon_spells", "extraSummonSpells",
         "extra_summon_spells", "Extra summon spell ids"),
     /**
-     * 需要二重咏唱才能生效的法术，例如炽焰追踪弹幕、火墙术。
+     * 需要二段咏唱才能生效的法术，例如炽焰追踪弹幕、火墙术。
      * <p>
      * 注意它的翻译键是 {@code maid_should_recast_spells} 而非 {@code extra_maid_should_recast_spells}—— 与其余八项的命名规律不一致，是历史遗留，已进语言文件，不能顺手「修正」。
      */
