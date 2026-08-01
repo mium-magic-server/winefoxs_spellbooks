@@ -8,6 +8,7 @@ import net.magicterra.winefoxsspellbooks.registry.WsbSounds;
 import net.magicterra.winefoxsspellbooks.registry.WsbSpells;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
@@ -148,6 +149,20 @@ public class FoxshadeWispProjectile extends AbstractMagicProjectile implements G
     protected void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         this.flankSign = Integer.signum(tag.getInt("FlankSign"));
+    }
+
+    // 基类的生成包只带 owner 与追踪目标；侧翼方向不跟着发，客户端就恒为 0 直线推算，
+    // 而 tick() 里的 handleEntityHoming 双端都跑，弹体每个位置包都会被服务端的弧线拽一下
+    @Override
+    public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
+        super.writeSpawnData(buffer);
+        buffer.writeByte(this.flankSign);
+    }
+
+    @Override
+    public void readSpawnData(RegistryFriendlyByteBuf buffer) {
+        super.readSpawnData(buffer);
+        this.flankSign = buffer.readByte();
     }
 
     @Override

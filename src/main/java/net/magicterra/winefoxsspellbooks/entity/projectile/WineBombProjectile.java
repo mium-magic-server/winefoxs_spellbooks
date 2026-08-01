@@ -88,6 +88,12 @@ public class WineBombProjectile extends AbstractMagicProjectile implements GeoEn
 
     @Override
     protected void onHit(HitResult result) {
+        // 基类 handleHitDetection 在实体命中后不判 isRemoved 就再派一次方块命中，同 tick 既擦到怪
+        // 又撞到地形的酒瓶会进两次 onHit(重力弹落在怪脚下是常态)。不拦住就铺两个酒池、
+        // 放两遍音效，重叠区的回蓝与微醺也翻倍
+        if (this.isRemoved()) {
+            return;
+        }
         super.onHit(result); // 基类已处理 impactParticles/impact 音效与 onHitEntity/onHitBlock 分发
         if (this.level().isClientSide) {
             return;
