@@ -9,14 +9,6 @@
       "required": false
     },
     {
-      "id": "cataclysm_spellbooks:pharaohs_wrath",
-      "required": false
-    },
-    {
-      "id": "discerning_the_eldritch:ravenous_revenant",
-      "required": false
-    },
-    {
       "id": "ess_requiem:hone_edge",
       "required": false
     },
@@ -26,14 +18,6 @@
     },
     {
       "id": "ess_requiem:adrenaline_rush",
-      "required": false
-    },
-    {
-      "id": "ess_requiem:nights_cover",
-      "required": false
-    },
-    {
-      "id": "ess_requiem:overwhelming_light",
       "required": false
     },
     {

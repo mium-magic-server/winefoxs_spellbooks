@@ -46,8 +46,8 @@ public final class CataclysmSpellbooksTags {
         ctx.attack().addOptional(SpellRegistries.GRAVITATION_PULL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistries.THOTHS_WITNESS.get().getSpellResource());
         ctx.positiveEffect().addOptional(SpellRegistries.FORGONE_RAGE.get().getSpellResource());
+        // PHARAOHS_WRATH: 攻击的同时给自己加增益
         ctx.attack().addOptional(SpellRegistries.PHARAOHS_WRATH.get().getSpellResource());
-        ctx.positiveEffect().addOptional(SpellRegistries.PHARAOHS_WRATH.get().getSpellResource());
 
         // 需要多次施放（recast）的法术
         ctx.maidShouldRecast().addOptional(SpellRegistries.VOID_BEAM.get().getSpellResource());

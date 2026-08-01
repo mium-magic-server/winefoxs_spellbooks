@@ -17,7 +17,6 @@ public final class MagicFromTheEastTags {
         ctx.attack().addOptional(MFTESpellRegistries.JADE_BULLET_SPELL.get().getSpellResource());
         // SOUL_BURST: AOE 伤害 + 给敌人施加 SOULBURN (HARMFUL) debuff
         ctx.attack().addOptional(MFTESpellRegistries.SOUL_BURST_SPELL.get().getSpellResource());
-        ctx.negativeEffect().addOptional(MFTESpellRegistries.SOUL_BURST_SPELL.get().getSpellResource());
         ctx.attack().addOptional(MFTESpellRegistries.SPIRIT_CHALLENGING.get().getSpellResource());
         ctx.attack().addOptional(MFTESpellRegistries.BONE_HANDS_SPELL.get().getSpellResource());
         ctx.attack().addOptional(MFTESpellRegistries.CALAMITY_CUT_SPELL.get().getSpellResource());

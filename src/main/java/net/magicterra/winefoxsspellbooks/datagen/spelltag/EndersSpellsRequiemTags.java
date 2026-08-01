@@ -34,7 +34,6 @@ public final class EndersSpellsRequiemTags {
         ctx.defense().addOptional(GGSpellRegistry.CATAPHRACT_HEAL.get().getSpellResource());
         ctx.attack().addOptional(GGSpellRegistry.CATAPHRACT_SLAM.get().getSpellResource());
         // CATAPHRACT_TACKLE: 冲锋位移，伤害由施加在自己身上的同名效果在接触时结算
-        ctx.movement().addOptional(GGSpellRegistry.CATAPHRACT_TACKLE.get().getSpellResource());
         ctx.attack().addOptional(GGSpellRegistry.CATAPHRACT_TACKLE.get().getSpellResource());
         ctx.negativeEffect().addOptional(GGSpellRegistry.FINALITY_OF_DECAY.get().getSpellResource());
         ctx.negativeEffect().addOptional(GGSpellRegistry.ETERNAL_BATTLEFIELD.get().getSpellResource());
@@ -71,9 +70,7 @@ public final class EndersSpellsRequiemTags {
         ctx.attack().addOptional(GGSpellRegistry.GLACIAL_SCULPTING.get().getSpellResource());
         // NIGHT_VEIL / OVERWHELMING_LIGHT: 多次施放的攻击 + 同时给自己加增益
         ctx.attack().addOptional(GGSpellRegistry.NIGHT_VEIL.get().getSpellResource());
-        ctx.positiveEffect().addOptional(GGSpellRegistry.NIGHT_VEIL.get().getSpellResource());
         ctx.attack().addOptional(GGSpellRegistry.OVERWHELMING_LIGHT.get().getSpellResource());
-        ctx.positiveEffect().addOptional(GGSpellRegistry.OVERWHELMING_LIGHT.get().getSpellResource());
 
         // 需要多次施放（recast）的法术
         ctx.maidShouldRecast().addOptional(GGSpellRegistry.CLAW.get().getSpellResource());

@@ -13,8 +13,6 @@ public final class DreamlessSpellsTags {
         ctx.negativeEffect().addOptional(SpellRegistries.MUTE.get().getSpellResource());
         // DRAINED / DULLARD: AOE 攻击 + 给敌人施加削弱 debuff（需要施法者先有 EMPTIED 效果）
         ctx.attack().addOptional(SpellRegistries.DRAINED.get().getSpellResource());
-        ctx.negativeEffect().addOptional(SpellRegistries.DRAINED.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistries.DULLARD.get().getSpellResource());
-        ctx.negativeEffect().addOptional(SpellRegistries.DULLARD.get().getSpellResource());
     }
 }

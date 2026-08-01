@@ -21,15 +21,11 @@ public final class DiscerningTheEldritchTags {
         ctx.defense().addOptional(SpellRegistries.ABRACADABRA.get().getSpellResource());
         // RAVENOUS_REVENANT: 给施法者施加 PREDATOR buff、给周围敌人施加 PREY debuff
         ctx.defense().addOptional(SpellRegistries.RAVENOUS_REVENANT.get().getSpellResource());
-        ctx.positiveEffect().addOptional(SpellRegistries.RAVENOUS_REVENANT.get().getSpellResource());
-        ctx.negativeEffect().addOptional(SpellRegistries.RAVENOUS_REVENANT.get().getSpellResource());
         ctx.movement().addOptional(SpellRegistries.OTHERWORLDLY_PRESENCE.get().getSpellResource());
         // RIFT_WALKER: 闪现 + 在落点生成造成伤害的 UnstableRiftEntity
-        ctx.movement().addOptional(SpellRegistries.RIFT_WALKER.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistries.RIFT_WALKER.get().getSpellResource());
         // BOOGIE_WOOGIE: 与目标交换位置 + 给目标施加 CONFUSION debuff
         ctx.movement().addOptional(SpellRegistries.BOOGIE_WOOGIE.get().getSpellResource());
-        ctx.negativeEffect().addOptional(SpellRegistries.BOOGIE_WOOGIE.get().getSpellResource());
         ctx.support().addOptional(SpellRegistries.MEND_FLESH.get().getSpellResource());
         ctx.negativeEffect().addOptional(SpellRegistries.SILENCE.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistries.CONJURE_FORSAKE_AID.get().getSpellResource());
@@ -40,11 +36,9 @@ public final class DiscerningTheEldritchTags {
         // CONJURE_GAOLER: 召唤狱卒，施法前先给 15 格内目标挂黑暗
         ctx.attack().addOptional(SpellRegistries.CONJURE_GAOLER.get().getSpellResource());
         ctx.summon().addOptional(SpellRegistries.CONJURE_GAOLER.get().getSpellResource());
-        ctx.negativeEffect().addOptional(SpellRegistries.CONJURE_GAOLER.get().getSpellResource());
 
         // CRYSTALLINE_CARVER: 多段近战，命中施加 CHILLED 减速 debuff
         ctx.attack().addOptional(SpellRegistries.CRYSTALLINE_CARVER.get().getSpellResource());
-        ctx.negativeEffect().addOptional(SpellRegistries.CRYSTALLINE_CARVER.get().getSpellResource());
         // EXORCISM 是清除"疯狂值"（insanity）的玩家专属机制，对女仆基本无意义，保留注释
         // audit:ignore EXORCISM
         // ctx.support().addOptional(SpellRegistries.EXORCISM.get().getSpellResource());

@@ -20,7 +20,6 @@ public final class AeromancyAdditionsTags {
 
         // UPDRAFT: 多次施放，将敌人击飞并施加 MOVEMENT_SLOWDOWN（眩晕）
         ctx.attack().addOptional(AASpells.UPDRAFT.get().getSpellResource());
-        ctx.negativeEffect().addOptional(AASpells.UPDRAFT.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(AASpells.UPDRAFT.get().getSpellResource());
     }
 }

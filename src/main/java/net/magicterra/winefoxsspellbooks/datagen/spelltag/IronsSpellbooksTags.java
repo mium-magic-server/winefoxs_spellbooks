@@ -95,8 +95,8 @@ public final class IronsSpellbooksTags {
         ctx.attack().addOptional(SpellRegistry.SUNBEAM_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.WISP_SPELL.get().getSpellResource());
         ctx.support().addOptional(SpellRegistry.GREATER_HEAL_SPELL.get().getSpellResource());
+        // HEAL: 自愈与治疗队友都能用，但行为类别互斥，女仆侧按自愈处理
         ctx.support().addOptional(SpellRegistry.HEAL_SPELL.get().getSpellResource());
-        ctx.supportEffect().addOptional(SpellRegistry.HEAL_SPELL.get().getSpellResource());
         ctx.positiveEffect().addOptional(SpellRegistry.FORTIFY_SPELL.get().getSpellResource());
         ctx.positiveEffect().addOptional(SpellRegistry.HASTE_SPELL.get().getSpellResource());
         ctx.positiveEffect().addOptional(SpellRegistry.CLEANSE_SPELL.get().getSpellResource());

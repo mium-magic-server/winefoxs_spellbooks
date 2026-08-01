@@ -1,10 +1,6 @@
 {
   "values": [
     {
-      "id": "irons_spellbooks:heal",
-      "required": false
-    },
-    {
       "id": "irons_spellbooks:blessing_of_life",
       "required": false
     },
