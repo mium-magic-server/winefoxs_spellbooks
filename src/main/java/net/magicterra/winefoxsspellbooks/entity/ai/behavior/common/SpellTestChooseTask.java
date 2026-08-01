@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
@@ -194,16 +195,27 @@ public class SpellTestChooseTask extends SpellChooseTask {
 
         lastAction = nextSpellAction;
 
-        if (entity instanceof MaidMagicEntity maid) {
-            maid.winefoxsSpellbooks$getMagicMaidAdapter().setBypassCastCheck(true);
-        }
+        setBypass(entity, true);
     }
 
     @Override
     protected void stop(ServerLevel level, Mob entity, long gameTime) {
         super.stop(level, entity, gameTime);
+        setBypass(entity, false);
+    }
+
+    /**
+     * 测试要的是「每个法术都轮得到、且轮得完」，所以蓝量既不当门槛也不扣：只放行前置检查的话，
+     * 女仆开场几发就把蓝烧干，之后蓝条一直趴在 0，看不出任何东西。
+     * <p>
+     * 两个开关跟着行为的 start/stop 走。换任务时 {@code EntityMaid#refreshBrain} 会先
+     * {@code stopAll} 再重建行为，stop 必然被调到，标志不会漏在 true 上。
+     */
+    private static void setBypass(Mob entity, boolean bypass) {
         if (entity instanceof MaidMagicEntity maid) {
-            maid.winefoxsSpellbooks$getMagicMaidAdapter().setBypassCastCheck(false);
+            MagicMaidAdapter adapter = maid.winefoxsSpellbooks$getMagicMaidAdapter();
+            adapter.setBypassCastCheck(bypass);
+            adapter.setBypassManaCost(bypass);
         }
     }
 }
