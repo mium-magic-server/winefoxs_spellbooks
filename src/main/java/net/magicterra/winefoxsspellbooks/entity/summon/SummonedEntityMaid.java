@@ -204,9 +204,10 @@ public class SummonedEntityMaid extends PathfinderMob implements MagicMaidDelega
         if (isAirForce() && this.isPassenger() && this.getVehicle() instanceof SummonedMaidBroom) {
             this.getBrain().setActiveActivityIfPossible(Activity.RIDE);
         } else {
-            this.getBrain().setActiveActivityIfPossible(
-                this.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET) ? Activity.FIGHT : Activity.IDLE
-            );
+            // 支援目标也要切 FIGHT：擦除 SUPPORT_TARGET 的只有 FIGHT/RIDE 里的 SpellChooseTask 与
+            // SpellCastingTask，只认 ATTACK_TARGET 的话，IDLE 里 StartSupporting 写进去的支援目标
+            // 无人消费，女仆会永远停在 IDLE 且再也不索敌
+            this.getBrain().setActiveActivityIfPossible(hasCombatTarget() ? Activity.FIGHT : Activity.IDLE);
         }
 
         // 处理施法逻辑（包含法术状态恢复）
