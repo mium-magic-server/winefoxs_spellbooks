@@ -22,7 +22,6 @@ import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
-import net.minecraft.core.NonNullList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -33,14 +32,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
-import net.neoforged.neoforge.items.wrapper.EmptyItemHandler;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
-import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.event.CurioChangeEvent;
-import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
 
 /**
  * 女仆事件处理器
@@ -141,13 +134,9 @@ public class MaidEventHandler {
         for (MaidSpellAction action : MaidSpellAction.ALL) {
             sorted.put(action, new ArrayList<>());
         }
-        IItemHandlerModifiable curiosItems = (IItemHandlerModifiable) EmptyItemHandler.INSTANCE;
-        if (CuriosCompat.isLoadedOrEnable()) {
-            curiosItems = CuriosApi.getCuriosInventory(maid).map(ICuriosItemHandler::getEquippedCurios).orElse(curiosItems);
-        }
         // 检查主手、盔甲栏、饰品栏法术
         boolean spellBookLoaded = false;
-        IItemHandler invWrapper = new CombinedInvWrapper(maid.getArmorInvWrapper(), new ItemStackHandler(NonNullList.of(ItemStack.EMPTY, maid.getMainHandItem())), maid.getMaidBauble(), curiosItems);
+        IItemHandler invWrapper = MaidMagicManager.getSpellGearView(maid);
         for (int i = 0; i < invWrapper.getSlots(); i++) {
             ItemStack stack = invWrapper.getStackInSlot(i);
             Item item = stack.getItem();
@@ -164,7 +153,7 @@ public class MaidEventHandler {
                 List<SpellSlot> activeSpells = spellContainer.getActiveSpells();
                 for (SpellSlot spellSlot : activeSpells) {
                     AbstractSpell spell = spellSlot.getSpell();
-                    int level = MaidMagicManager.getLevelFor(maid, spell, spellSlot.getLevel());
+                    int level = MaidMagicManager.getLevelFor(maid, invWrapper, spell, spellSlot.getLevel());
                     SpellData spellData = new SpellData(spell, level);
                     // 行为类别互斥，首个命中即归属；不属于任何类别的法术女仆用不了，丢弃
                     MaidSpellAction action = MaidSpellCatalog.actionOf(spell);

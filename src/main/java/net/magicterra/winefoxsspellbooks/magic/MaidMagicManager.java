@@ -1,5 +1,6 @@
 package net.magicterra.winefoxsspellbooks.magic;
 
+import com.github.tartaricacid.touhoulittlemaid.compat.curios.CuriosCompat;
 import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.IChatBubbleData;
 import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.implement.TextChatBubbleData;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
@@ -30,8 +31,12 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.items.wrapper.EmptyItemHandler;
+import top.theillusivec4.curios.api.CuriosApi;
+import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
 
 public class MaidMagicManager {
     public static final int MANA_REGEN_TICKS = 10;
@@ -162,18 +167,39 @@ public class MaidMagicManager {
         return (int) (spell.getSpellCooldown() * (2 - Utils.softCapFormula(playerCooldownModifier)) * itemCoolDownModifer);
     }
 
-    public static int getLevelFor(EntityMaid maid, AbstractSpell spell, int level) {
+    /**
+     * 女仆的施法装备视图：盔甲栏 + 主手 + TLM 饰品栏 + Curios 饰品栏。
+     * <p>
+     * 找法术书和算饰品加成必须看同一批槽位，否则会出现「书读得到、戒指读不到」的偏差：姻缘戒指这类饰品的原生槽位在 Curios 那边，漏掉它等于加成静默失效。
+     *
+     * @param maid 女仆
+     * @return 合并后的只读视图
+     */
+    public static IItemHandler getSpellGearView(EntityMaid maid) {
+        IItemHandlerModifiable curiosItems = (IItemHandlerModifiable) EmptyItemHandler.INSTANCE;
+        if (CuriosCompat.isLoadedOrEnable()) {
+            curiosItems = CuriosApi.getCuriosInventory(maid).map(ICuriosItemHandler::getEquippedCurios).orElse(curiosItems);
+        }
+        return new CombinedInvWrapper(maid.getArmorInvWrapper(),
+            new ItemStackHandler(NonNullList.of(ItemStack.EMPTY, maid.getMainHandItem())),
+            maid.getMaidBauble(), curiosItems);
+    }
+
+    /**
+     * 计入饰品亲和加成后的实际施法等级。
+     *
+     * @param gearView {@link #getSpellGearView} 的结果。视图由调用方建一次传进来： 一次重算要跑一整本法术书，每个法术各建一遍的话，Curios
+     *                 那边每次都会现场新建一个合并 wrapper
+     */
+    public static int getLevelFor(EntityMaid maid, IItemHandler gearView, AbstractSpell spell, int level) {
         int addition = 0;
-        if (maid != null) {
-            IItemHandler invWrapper = new CombinedInvWrapper(maid.getArmorInvWrapper(), new ItemStackHandler(NonNullList.of(ItemStack.EMPTY, maid.getMainHandItem())), maid.getMaidBauble());
-            for (int i = 0; i < invWrapper.getSlots(); i++) {
-                ItemStack stackInSlot = invWrapper.getStackInSlot(i);
-                AffinityData affinityData = AffinityData.getAffinityData(stackInSlot);
-                if (affinityData == AffinityData.NONE) {
-                    continue;
-                }
-                addition += affinityData.getBonusFor(spell);
+        for (int i = 0; i < gearView.getSlots(); i++) {
+            ItemStack stackInSlot = gearView.getStackInSlot(i);
+            AffinityData affinityData = AffinityData.getAffinityData(stackInSlot);
+            if (affinityData == AffinityData.NONE) {
+                continue;
             }
+            addition += affinityData.getBonusFor(spell);
         }
         var levelEvent = new ModifySpellLevelEvent(spell, maid, level, level + addition);
         NeoForge.EVENT_BUS.post(levelEvent);
