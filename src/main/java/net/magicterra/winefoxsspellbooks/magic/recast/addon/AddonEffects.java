@@ -1,8 +1,10 @@
 package net.magicterra.winefoxsspellbooks.magic.recast.addon;
 
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
@@ -31,8 +33,32 @@ final class AddonEffects {
         withEffect(entity, effectId, (holder, registry) -> entity.removeEffect(registry.wrapAsHolder(holder)));
     }
 
+    /**
+     * 给目标挂上该 id 的效果，时长按 tick 计。id 无效或效果未注册（模组没装）时什么也不做。
+     */
+    static void add(LivingEntity entity, String effectId, int duration) {
+        withEffect(entity, effectId, (holder, registry) ->
+            entity.addEffect(new MobEffectInstance(registry.wrapAsHolder(holder), duration)));
+    }
+
+    /**
+     * 目标身上该 id 效果的层数（{@code getAmplifier} 原值，一层为 0）。没挂该效果、 id 无效、或效果未注册（模组没装）时返回 -1，调用方据此走兜底。
+     */
+    static int amplifier(LivingEntity entity, String effectId) {
+        int[] amplifier = {-1};
+        withEffect(entity, effectId, (holder, registry) -> {
+            MobEffectInstance instance = entity.getEffect(registry.wrapAsHolder(holder));
+            if (instance == null) {
+                return false;
+            }
+            amplifier[0] = instance.getAmplifier();
+            return true;
+        });
+        return amplifier[0];
+    }
+
     private interface EffectAction {
-        boolean apply(MobEffect effect, net.minecraft.core.Registry<MobEffect> registry);
+        boolean apply(MobEffect effect, Registry<MobEffect> registry);
     }
 
     private static boolean withEffect(LivingEntity entity, String effectId, EffectAction action) {

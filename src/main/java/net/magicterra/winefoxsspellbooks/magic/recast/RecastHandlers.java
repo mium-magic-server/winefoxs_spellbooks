@@ -6,11 +6,15 @@ import io.redspace.ironsspellbooks.spells.fire.WallOfFireSpell;
 import io.redspace.ironsspellbooks.spells.lightning.ThunderStepSpell;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
+import net.magicterra.winefoxsspellbooks.magic.recast.addon.AeromancyAdditionsRecasts;
 import net.magicterra.winefoxsspellbooks.magic.recast.addon.CataclysmRecasts;
+import net.magicterra.winefoxsspellbooks.magic.recast.addon.DiscerningTheEldritchRecasts;
 import net.magicterra.winefoxsspellbooks.magic.recast.addon.EndersSpellsRequiemRecasts;
 import net.magicterra.winefoxsspellbooks.magic.recast.addon.FiresEnderExpansionRecasts;
+import net.magicterra.winefoxsspellbooks.magic.recast.addon.GtbcsSpellbooksRecasts;
 
 /**
  * 法术 id → recast 收尾动作的全局注册表，外加派发逻辑。
@@ -31,31 +35,26 @@ public final class RecastHandlers {
     private static final Map<String, RecastHandler> BY_SPELL_ID = new HashMap<>();
 
     static {
-        // 反射目标必须在这里显式登记：注册表存的是方法引用，而方法引用不触发目标类的
-        // 静态初始化，写在各 handler 的 static 块里会赶不上启动自检
-        FiresEnderExpansionRecasts.declareReflection();
-        CataclysmRecasts.declareReflection();
-        EndersSpellsRequiemRecasts.declareReflection();
+        // 每个附属一行，法术路径与反射登记都写在各自的 contribute 里。加新附属只动它自己的文件
+        // 加这里一行，互不打架。反射目标必须由 contribute 顺带登记：注册表存的是方法引用，
+        // 而方法引用不触发目标类的静态初始化，写在各 handler 的 static 块里会赶不上启动自检
+        contribute(FiresEnderExpansionRecasts.MOD_ID, FiresEnderExpansionRecasts::contribute);
+        contribute(CataclysmRecasts.MOD_ID, CataclysmRecasts::contribute);
+        contribute(EndersSpellsRequiemRecasts.MOD_ID, EndersSpellsRequiemRecasts::contribute);
+        contribute(AeromancyAdditionsRecasts.MOD_ID, AeromancyAdditionsRecasts::contribute);
+        contribute(DiscerningTheEldritchRecasts.MOD_ID, DiscerningTheEldritchRecasts::contribute);
+        contribute(GtbcsSpellbooksRecasts.MOD_ID, GtbcsSpellbooksRecasts::contribute);
 
-        // ========== Fires Ender Expansion ==========
-        register(FiresEnderExpansionRecasts.MOD_ID, "scintillating_stride",
-            FiresEnderExpansionRecasts::scintillatingStride);
-        register(FiresEnderExpansionRecasts.MOD_ID, "binary_stars",
-            FiresEnderExpansionRecasts::binaryStars);
-        register(FiresEnderExpansionRecasts.MOD_ID, "hollow_crystal",
-            FiresEnderExpansionRecasts::hollowCrystal);
-
-        // ========== Cataclysm Spellbooks ==========
-        register(CataclysmRecasts.MOD_ID, "piercing_bone", CataclysmRecasts::bonePierce);
-        register(CataclysmRecasts.MOD_ID, "abyss_fireball", CataclysmRecasts::abyssFireball);
-
-        // ========== Enders Spells Requiem ==========
-        register(EndersSpellsRequiemRecasts.MOD_ID, "twilight_assault",
-            EndersSpellsRequiemRecasts::twilightAssault);
+        // ========== 已确认无法兼容 ==========
+        // Apprentice's Codex 的 BOUND_BOW、BOUND_SWORD、TOTEM_OF_PERMAFROST、FIELD_OVERSEER：
+        // 收尾逻辑封装在各自的 XxxManager 静态方法里，形参类型就是 ServerPlayer，不是能反射构造的
+        // 实体；要兼容得把对方整个 Manager 连同其玩家态一起搬过来，收益远不抵维护成本。
+        // 女仆施放这几个法术时收尾只会挂冷却（defaultFinish），特效静默丢失，这是已知且接受的。
+        // FIELD_OVERSEER 因为打了 summon 标签，会走 IronsCoreRecasts::summon 拿到一个近似的召唤物回收。
     }
 
-    private static void register(String modId, String spellPath, RecastHandler handler) {
-        BY_SPELL_ID.put(modId + ":" + spellPath, handler);
+    private static void contribute(String modId, Consumer<RecastRegistrar> addon) {
+        addon.accept(new RecastRegistrar(modId, BY_SPELL_ID));
     }
 
     /**

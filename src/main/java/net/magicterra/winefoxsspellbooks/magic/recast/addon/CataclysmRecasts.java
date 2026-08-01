@@ -4,11 +4,13 @@ import io.redspace.ironsspellbooks.capabilities.magic.RecastResult;
 import java.util.Optional;
 import net.magicterra.winefoxsspellbooks.magic.recast.AddonReflection;
 import net.magicterra.winefoxsspellbooks.magic.recast.RecastContext;
+import net.magicterra.winefoxsspellbooks.magic.recast.RecastRegistrar;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 
 /**
  * Cataclysm Spellbooks 的 recast 收尾。
@@ -34,10 +36,19 @@ public final class CataclysmRecasts {
     private static final String ABYSS_FIREBALL = "com.github.L_Ender.cataclysm.entity.projectile.Ignis_Abyss_Fireball_Entity";
 
     private static final Class<?>[] BONE_CTOR =
-        {net.minecraft.world.level.Level.class, float.class, LivingEntity.class};
+        {Level.class, float.class, LivingEntity.class};
 
     private static final Class<?>[] FIREBALL_CTOR =
-        {net.minecraft.world.level.Level.class, LivingEntity.class};
+        {Level.class, LivingEntity.class};
+
+    private static final AddonProjectiles.Setter SET_NO_GRAVITY =
+        new AddonProjectiles.Setter("setNoGravity", boolean.class);
+
+    private static final AddonProjectiles.Setter BONE_SHOOT =
+        new AddonProjectiles.Setter("shoot", double.class, double.class, double.class, float.class, float.class);
+
+    private static final AddonProjectiles.Setter SHOOT_FROM_ROTATION = new AddonProjectiles.Setter(
+        "shootFromRotation", Entity.class, float.class, float.class, float.class, float.class, float.class);
 
     /**
      * 向外发射的骨头数量，均分一整圈。
@@ -45,19 +56,20 @@ public final class CataclysmRecasts {
     private static final int BONE_COUNT = 8;
 
     /**
-     * 向自检登记本模组的反射目标。
+     * 登记本模组的收尾动作与反射目标。
      */
-    public static void declareReflection() {
+    public static void contribute(RecastRegistrar registrar) {
         AddonReflection.declareClass(CATACLYSM_MOD_ID, BLAZING_BONE);
         AddonReflection.declareMethod(CATACLYSM_MOD_ID, BLAZING_BONE, "<init>", BONE_CTOR);
-        AddonReflection.declareMethod(CATACLYSM_MOD_ID, BLAZING_BONE, "setNoGravity", boolean.class);
-        AddonReflection.declareMethod(CATACLYSM_MOD_ID, BLAZING_BONE, "shoot",
-            double.class, double.class, double.class, float.class, float.class);
+        AddonProjectiles.declare(CATACLYSM_MOD_ID, BLAZING_BONE, SET_NO_GRAVITY);
+        AddonProjectiles.declare(CATACLYSM_MOD_ID, BLAZING_BONE, BONE_SHOOT);
 
         AddonReflection.declareClass(CATACLYSM_MOD_ID, ABYSS_FIREBALL);
         AddonReflection.declareMethod(CATACLYSM_MOD_ID, ABYSS_FIREBALL, "<init>", FIREBALL_CTOR);
-        AddonReflection.declareMethod(CATACLYSM_MOD_ID, ABYSS_FIREBALL, "shootFromRotation",
-            Entity.class, float.class, float.class, float.class, float.class, float.class);
+        AddonProjectiles.declare(CATACLYSM_MOD_ID, ABYSS_FIREBALL, SHOOT_FROM_ROTATION);
+
+        registrar.register("piercing_bone", CataclysmRecasts::bonePierce);
+        registrar.register("abyss_fireball", CataclysmRecasts::abyssFireball);
     }
 
     /**
@@ -100,10 +112,8 @@ public final class CataclysmRecasts {
             Entity entity = (Entity) bone;
             entity.moveTo(casterX, casterY, casterZ, i * (360.0f / BONE_COUNT), caster.getXRot());
 
-            AddonReflection.invoke(bone, "setNoGravity", new Class<?>[] {boolean.class}, true);
-            AddonReflection.invoke(bone, "shoot",
-                new Class<?>[] {double.class, double.class, double.class, float.class, float.class},
-                angleX, 0.2, angleZ, 0.5f, 1.0f);
+            AddonProjectiles.invoke(bone, SET_NO_GRAVITY, true);
+            AddonProjectiles.invoke(bone, BONE_SHOOT, angleX, 0.2, angleZ, 0.5f, 1.0f);
 
             level.addFreshEntity(entity);
         }
@@ -119,8 +129,7 @@ public final class CataclysmRecasts {
         entity.setPos(caster.position().add(0,
             caster.getEyeHeight() - (entity.getBoundingBox().getYsize() * 0.5), 0));
 
-        AddonReflection.invoke(fireball, "shootFromRotation",
-            new Class<?>[] {Entity.class, float.class, float.class, float.class, float.class, float.class},
+        AddonProjectiles.invoke(fireball, SHOOT_FROM_ROTATION,
             caster, caster.getXRot(), caster.getYHeadRot(), 0.0f, 1.0f, 1.0f);
 
         level.addFreshEntity(entity);

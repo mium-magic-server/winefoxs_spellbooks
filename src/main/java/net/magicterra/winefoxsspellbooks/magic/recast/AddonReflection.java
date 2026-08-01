@@ -9,9 +9,10 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 /**
- * 附属模组的反射访问层。所有目标须先 {@link #declareClass} / {@link #declareMethod} 声明，
+ * 附属模组的反射访问层。所有目标须先 {@link #declareClass} / {@link #declareMethod} / {@link #declareField} 声明，
  * {@link #selfCheck()} 在服务器启动时校验：模组已安装但成员缺失才 WARN，模组未安装则静默。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
@@ -22,12 +23,16 @@ public final class AddonReflection {
     }
 
     /**
+     * 声明目标的种类，决定 {@link #selfCheck()} 用哪种方式去查。
+     */
+    private enum Kind {
+        CLASS, METHOD, FIELD
+    }
+
+    /**
      * 一个声明过的反射目标，供 {@link #selfCheck()} 逐个验证。
      */
-    private record Declaration(String modId, String className, String memberName, Class<?>[] paramTypes) {
-        boolean isClassOnly() {
-            return memberName == null;
-        }
+    private record Declaration(String modId, String className, Kind kind, String memberName, Class<?>[] paramTypes) {
     }
 
     private static final List<Declaration> DECLARATIONS = new ArrayList<>();
@@ -41,11 +46,9 @@ public final class AddonReflection {
      *
      * @param modId     该类所属模组的 id；模组未安装时自检跳过，不报错
      * @param className 全限定类名
-     * @return {@code className} 原样返回，便于 {@code private static final String X = declareClass(...)}
      */
-    public static String declareClass(String modId, String className) {
-        DECLARATIONS.add(new Declaration(modId, className, null, null));
-        return className;
+    public static void declareClass(String modId, String className) {
+        DECLARATIONS.add(new Declaration(modId, className, Kind.CLASS, null, null));
     }
 
     /**
@@ -57,7 +60,19 @@ public final class AddonReflection {
      * @param paramTypes 参数类型，用于精确定位重载
      */
     public static void declareMethod(String modId, String className, String memberName, Class<?>... paramTypes) {
-        DECLARATIONS.add(new Declaration(modId, className, memberName, paramTypes));
+        DECLARATIONS.add(new Declaration(modId, className, Kind.METHOD, memberName, paramTypes));
+    }
+
+    /**
+     * 声明一个要反射读取的 public 静态字段。只声明类查不出字段改名——类还在，字段没了，
+     * {@link #staticField} 只会静默返回 empty。
+     *
+     * @param modId     该类所属模组的 id
+     * @param className 全限定类名
+     * @param fieldName 字段名
+     */
+    public static void declareField(String modId, String className, String fieldName) {
+        DECLARATIONS.add(new Declaration(modId, className, Kind.FIELD, fieldName, null));
     }
 
     // ==================== 访问 ====================
@@ -128,6 +143,26 @@ public final class AddonReflection {
         }
     }
 
+    /**
+     * 读一个 public 静态 {@link DeferredHolder} 字段并解出它持有的对象。
+     * <p>
+     * 附属模组的注册表基本都是这个形状；字段不在、或持有的不是 Holder 时返回 empty。
+     */
+    public static Optional<Object> holderValue(String className, String fieldName) {
+        return staticField(className, fieldName)
+            .filter(DeferredHolder.class::isInstance)
+            .map(holder -> ((DeferredHolder<?, ?>) holder).get());
+    }
+
+    /**
+     * 同上，并把结果收窄到期望类型。字段不在、不是 Holder、或持有的类型不符时一律返回 empty， 调用方直接 {@code orElse} 一个兜底值即可，不必自己再 instanceof 一遍。
+     */
+    public static <T> Optional<T> holderValue(String className, String fieldName, Class<T> expectedType) {
+        return holderValue(className, fieldName)
+            .filter(expectedType::isInstance)
+            .map(expectedType::cast);
+    }
+
     // ==================== 自检 ====================
 
     /**
@@ -150,13 +185,14 @@ public final class AddonReflection {
                 missing++;
                 continue;
             }
-            if (declaration.isClassOnly()) {
+            if (declaration.kind() == Kind.CLASS) {
                 continue;
             }
             if (!memberExists(type.get(), declaration)) {
                 WinefoxsSpellbooks.LOGGER.warn(
-                    "[{}] class '{}' exists but member '{}' does not. That call will be skipped at runtime "
-                        + "(e.g. a projectile may spawn with default damage). Update magic/recast/addon/.",
+                    "[{}] class '{}' exists but member '{}' does not. That reference is skipped at runtime "
+                        + "(e.g. a projectile spawns with default damage, or a visual effect never appears). "
+                        + "Update magic/recast/addon/.",
                     declaration.modId(), declaration.className(), declaration.memberName());
                 missing++;
             }
@@ -172,13 +208,15 @@ public final class AddonReflection {
 
     private static boolean memberExists(Class<?> type, Declaration declaration) {
         try {
-            if ("<init>".equals(declaration.memberName())) {
+            if (declaration.kind() == Kind.FIELD) {
+                type.getField(declaration.memberName());
+            } else if ("<init>".equals(declaration.memberName())) {
                 type.getConstructor(declaration.paramTypes());
             } else {
                 type.getMethod(declaration.memberName(), declaration.paramTypes());
             }
             return true;
-        } catch (NoSuchMethodException | RuntimeException e) {
+        } catch (ReflectiveOperationException | RuntimeException e) {
             return false;
         }
     }

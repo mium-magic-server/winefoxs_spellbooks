@@ -12,12 +12,12 @@ import java.util.UUID;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.magic.recast.AddonReflection;
 import net.magicterra.winefoxsspellbooks.magic.recast.RecastContext;
+import net.magicterra.winefoxsspellbooks.magic.recast.RecastRegistrar;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
-import net.minecraft.core.Holder;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
@@ -40,30 +40,37 @@ public final class FiresEnderExpansionRecasts {
 
     private static final String HOLLOW_CRYSTAL = "net.fireofpower.firesenderexpansion.entities.spells.HollowCrystal.HollowCrystal";
 
-    private static final String EFFECT_REGISTRY = "net.fireofpower.firesenderexpansion.registries.EffectRegistry";
-
     /**
      * 闪烁步伐结束时要摘掉的效果 id。注册名带 {@code _effect} 后缀（见该模组的 {@code EffectRegistry}），漏掉的话查表恒为空。
      */
     private static final String STRIDING_EFFECT = MOD_ID + ":striding_effect";
 
     /**
-     * 空心水晶的蓄力效果 id，没有它就不发射。同样带 {@code _effect} 后缀。
+     * 空心水晶的蓄力效果 id，没有它就不发射。层数也从施法者身上的这层效果读。同样带 {@code _effect} 后缀。
      */
     private static final String HOLLOW_CRYSTAL_EFFECT = MOD_ID + ":hollow_crystal_effect";
 
+    private static final AddonProjectiles.Setter SET_DAMAGE =
+        new AddonProjectiles.Setter("setDamage", float.class);
+
+    private static final AddonProjectiles.Setter SHOOT =
+        new AddonProjectiles.Setter("shoot", Vec3.class);
+
     /**
-     * 向自检登记本模组的反射目标。
+     * 登记本模组的收尾动作与反射目标。
      */
-    public static void declareReflection() {
+    public static void contribute(RecastRegistrar registrar) {
         // 双星走 AddonProjectiles.shootHoming，构造器与四个 setter 都要登记，只登记类查不出 setter 改名
         AddonProjectiles.declareHoming(MOD_ID, NOVA_STAR);
         AddonProjectiles.declareHoming(MOD_ID, OBSIDIAN_STAR);
         AddonReflection.declareClass(MOD_ID, HOLLOW_CRYSTAL);
         AddonReflection.declareMethod(MOD_ID, HOLLOW_CRYSTAL, "<init>", AddonProjectiles.CTOR_SIGNATURE);
-        AddonReflection.declareMethod(MOD_ID, HOLLOW_CRYSTAL, "setDamage", float.class);
-        AddonReflection.declareMethod(MOD_ID, HOLLOW_CRYSTAL, "shoot", Vec3.class);
-        AddonReflection.declareClass(MOD_ID, EFFECT_REGISTRY);
+        AddonProjectiles.declare(MOD_ID, HOLLOW_CRYSTAL, SET_DAMAGE);
+        AddonProjectiles.declare(MOD_ID, HOLLOW_CRYSTAL, SHOOT);
+
+        registrar.register("scintillating_stride", FiresEnderExpansionRecasts::scintillatingStride);
+        registrar.register("binary_stars", FiresEnderExpansionRecasts::binaryStars);
+        registrar.register("hollow_crystal", FiresEnderExpansionRecasts::hollowCrystal);
     }
 
     /**
@@ -97,9 +104,10 @@ public final class FiresEnderExpansionRecasts {
         );
 
         // AoE 波及走【阵营敌我】的统一谓词，勿手写
+        DamageSource damageSource = ctx.spell().getDamageSource(caster);
         level.getEntitiesOfClass(LivingEntity.class, caster.getBoundingBox().inflate(radius),
                 e -> WinefoxHexHelper.isFactionHostile(e, caster))
-            .forEach(e -> DamageSources.applyDamage(e, damage, ctx.spell().getDamageSource(caster)));
+            .forEach(e -> DamageSources.applyDamage(e, damage, damageSource));
 
         AddonEffects.remove(caster, STRIDING_EFFECT);
     }
@@ -177,9 +185,9 @@ public final class FiresEnderExpansionRecasts {
         double yOffset = caster.getEyeHeight() + (entity.getBoundingBox().getYsize() * 0.25) - 3.0;
         entity.setPos(caster.position().add(0, yOffset, 0).add(caster.getForward().multiply(3.0, 3.0, 3.0)));
 
-        AddonReflection.invoke(crystal, "setDamage", new Class<?>[] {float.class}, hollowCrystalDamage(ctx));
+        AddonProjectiles.invoke(crystal, SET_DAMAGE, hollowCrystalDamage(ctx));
         entity.setDeltaMovement(entity.getDeltaMovement().multiply(0.5, 0.5, 0.5));
-        AddonReflection.invoke(crystal, "shoot", new Class<?>[] {Vec3.class}, lookDir);
+        AddonProjectiles.invoke(crystal, SHOOT, lookDir);
 
         AddonEffects.remove(caster, HOLLOW_CRYSTAL_EFFECT);
         level.addFreshEntity(entity);
@@ -187,20 +195,13 @@ public final class FiresEnderExpansionRecasts {
     }
 
     /**
-     * 空心水晶伤害：按蓄力效果的层数放大；拿不到效果注册表时退回一层的伤害。
+     * 空心水晶伤害：按蓄力效果的层数放大；效果不在身上时退回一层的伤害。
      */
-    @SuppressWarnings("unchecked")
     private static float hollowCrystalDamage(RecastContext ctx) {
-        LivingEntity caster = ctx.caster();
         // 用真实施法等级，附属自己的 HollowCrystalSpell#getDamage 也是这么算的
         float base = ctx.spellPower();
-        Optional<Object> holder = AddonReflection.staticField(EFFECT_REGISTRY, "HOLLOW_CRYSTAL_EFFECT");
-        if (holder.isPresent() && holder.get() instanceof Holder<?>) {
-            var effect = caster.getEffect((Holder<MobEffect>) holder.get());
-            if (effect != null) {
-                return ((effect.getAmplifier() * 15.0f) * base) / 50.0f;
-            }
-        }
-        return (15.0f * base) / 50.0f;
+        int amplifier = AddonEffects.amplifier(ctx.caster(), HOLLOW_CRYSTAL_EFFECT);
+        float stacks = amplifier < 0 ? 1.0f : amplifier;
+        return ((stacks * 15.0f) * base) / 50.0f;
     }
 }
