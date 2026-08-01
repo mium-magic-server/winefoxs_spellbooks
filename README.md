@@ -408,7 +408,7 @@ Both require permission level 2:
 - **Jade** — point at a maid to see her mana; point at a summoned maid to also see her spell count, and hold Shift for the full list.
 - **JEI** — every item from this mod has an info page (the "i" in the top right).
 - **Advanced Loot Info** — the loot this mod injects into chests, and the maid morning gift, both show their odds in JEI / EMI / REI.
-- **Patchouli** — 12 guide entries under the "Winefox's Spellbooks" category of Touhou Little Maid's *Memorizable Gensokyo*, covering mana, casting media, tasks, troubleshooting, the school and its items and spells, summoned maids, datapacks, commands and config.
+- **Patchouli** — 12 guide entries under the "Winefox's Spellbooks" category of Touhou Little Maid's *Memorizable Gensokyo*, covering mana, casting media, tasks, animations, mod integration, troubleshooting, the school with its items and spells (summoned maids included), datapacks, commands and config.
 
 ---
 

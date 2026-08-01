@@ -71,7 +71,36 @@
     {
       "type": "patchouli:text",
       "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spells.pages.14.text"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spells.pages.15.title",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spells.pages.15.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spells.pages.16.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spells.pages.17.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spells.pages.18.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spells.pages.19.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spells.pages.20.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.spells.pages.21.text"
     }
   ],
-  "sortnum": 9
+  "sortnum": 10
 }
