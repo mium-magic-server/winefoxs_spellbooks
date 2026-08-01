@@ -330,7 +330,7 @@ MagicMeleeAttack            近战补充攻击（配置 meleeAttackInMagicTask �
 5. 补齐两份 lang：`en_us.json` + `zh_cn.json`。
 6. 需要产出卷轴时，确认学派、`WsbItemTags`、战利品修改器（`datagen/WsbGlobalLootModifierProvider`）。
 7. `./gradlew runData && ./gradlew build`。
-8. 需要 Patchouli 词条时，在 `assets/touhou_little_maid/patchouli_books/memorizable_gensokyo/{en_us,zh_cn}/entries/winefoxs_spellbooks/` 下各加一份。
+8. 需要 Patchouli 词条时，只在 `assets/touhou_little_maid/patchouli_books/memorizable_gensokyo/en_us/entries/winefoxs_spellbooks/` 下加一份词条 json——书本只有 en_us 一棵树，正文一律走 `patchouli.…` 翻译键，中英文各自写在两份 lang 里。注意单页容量有限，超出只会静默缩小字号。
 
 ### 5.2 支持一个新的 Iron's 附属模组
 
@@ -341,7 +341,8 @@ MagicMeleeAttack            近战补充攻击（配置 meleeAttackInMagicTask �
    - `datagen/spelldata/<Mod>Data.java`（仅在需要覆写施法距离或附带效果时创建；例如 Snow Waifu Spell 只有 Tags 文件）。
 4. 在 `MaidSpellTagsProvider#addTags`（及 `SpellDataProvider#run`）中注册新的 contributor。
 5. 需要 recast 收尾逻辑的，新增 `magic/recast/addon/<Mod>Recasts.java` 并注册进 `RecastHandlers`。
-6. `./gradlew runData && ./gradlew build`。
+6. 更新两份 README 的附属表格与「N 个附属」计数——分类数取自 `src/generated/resources/data/winefoxs_spellbooks/tags/irons_spellbooks/spells/` 下各标签里该命名空间的去重条目数。
+7. `./gradlew runData && ./gradlew build`。
 
 > 每个附属拆分为独立文件是刻意设计，便于并行修改不同附属而不产生冲突。
 
