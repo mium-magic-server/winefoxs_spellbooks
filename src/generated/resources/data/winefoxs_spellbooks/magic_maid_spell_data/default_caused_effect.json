@@ -21,6 +21,22 @@
       "spell": "aero_additions:updraft"
     },
     {
+      "effect": "apprenticecodex:divine_possession",
+      "spell": "apprenticecodex:divine_possession"
+    },
+    {
+      "effect": "apprenticecodex:echo_spell",
+      "spell": "apprenticecodex:echo_cast"
+    },
+    {
+      "effect": "apprenticecodex:palette_reception",
+      "spell": "apprenticecodex:palette_shift"
+    },
+    {
+      "effect": "apprenticecodex:thermal_processing",
+      "spell": "apprenticecodex:thermal_process"
+    },
+    {
       "effect": "cataclysm_spellbooks:abyssal_predator_effect",
       "spell": "cataclysm_spellbooks:abyssal_predator"
     },
@@ -181,6 +197,42 @@
       "spell": "gtbcs_geomancy_plus:solar_beam"
     },
     {
+      "effect": "gametechbcs_spellbooks:flames_reborn",
+      "spell": "gametechbcs_spellbooks:flames_reborn"
+    },
+    {
+      "effect": "gametechbcs_spellbooks:lingering_strain",
+      "spell": "gametechbcs_spellbooks:lingering_strain"
+    },
+    {
+      "effect": "gametechbcs_spellbooks:reversal",
+      "spell": "gametechbcs_spellbooks:reversal"
+    },
+    {
+      "effect": "gametechbcs_spellbooks:corroded",
+      "spell": "gametechbcs_spellbooks:acid_rain"
+    },
+    {
+      "effect": "gametechbcs_spellbooks:aerial_collapse",
+      "spell": "gametechbcs_spellbooks:aerial_collapse"
+    },
+    {
+      "effect": "gametechbcs_spellbooks:blackout",
+      "spell": "gametechbcs_spellbooks:blackout"
+    },
+    {
+      "effect": "gametechbcs_spellbooks:hemorrhage",
+      "spell": "gametechbcs_spellbooks:crimson_downpour"
+    },
+    {
+      "effect": "gametechbcs_spellbooks:nullflare_ice",
+      "spell": "gametechbcs_spellbooks:nullflare"
+    },
+    {
+      "effect": "gametechbcs_spellbooks:psychic_control",
+      "spell": "gametechbcs_spellbooks:psychic_bolt"
+    },
+    {
       "effect": "hazennstuff:ichor",
       "spell": "hazennstuff:golden_shower"
     },
@@ -259,6 +311,254 @@
     {
       "effect": "iss_magicfromtheeast:soulburn",
       "spell": "iss_magicfromtheeast:soul_burst"
+    },
+    {
+      "effect": "monsterspellbooks:endersent_strength",
+      "spell": "monsterspellbooks:endersent_form"
+    },
+    {
+      "effect": "monsterspellbooks:bloodlust",
+      "spell": "monsterspellbooks:hysteria"
+    },
+    {
+      "effect": "monsterspellbooks:lichdom",
+      "spell": "monsterspellbooks:lichdom"
+    },
+    {
+      "effect": "monsterspellbooks:overheat",
+      "spell": "monsterspellbooks:overheat"
+    },
+    {
+      "effect": "monsterspellbooks:reaper_aspect",
+      "spell": "monsterspellbooks:reaper_aspect"
+    },
+    {
+      "effect": "monsterspellbooks:soul_form",
+      "spell": "monsterspellbooks:soul_form"
+    },
+    {
+      "effect": "monsterspellbooks:effect_of_undying",
+      "spell": "monsterspellbooks:spell_of_undying"
+    },
+    {
+      "effect": "minecraft:water_breathing",
+      "spell": "monsterspellbooks:air_bubble"
+    },
+    {
+      "effect": "minecraft:strength",
+      "spell": "monsterspellbooks:enchanters_boost"
+    },
+    {
+      "effect": "minecraft:resistance",
+      "spell": "monsterspellbooks:enchanters_protection"
+    },
+    {
+      "effect": "monsterspellbooks:frost_coating",
+      "spell": "monsterspellbooks:frost_coating"
+    },
+    {
+      "effect": "monsterspellbooks:soul_boosted",
+      "spell": "monsterspellbooks:soul_casting_field"
+    },
+    {
+      "effect": "monsterspellbooks:heal_cut",
+      "spell": "monsterspellbooks:anticoagulation"
+    },
+    {
+      "effect": "minecraft:wither",
+      "spell": "monsterspellbooks:banshee_scream"
+    },
+    {
+      "effect": "irons_spellbooks:rend",
+      "spell": "monsterspellbooks:blood_pierce"
+    },
+    {
+      "effect": "monsterspellbooks:brimstone_flame",
+      "spell": "monsterspellbooks:brimstone_wrath"
+    },
+    {
+      "effect": "monsterspellbooks:heal_cut",
+      "spell": "monsterspellbooks:cauterizing_touch"
+    },
+    {
+      "effect": "monsterspellbooks:heavy_body",
+      "spell": "monsterspellbooks:crush"
+    },
+    {
+      "effect": "irons_spellbooks:airborne",
+      "spell": "monsterspellbooks:endersent_smash"
+    },
+    {
+      "effect": "monsterspellbooks:paralysis",
+      "spell": "monsterspellbooks:fall_curse"
+    },
+    {
+      "effect": "monsterspellbooks:madness",
+      "spell": "monsterspellbooks:frenzied_burst"
+    },
+    {
+      "effect": "monsterspellbooks:madness",
+      "spell": "monsterspellbooks:frenzy_surge"
+    },
+    {
+      "effect": "irons_spellbooks:guided",
+      "spell": "monsterspellbooks:glow_ink_release"
+    },
+    {
+      "effect": "monsterspellbooks:paralysis",
+      "spell": "monsterspellbooks:gravity_well"
+    },
+    {
+      "effect": "monsterspellbooks:paralysis",
+      "spell": "monsterspellbooks:guardians_neutralizer"
+    },
+    {
+      "effect": "monsterspellbooks:bleeding",
+      "spell": "monsterspellbooks:sanguinite_evisceration"
+    },
+    {
+      "effect": "monsterspellbooks:space_anchored",
+      "spell": "monsterspellbooks:soul_chain"
+    },
+    {
+      "effect": "monsterspellbooks:paralysis",
+      "spell": "monsterspellbooks:space_breaker"
+    },
+    {
+      "effect": "monsterspellbooks:lethargy",
+      "spell": "monsterspellbooks:spectral_blast"
+    },
+    {
+      "effect": "monsterspellbooks:soul_rend",
+      "spell": "monsterspellbooks:spirit_strike"
+    },
+    {
+      "effect": "monsterspellbooks:suffocation",
+      "spell": "monsterspellbooks:suffocate"
+    },
+    {
+      "effect": "irons_spellbooks:airborne",
+      "spell": "monsterspellbooks:wind_wave"
+    },
+    {
+      "effect": "monsterspellbooks:soul_rend",
+      "spell": "monsterspellbooks:wither_nova"
+    },
+    {
+      "effect": "peyroscythe:black_flame_wings",
+      "spell": "peyroscythe:black_flame_wings"
+    },
+    {
+      "effect": "peyroscythe:moon_frenzy",
+      "spell": "peyroscythe:crimson_moon"
+    },
+    {
+      "effect": "peyroscythe:sinfire_embrace",
+      "spell": "peyroscythe:sinfire_embrace"
+    },
+    {
+      "effect": "peyroscythe:death_smoke_erosion",
+      "spell": "peyroscythe:death_smoke"
+    },
+    {
+      "effect": "irons_spellbooks:chilled",
+      "spell": "peyroscythe:the_frozen_world"
+    },
+    {
+      "effect": "peyroscythe:holy_bell_suppression",
+      "spell": "peyroscythe:holy_bell"
+    },
+    {
+      "effect": "peyroscythe:illusion_crazy",
+      "spell": "peyroscythe:illusion_crazy"
+    },
+    {
+      "effect": "peyroscythe:illusion_fear",
+      "spell": "peyroscythe:illusion_fear"
+    },
+    {
+      "effect": "somakespells:blessed",
+      "spell": "somakespells:blessing"
+    },
+    {
+      "effect": "somakespells:blood_cut",
+      "spell": "somakespells:blood_cut"
+    },
+    {
+      "effect": "somakespells:blood_rush",
+      "spell": "somakespells:blood_rush"
+    },
+    {
+      "effect": "somakespells:combustioned",
+      "spell": "somakespells:combustion"
+    },
+    {
+      "effect": "somakespells:earthbound",
+      "spell": "somakespells:earthbound"
+    },
+    {
+      "effect": "somakespells:eldritch_gambit",
+      "spell": "somakespells:eldritch_gambit"
+    },
+    {
+      "effect": "somakespells:ender_corruption",
+      "spell": "somakespells:ender_corruption"
+    },
+    {
+      "effect": "somakespells:evocation_fortitude",
+      "spell": "somakespells:evocation_fortitude"
+    },
+    {
+      "effect": "somakespells:overgrown",
+      "spell": "somakespells:overgrowth"
+    },
+    {
+      "effect": "somakespells:permafrost",
+      "spell": "somakespells:permafrost"
+    },
+    {
+      "effect": "somakespells:reverberation",
+      "spell": "somakespells:reverberation"
+    },
+    {
+      "effect": "somakespells:rose_secret",
+      "spell": "somakespells:rose_secret"
+    },
+    {
+      "effect": "somakespells:spirit_empowerment",
+      "spell": "somakespells:spirit_empowerment"
+    },
+    {
+      "effect": "somakespells:submerged",
+      "spell": "somakespells:submerge"
+    },
+    {
+      "effect": "somakespells:symmetry_empowerment",
+      "spell": "somakespells:symmetry_empowerment"
+    },
+    {
+      "effect": "somakespells:custodia_caeli_blessing",
+      "spell": "somakespells:custodia_caeli"
+    },
+    {
+      "effect": "somakespells:electrocuted",
+      "spell": "somakespells:lightning_cut"
+    },
+    {
+      "effect": "somakespells:electrocuted",
+      "spell": "somakespells:lightning_lash"
+    },
+    {
+      "effect": "somakespells:electrocuted",
+      "spell": "somakespells:lightning_strike"
+    },
+    {
+      "effect": "somakespells:wet",
+      "spell": "somakespells:storm_aura"
+    },
+    {
+      "effect": "somakespells:wet",
+      "spell": "somakespells:thunder_cloud"
     },
     {
       "effect": "winefoxs_spellbooks:crescent_brand",

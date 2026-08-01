@@ -32,7 +32,7 @@
 除女仆施法这条主线外，模组还提供：
 
 - **酒狐巫法**——自带伤害类型与专属属性的独立学派，核心是**玩家与女仆的配合**：玩家起手、女仆接力，协同作战的收益远高于各自为战；
-- **附属兼容**——为 10 个《Iron 的法术与魔法书》附属的数百个法术做了行为分类，已安装则生效，未安装也不报错。
+- **附属兼容**——为 15 个《Iron 的法术与魔法书》附属的数百个法术做了行为分类，已安装则生效，未安装也不报错。
 
 关于名字：咏唱动画只有 GeckoLib 模型的女仆才能播放，而「酒狐」正是这样一款女仆模型。
 
@@ -213,12 +213,17 @@
 
 | 模组 | 已分类法术数 |
 |---|---|
+| Monsters & Spellbooks | 107 |
 | Iron's Spells 'n Spellbooks（本体） | 101 |
+| Somake Spells | 66 |
+| Apprentice's Codex | 53 |
 | Ender's Spells and Stuff: Requiem | 46 |
 | Hazen 'N Stuff | 38 |
 | Cataclysm: Spellbooks | 34 |
 | Magic From The East | 22 |
 | Discerning The Eldritch | 21 |
+| GTBC's Spellbooks | 16 |
+| Peyro's Scythes & Spells | 16 |
 | GTBC's Geomancy Plus | 12 |
 | Fire's Ender Expansion | 11 |
 | SnackPirate's Aeromancy Additions | 10 |

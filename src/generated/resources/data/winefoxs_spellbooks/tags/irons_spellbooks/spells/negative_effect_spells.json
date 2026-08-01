@@ -56,6 +56,34 @@
       "id": "irons_spellbooks:root",
       "required": false
     },
+    {
+      "id": "monsterspellbooks:anticoagulation",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:glow_ink_release",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:fall_curse",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:holy_bell",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:illusion_crazy",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:illusion_fear",
+      "required": false
+    },
+    {
+      "id": "somakespells:slumber_melody",
+      "required": false
+    },
     "winefoxs_spellbooks:crescent_brand",
     "winefoxs_spellbooks:tipsy_mist"
   ]

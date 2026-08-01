@@ -1,6 +1,14 @@
 {
   "values": [
     {
+      "id": "apprenticecodex:graced_rain",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:healing_bloom",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:blessing_of_life",
       "required": false
     },
@@ -10,6 +18,14 @@
     },
     {
       "id": "irons_spellbooks:healing_circle",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:soul_casting_field",
+      "required": false
+    },
+    {
+      "id": "somakespells:blessed_connection",
       "required": false
     }
   ]

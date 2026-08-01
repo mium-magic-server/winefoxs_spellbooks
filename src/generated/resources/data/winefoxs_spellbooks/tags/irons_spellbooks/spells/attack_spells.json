@@ -17,6 +17,170 @@
       "required": false
     },
     {
+      "id": "apprenticecodex:anchor_blink",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:arcane_beam",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:arcane_blast",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:artisan_smash",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:bound_bow",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:bound_sword",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:breaching_enemy",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:bullet_stream",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:commence_fire",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:compound_phial",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:dual_acrobat",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:extract",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:feather_rush",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:fly_swatter",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:frost_rune",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:fujin",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:grind_runner",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:heavenly_fist",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:higanbana",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:illuminate_stellar",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:inscribe_ice",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:lethal_assault",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:magic_spear",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:mana_slash",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:mantis_leap",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:moon_light",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:phalanx_charge",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:precision_jack",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:quick_arms",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:servant_gaze",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:shock",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:silent_assassin",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:sky_edge",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:slash_blade",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:thermal_process",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:tiro_volley",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:totem_of_permafrost",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:unite_luna",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:archer_multiple",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:auto_turret",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:field_overseer",
+      "required": false
+    },
+    {
       "id": "cataclysm_spellbooks:void_beam",
       "required": false
     },
@@ -382,6 +546,54 @@
     },
     {
       "id": "gtbcs_geomancy_plus:solar_beam",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:acid_rain",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:aerial_collapse",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:ashen_breath",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:blackout",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:crimson_downpour",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:displacement",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:ensnare",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:meteor_storm",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:nullflare",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:psychic_bolt",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:shatterpoint",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:call_forth_the_dead_king",
       "required": false
     },
     {
@@ -869,7 +1081,583 @@
       "required": false
     },
     {
+      "id": "monsterspellbooks:forceful_wind",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:steam_stream",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:suffocate",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:wind_charge",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:wind_wave",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:blood_pierce",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:blood_thorn",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:cauterizing_touch",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:sanguinite_evisceration",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:endersent_smash",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:gravity_well",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:obsidian_arsenal",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:space_breaker",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:space_rupture",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:unstable_teleport",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:void_arrows",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:crush",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:crushing_presence",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:blast_fungus",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:brimstone_buzzsaw",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:brimstone_rain",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:brimstone_wrath",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:napalm_orb",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:wrath",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:divine_intervention",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:hallow_slash",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:paladin_throw",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:bubble_spray",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:effervescence_bubble",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:ink_bomb",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:razor_typhoon",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:riptide_dash",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:water_trident",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:blizzard_aspect",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:frost_breath",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:frosted_snowbolt",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:ice_arsenal",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:orbital_snowball",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_ice_hydra",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:tundra_terrain",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:discharge",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:guardians_neutralizer",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:ancient_flash",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:raigo",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:raijin_judgement",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:redstone_bolt",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:redstone_chain",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:redstone_lasers",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:redstone_mines",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:static_cleave",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:thunder_step",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:thunderstorm_wave",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:voltaic_multishot",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:zap",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:infection_slash",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:leaf_crystal",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:poison_quill",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:spider_fangs",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_poison_vines",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:vital_blast",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:graveyard_fissure",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:life_drain",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:putrescence_mass",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:rancorcall",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:soul_chain",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:soul_firebolt",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:soul_scorch",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:spectral_blast",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:spirit_strike",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:stray_grasp",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:torment_arrow",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:vile_slash",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:wither_bomb",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:wither_nova",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_death_knight",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_soul_wizard",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_wither_warrior",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_aegis_patrol",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_dwarven_drones",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_prismarine_squad",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:corrupted_beacon_ray",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:dragon_charge",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:firmament_splitter",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:frenzied_burst",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:frenzied_storm",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:frenzy_surge",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:spinblade",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:banshee_scream",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:bone_dagger",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:black_fireball",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:chaos_cradle",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:death_smoke",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:frost_hell",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:the_frozen_world",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:glacier",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:holy_lance",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:icy_comet_rain",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:nero_holy_ray",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:summon_blaze",
+      "required": false
+    },
+    {
       "id": "snowwaifuspell:summon_snow_queen",
+      "required": false
+    },
+    {
+      "id": "somakespells:abyssal_burn",
+      "required": false
+    },
+    {
+      "id": "somakespells:apocalyptic_burst",
+      "required": false
+    },
+    {
+      "id": "somakespells:damned_demomans",
+      "required": false
+    },
+    {
+      "id": "somakespells:eruption",
+      "required": false
+    },
+    {
+      "id": "somakespells:fire_blast",
+      "required": false
+    },
+    {
+      "id": "somakespells:fire_orbs",
+      "required": false
+    },
+    {
+      "id": "somakespells:firestorm_vortex",
+      "required": false
+    },
+    {
+      "id": "somakespells:incinerator_slash",
+      "required": false
+    },
+    {
+      "id": "somakespells:bloodmark",
+      "required": false
+    },
+    {
+      "id": "somakespells:bloody_legacy",
+      "required": false
+    },
+    {
+      "id": "somakespells:cursed_connection",
+      "required": false
+    },
+    {
+      "id": "somakespells:fragmented_requiem",
+      "required": false
+    },
+    {
+      "id": "somakespells:lightning_ball",
+      "required": false
+    },
+    {
+      "id": "somakespells:lightning_cut",
+      "required": false
+    },
+    {
+      "id": "somakespells:lightning_dance",
+      "required": false
+    },
+    {
+      "id": "somakespells:lightning_field",
+      "required": false
+    },
+    {
+      "id": "somakespells:lightning_lash",
+      "required": false
+    },
+    {
+      "id": "somakespells:lightning_spark",
+      "required": false
+    },
+    {
+      "id": "somakespells:lightning_spear",
+      "required": false
+    },
+    {
+      "id": "somakespells:lightning_strike",
+      "required": false
+    },
+    {
+      "id": "somakespells:lightning_swarm",
+      "required": false
+    },
+    {
+      "id": "somakespells:storm_aura",
+      "required": false
+    },
+    {
+      "id": "somakespells:thunder_cloud",
+      "required": false
+    },
+    {
+      "id": "somakespells:hydro_slash",
+      "required": false
+    },
+    {
+      "id": "somakespells:sea_serpent",
+      "required": false
+    },
+    {
+      "id": "somakespells:sea_serpent_jet",
+      "required": false
+    },
+    {
+      "id": "somakespells:tidal_dash",
+      "required": false
+    },
+    {
+      "id": "somakespells:tidal_grasp",
+      "required": false
+    },
+    {
+      "id": "somakespells:tsunami",
+      "required": false
+    },
+    {
+      "id": "somakespells:water_ball",
+      "required": false
+    },
+    {
+      "id": "somakespells:water_control",
+      "required": false
+    },
+    {
+      "id": "somakespells:water_spear",
+      "required": false
+    },
+    {
+      "id": "somakespells:axe_cleave",
+      "required": false
+    },
+    {
+      "id": "somakespells:desert_wrath",
+      "required": false
+    },
+    {
+      "id": "somakespells:halberd_strike",
+      "required": false
+    },
+    {
+      "id": "somakespells:mirror_strike",
+      "required": false
+    },
+    {
+      "id": "somakespells:abyssal_orbs",
+      "required": false
+    },
+    {
+      "id": "somakespells:chain_connection",
+      "required": false
+    },
+    {
+      "id": "somakespells:pumpkin_bomb",
+      "required": false
+    },
+    {
+      "id": "somakespells:summon_zombie",
+      "required": false
+    },
+    {
+      "id": "somakespells:jingle_bell",
+      "required": false
+    },
+    {
+      "id": "somakespells:phantom_barrage",
+      "required": false
+    },
+    {
+      "id": "somakespells:ram_tchum",
+      "required": false
+    },
+    {
+      "id": "somakespells:resonant_pulse",
+      "required": false
+    },
+    {
+      "id": "somakespells:soul_grab",
       "required": false
     },
     "winefoxs_spellbooks:foxshade_wisps",

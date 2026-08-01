@@ -5,6 +5,78 @@
       "required": false
     },
     {
+      "id": "apprenticecodex:arcane_beam",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:archer_multiple",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:bullet_stream",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:commence_fire",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:dual_acrobat",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:feather_rush",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:field_overseer",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:fly_swatter",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:force_field",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:fujin",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:graced_rain",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:grind_runner",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:long_stride",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:mystic_shield",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:phalanx_charge",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:thermal_process",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:tiro_volley",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:totem_of_permafrost",
+      "required": false
+    },
+    {
       "id": "cataclysm_spellbooks:void_beam",
       "required": false
     },
@@ -81,6 +153,18 @@
       "required": false
     },
     {
+      "id": "gametechbcs_spellbooks:ashen_breath",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:nullflare",
+      "required": false
+    },
+    {
+      "id": "gametechbcs_spellbooks:psychic_bolt",
+      "required": false
+    },
+    {
       "id": "hazennstuff:dazzling_obliteration",
       "required": false
     },
@@ -129,7 +213,127 @@
       "required": false
     },
     {
+      "id": "monsterspellbooks:brimstone_rain",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:brimstone_wrath",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:bubble_spray",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:cloud_dash",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:corrupted_beacon_ray",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:discharge",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:frenzied_storm",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:frenzy_surge",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:guardians_neutralizer",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:life_drain",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:ancient_flash",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:rancorcall",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:redstone_lasers",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:steam_stream",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:thunder_step",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:void_arrows",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:wither_nova",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:black_fireball",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:death_smoke",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:frost_hell",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:icy_comet_rain",
+      "required": false
+    },
+    {
       "id": "snowwaifuspell:summon_snow_queen",
+      "required": false
+    },
+    {
+      "id": "somakespells:blessed_connection",
+      "required": false
+    },
+    {
+      "id": "somakespells:bloodmark",
+      "required": false
+    },
+    {
+      "id": "somakespells:chain_connection",
+      "required": false
+    },
+    {
+      "id": "somakespells:cursed_connection",
+      "required": false
+    },
+    {
+      "id": "somakespells:fire_orbs",
+      "required": false
+    },
+    {
+      "id": "somakespells:hydro_slash",
+      "required": false
+    },
+    {
+      "id": "somakespells:lightning_cut",
+      "required": false
+    },
+    {
+      "id": "somakespells:phantom_barrage",
+      "required": false
+    },
+    {
+      "id": "somakespells:thunder_cloud",
       "required": false
     },
     "winefoxs_spellbooks:foxshade_wisps"

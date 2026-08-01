@@ -2,6 +2,34 @@
   "values": [
     {
       "range": 2.0,
+      "spell": "apprenticecodex:bound_sword"
+    },
+    {
+      "range": 2.0,
+      "spell": "apprenticecodex:higanbana"
+    },
+    {
+      "range": 2.0,
+      "spell": "apprenticecodex:mantis_leap"
+    },
+    {
+      "range": 2.0,
+      "spell": "apprenticecodex:moon_light"
+    },
+    {
+      "range": 2.0,
+      "spell": "apprenticecodex:phalanx_charge"
+    },
+    {
+      "range": 2.0,
+      "spell": "apprenticecodex:precision_jack"
+    },
+    {
+      "range": 2.0,
+      "spell": "apprenticecodex:slash_blade"
+    },
+    {
+      "range": 2.0,
       "spell": "cataclysm_spellbooks:abyssal_slash"
     },
     {
@@ -55,6 +83,58 @@
     {
       "range": 15.0,
       "spell": "irons_spellbooks:none"
+    },
+    {
+      "range": 2.0,
+      "spell": "monsterspellbooks:cauterizing_touch"
+    },
+    {
+      "range": 2.0,
+      "spell": "monsterspellbooks:endersent_smash"
+    },
+    {
+      "range": 2.0,
+      "spell": "monsterspellbooks:gravity_well"
+    },
+    {
+      "range": 2.0,
+      "spell": "monsterspellbooks:ancient_flash"
+    },
+    {
+      "range": 2.0,
+      "spell": "monsterspellbooks:sanguinite_evisceration"
+    },
+    {
+      "range": 2.0,
+      "spell": "monsterspellbooks:space_breaker"
+    },
+    {
+      "range": 2.0,
+      "spell": "monsterspellbooks:spirit_strike"
+    },
+    {
+      "range": 2.0,
+      "spell": "monsterspellbooks:vile_slash"
+    },
+    {
+      "range": 2.0,
+      "spell": "somakespells:hydro_slash"
+    },
+    {
+      "range": 2.0,
+      "spell": "somakespells:incinerator_slash"
+    },
+    {
+      "range": 2.0,
+      "spell": "somakespells:lightning_cut"
+    },
+    {
+      "range": 2.0,
+      "spell": "somakespells:mirror_strike"
+    },
+    {
+      "range": 2.0,
+      "spell": "somakespells:ram_tchum"
     },
     {
       "range": 16.0,

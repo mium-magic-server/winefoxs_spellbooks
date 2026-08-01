@@ -6,16 +6,21 @@ import java.util.concurrent.CompletableFuture;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.api.spell.SpellFlag;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.AeromancyAdditionsTags;
+import net.magicterra.winefoxsspellbooks.datagen.spelltag.ApprenticesCodexTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.CataclysmSpellbooksTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.DiscerningTheEldritchTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.DreamlessSpellsTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.EndersSpellsRequiemTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.FiresEnderExpansionTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.GeomancyPlusTags;
+import net.magicterra.winefoxsspellbooks.datagen.spelltag.GtbcsSpellbooksTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.HazenNStuffTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.IronsSpellbooksTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.MagicFromTheEastTags;
+import net.magicterra.winefoxsspellbooks.datagen.spelltag.MonstersSpellbooksTags;
+import net.magicterra.winefoxsspellbooks.datagen.spelltag.PeyrosScytheTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.SnowWaifuSpellTags;
+import net.magicterra.winefoxsspellbooks.datagen.spelltag.SomakeSpellsTags;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.SpellTagContext;
 import net.magicterra.winefoxsspellbooks.datagen.spelltag.WinefoxsSpellbooksTags;
 import net.minecraft.core.HolderLookup;
@@ -56,16 +61,21 @@ public class MaidSpellTagsProvider extends IntrinsicHolderTagsProvider<AbstractS
         );
 
         AeromancyAdditionsTags.contribute(ctx);
+        ApprenticesCodexTags.contribute(ctx);
         CataclysmSpellbooksTags.contribute(ctx);
         DiscerningTheEldritchTags.contribute(ctx);
         DreamlessSpellsTags.contribute(ctx);
         EndersSpellsRequiemTags.contribute(ctx);
         FiresEnderExpansionTags.contribute(ctx);
         GeomancyPlusTags.contribute(ctx);
+        GtbcsSpellbooksTags.contribute(ctx);
         HazenNStuffTags.contribute(ctx);
         IronsSpellbooksTags.contribute(ctx);
         MagicFromTheEastTags.contribute(ctx);
+        MonstersSpellbooksTags.contribute(ctx);
+        PeyrosScytheTags.contribute(ctx);
         SnowWaifuSpellTags.contribute(ctx);
+        SomakeSpellsTags.contribute(ctx);
         WinefoxsSpellbooksTags.contribute(ctx);
     }
 }

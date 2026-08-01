@@ -32,7 +32,7 @@
 Beyond that main line, the mod also provides:
 
 - **Winefox Hex** — a standalone school with its own damage type and attributes, built around **player–maid teamwork**: the player opens, the maid follows up, and fighting together pays far better than fighting apart;
-- **Addon compatibility** — behaviour classifications for several hundred spells across 10 Iron's Spells addons. Installed addons take effect automatically; missing ones cause no errors.
+- **Addon compatibility** — behaviour classifications for several hundred spells across 15 Iron's Spells addons. Installed addons take effect automatically; missing ones cause no errors.
 
 About the name: casting animations only play on GeckoLib maid models, and "Winefox" is one such model.
 
@@ -213,12 +213,17 @@ The mod ships behaviour classifications for the Iron's Spells addons below. **In
 
 | Mod | Spells classified |
 |---|---|
+| Monsters & Spellbooks | 107 |
 | Iron's Spells 'n Spellbooks (base) | 101 |
+| Somake Spells | 66 |
+| Apprentice's Codex | 53 |
 | Ender's Spells and Stuff: Requiem | 46 |
 | Hazen 'N Stuff | 38 |
 | Cataclysm: Spellbooks | 34 |
 | Magic From The East | 22 |
 | Discerning The Eldritch | 21 |
+| GTBC's Spellbooks | 16 |
+| Peyro's Scythes & Spells | 16 |
 | GTBC's Geomancy Plus | 12 |
 | Fire's Ender Expansion | 11 |
 | SnackPirate's Aeromancy Additions | 10 |

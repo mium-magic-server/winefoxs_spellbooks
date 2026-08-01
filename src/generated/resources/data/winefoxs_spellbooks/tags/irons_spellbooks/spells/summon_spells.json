@@ -1,6 +1,18 @@
 {
   "values": [
     {
+      "id": "apprenticecodex:archer_multiple",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:auto_turret",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:field_overseer",
+      "required": false
+    },
+    {
       "id": "cataclysm_spellbooks:conjure_koboldiator",
       "required": false
     },
@@ -61,6 +73,10 @@
       "required": false
     },
     {
+      "id": "gametechbcs_spellbooks:call_forth_the_dead_king",
+      "required": false
+    },
+    {
       "id": "hazennstuff:call_forth_terraprisma",
       "required": false
     },
@@ -105,7 +121,55 @@
       "required": false
     },
     {
+      "id": "monsterspellbooks:orbital_snowball",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_ice_hydra",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:leaf_crystal",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_poison_vines",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_death_knight",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_soul_wizard",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_wither_warrior",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_aegis_patrol",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_dwarven_drones",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:summon_prismarine_squad",
+      "required": false
+    },
+    {
+      "id": "peyroscythe:summon_blaze",
+      "required": false
+    },
+    {
       "id": "snowwaifuspell:summon_snow_queen",
+      "required": false
+    },
+    {
+      "id": "somakespells:summon_zombie",
       "required": false
     },
     "winefoxs_spellbooks:summon_maid"

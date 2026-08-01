@@ -5,6 +5,22 @@
       "required": false
     },
     {
+      "id": "apprenticecodex:assist_wings",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:long_stride",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:mist_form",
+      "required": false
+    },
+    {
+      "id": "apprenticecodex:spectral_wing",
+      "required": false
+    },
+    {
       "id": "cataclysm_spellbooks:cursed_rush",
       "required": false
     },
@@ -33,6 +49,10 @@
       "required": false
     },
     {
+      "id": "gametechbcs_spellbooks:spectral_blink",
+      "required": false
+    },
+    {
       "id": "hazennstuff:prismatic_shift",
       "required": false
     },
@@ -58,6 +78,22 @@
     },
     {
       "id": "iss_magicfromtheeast:cloud_ride",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:air_propulsion",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:soul_fire_teleport",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:cloud_dash",
+      "required": false
+    },
+    {
+      "id": "somakespells:render_rush",
       "required": false
     }
   ]

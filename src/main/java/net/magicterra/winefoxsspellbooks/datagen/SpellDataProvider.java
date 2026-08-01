@@ -6,15 +6,20 @@ import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.AeromancyAdditionsData;
+import net.magicterra.winefoxsspellbooks.datagen.spelldata.ApprenticesCodexData;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.CataclysmSpellbooksData;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.DiscerningTheEldritchData;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.DreamlessSpellsData;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.EndersSpellsRequiemData;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.FiresEnderExpansionData;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.GeomancyPlusData;
+import net.magicterra.winefoxsspellbooks.datagen.spelldata.GtbcsSpellbooksData;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.HazenNStuffData;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.IronsSpellbooksData;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.MagicFromTheEastData;
+import net.magicterra.winefoxsspellbooks.datagen.spelldata.MonstersSpellbooksData;
+import net.magicterra.winefoxsspellbooks.datagen.spelldata.PeyrosScytheData;
+import net.magicterra.winefoxsspellbooks.datagen.spelldata.SomakeSpellsData;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.SpellDataContext;
 import net.magicterra.winefoxsspellbooks.datagen.spelldata.WinefoxsSpellbooksData;
 import net.magicterra.winefoxsspellbooks.magic.data.SpellCastingRangeData;
@@ -46,15 +51,20 @@ public class SpellDataProvider implements DataProvider {
         var ctx = new SpellDataContext(rangeBuilder, effectBuilder);
 
         AeromancyAdditionsData.contribute(ctx);
+        ApprenticesCodexData.contribute(ctx);
         CataclysmSpellbooksData.contribute(ctx);
         DiscerningTheEldritchData.contribute(ctx);
         DreamlessSpellsData.contribute(ctx);
         EndersSpellsRequiemData.contribute(ctx);
         FiresEnderExpansionData.contribute(ctx);
         GeomancyPlusData.contribute(ctx);
+        GtbcsSpellbooksData.contribute(ctx);
         HazenNStuffData.contribute(ctx);
         IronsSpellbooksData.contribute(ctx);
         MagicFromTheEastData.contribute(ctx);
+        MonstersSpellbooksData.contribute(ctx);
+        PeyrosScytheData.contribute(ctx);
+        SomakeSpellsData.contribute(ctx);
         WinefoxsSpellbooksData.contribute(ctx);
 
         return CompletableFuture.allOf(

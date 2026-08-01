@@ -44,6 +44,30 @@
       "id": "irons_spellbooks:frostbite",
       "required": false
     },
+    {
+      "id": "monsterspellbooks:air_bubble",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:enchanters_boost",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:enchanters_protection",
+      "required": false
+    },
+    {
+      "id": "monsterspellbooks:frost_coating",
+      "required": false
+    },
+    {
+      "id": "somakespells:custodia_caeli",
+      "required": false
+    },
+    {
+      "id": "somakespells:guardian_connection",
+      "required": false
+    },
     "winefoxs_spellbooks:mana_transfer"
   ]
 }

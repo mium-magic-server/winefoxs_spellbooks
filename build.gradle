@@ -237,6 +237,16 @@ dependencies {
     // GTBC's Geomancy Plus - Iron's Spells Addon
     implementation("curse.maven:gtbcs-geomancy-plus-1352485:${gtbcs_geomancy_plus_version}")
     implementation("curse.maven:gtbcs-spelllib-1194714:${gtbcs_spelllib_version}")
+    // GTBC's Spellbooks - Iron's Spells Addon（与 Geomancy Plus 同作者，共用 gtbcs-spelllib）
+    implementation("curse.maven:gtbcs-spellbooks-1125198:${gtbcs_spellbooks_version}")
+    // Monsters & Spellbooks
+    implementation("curse.maven:monsters-spellbooks-iss-1428928:${monsters_spellbooks_version}")
+    // Apprentice's Codex
+    implementation("curse.maven:apprentices-codex-1450885:${apprentices_codex_version}")
+    // Somake Spells - Iron's Spells Addon
+    implementation("curse.maven:somake-spells-irons-spells-addon-1461634:${somake_spells_version}")
+    // Peyro's Scythes & Spells
+    implementation("curse.maven:peyros-scythe-1327449:${peyros_scythe_version}")
 
 
     // 新生魔艺
