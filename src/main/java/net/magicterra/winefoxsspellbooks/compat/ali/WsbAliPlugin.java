@@ -1,31 +1,28 @@
 package net.magicterra.winefoxsspellbooks.compat.ali;
 
 import com.yanny.aci.api.RangeValue;
+import com.yanny.aci.tooltip.TooltipNode;
 import com.yanny.ali.api.AliEntrypoint;
 import com.yanny.ali.api.ILootModifier;
 import com.yanny.ali.api.IOperation;
 import com.yanny.ali.api.IServerUtils;
-import com.yanny.ali.api.ITooltipNode;
 import com.yanny.ali.neoforge.plugin.IForgePlugin;
 import com.yanny.ali.plugin.common.NodeUtils;
 import com.yanny.ali.plugin.common.nodes.ItemNode;
 import com.yanny.ali.plugin.glm.GlobalLootModifierUtils;
 import com.yanny.ali.plugin.glm.IGlobalLootModifierPlugin;
 import com.yanny.ali.plugin.glm.ILootTableIdConditionPredicate;
+import com.yanny.ali.plugin.server.EnchantedRanges;
 import com.yanny.ali.plugin.server.EntryTooltipUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.loot.AddItemLootModifier;
-import net.minecraft.core.Holder;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 /**
@@ -66,15 +63,13 @@ public class WsbAliPlugin implements IForgePlugin {
         RangeValue countRange = new RangeValue(provider.getMinValue(), provider.getMaxValue());
 
         return GlobalLootModifierUtils.getLootModifier(allConditions, conditions -> {
-            Map<Holder<Enchantment>, Map<Integer, RangeValue>> chance =
-                NodeUtils.getEnchantedChance(utils, conditions, 1.0f);
-            // RangeValue 可变且会被 tooltip 侧就地改写，两处各给一份副本
-            Map<Holder<Enchantment>, Map<Integer, RangeValue>> count = new LinkedHashMap<>();
-            count.put(null, Map.of(0, new RangeValue(countRange)));
+            EnchantedRanges chance = NodeUtils.getEnchantedChance(utils, conditions, 1.0f);
+            // RangeValue 不可变，tooltip 与条目共用同一份即可
+            EnchantedRanges count = new EnchantedRanges(countRange);
 
-            ITooltipNode tooltip = EntryTooltipUtils.getTooltip(utils, 0, chance, count,
-                Collections.emptyList(), conditions);
-            ItemNode node = new ItemNode(1.0f, new RangeValue(countRange),
+            TooltipNode tooltip = EntryTooltipUtils.getTooltip(utils, 0, chance, count,
+                Collections.emptyList(), conditions).build();
+            ItemNode node = new ItemNode(1.0f, countRange,
                 modifier.getItem().getDefaultInstance(), tooltip,
                 Collections.emptyList(), conditions);
             return Collections.singletonList(new IOperation.AddOperation(stack -> true, node));
