@@ -2,6 +2,7 @@ package net.magicterra.winefoxsspellbooks.magic.recast.addon;
 
 import io.redspace.ironsspellbooks.capabilities.magic.MultiTargetEntityCastData;
 import io.redspace.ironsspellbooks.damage.DamageSources;
+import io.redspace.ironsspellbooks.entity.spells.AoeEntity;
 import java.util.Optional;
 import java.util.UUID;
 import net.magicterra.winefoxsspellbooks.magic.recast.AddonReflection;
@@ -10,8 +11,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
@@ -31,7 +32,10 @@ public final class EndersSpellsRequiemRecasts {
 
     private static final String PALE_FLAME = "net.ender.ess_requiem.entity.spells.pale_flame.PaleFlame";
 
-    private static final Class<?>[] PALE_FLAME_CTOR = {LivingEntity.class, boolean.class};
+    /**
+     * PaleFlame 只有 {@code (EntityType, Level)} 与 {@code (Level, boolean)} 两个构造器， 后者的 boolean 是「镜像」而非归属，归属须构造后自行 {@code setOwner}。
+     */
+    private static final Class<?>[] PALE_FLAME_CTOR = {Level.class, boolean.class};
 
     /**
      * 苍白火焰的伤害相对法术强度的倍率。
@@ -45,7 +49,6 @@ public final class EndersSpellsRequiemRecasts {
         AddonReflection.declareClass(MOD_ID, SOUND_REGISTRY);
         AddonReflection.declareClass(MOD_ID, PALE_FLAME);
         AddonReflection.declareMethod(MOD_ID, PALE_FLAME, "<init>", PALE_FLAME_CTOR);
-        AddonReflection.declareMethod(MOD_ID, PALE_FLAME, "setDamage", float.class);
     }
 
     /**
@@ -87,17 +90,17 @@ public final class EndersSpellsRequiemRecasts {
     }
 
     private static void spawnPaleFlame(ServerLevel level, LivingEntity caster, LivingEntity target, float damage) {
-        Optional<Object> created = AddonReflection.construct(PALE_FLAME, PALE_FLAME_CTOR, caster, false);
-        if (created.isEmpty()) {
+        // PaleFlame 继承 Iron's 的 AoeEntity，是编译期可见的类型，伤害与归属直接调即可，无需反射。
+        // 归属不能省：AoeEntity.canHitEntity 靠 owner 过滤友军，不设会连自家人一起烧
+        if (!(AddonReflection.construct(PALE_FLAME, PALE_FLAME_CTOR, level, false)
+            .orElse(null) instanceof AoeEntity flame)) {
             return;
         }
-        Object paleFlame = created.get();
-        AddonReflection.invoke(paleFlame, "setDamage", new Class<?>[] {float.class}, damage);
-
-        Entity flameEntity = (Entity) paleFlame;
-        flameEntity.moveTo(target.position());
-        flameEntity.setYRot(target.getYRot());
-        flameEntity.setXRot(target.getXRot());
-        level.addFreshEntity(flameEntity);
+        flame.setDamage(damage);
+        flame.setOwner(caster);
+        flame.moveTo(target.position());
+        flame.setYRot(target.getYRot());
+        flame.setXRot(target.getXRot());
+        level.addFreshEntity(flame);
     }
 }
