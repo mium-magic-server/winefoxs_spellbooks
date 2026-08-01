@@ -70,6 +70,13 @@ public class SpellChooseTask extends Behavior<Mob> {
 
     protected MaidSpellAction lastAction;
 
+    /**
+     * 本轮 {@link #calculateDefaultActionWeights} 算出的「救队友」权重。
+     * <p>
+     * 该权重只由队友血量决定，本轮内不会变，而 {@link #selectActionByWeights} 判空桶时还要用它一次—— 存下来而不是重算：{@link #getSupportOtherWeight} 会走一遍附近盟友表，队友都满血时走满全表。
+     */
+    protected int lastSupportOtherWeight;
+
     protected int maxDelayTicks;
 
     protected int nextSpellTickCount;
@@ -284,14 +291,15 @@ public class SpellChooseTask extends Behavior<Mob> {
         }
 
         // 支援队友
+        lastSupportOtherWeight = 0;
         if (!nearbyAlliedEntities.isEmpty() || supportTarget != null) {
             int positiveEffectWeight = getPositiveWeight(supportTarget);
-            int supportEffectWeight = getSupportOtherWeight(supportTarget);
+            lastSupportOtherWeight = getSupportOtherWeight(supportTarget);
             if (!usable(MaidSpellAction.POSITIVE).isEmpty()) {
                 weights.put(MaidSpellAction.POSITIVE, positiveEffectWeight);
             }
             if (!usable(MaidSpellAction.SUPPORT_OTHER).isEmpty()) {
-                weights.put(MaidSpellAction.SUPPORT_OTHER, supportEffectWeight);
+                weights.put(MaidSpellAction.SUPPORT_OTHER, lastSupportOtherWeight);
             }
         }
 
@@ -321,8 +329,10 @@ public class SpellChooseTask extends Behavior<Mob> {
     }
 
     /**
-     * 两阶段加权随机：先支援类（SUPPORT / POSITIVE / SUPPORT_OTHER），选不中再战斗类
-     * （ATTACK / DEFENSE / MOVEMENT / NEGATIVE）。
+     * 两阶段加权随机：先看能不能救队友（POSITIVE / SUPPORT_OTHER），救不成再从自己这边挑
+     * （SUPPORT / ATTACK / DEFENSE / MOVEMENT / NEGATIVE）。
+     * <p>
+     * 自愈（SUPPORT）归第二阶段：它若参与第一阶段的早退判断，只要附近站着任何一个盟友——哪怕 不需要救——半血女仆就会无条件重选自愈而不还手。「优先」的对象是队友，不是自己。
      *
      * @param weights 行为类型 -&gt; 权重的映射
      * @return 选中的行为类型，null 表示没有可用的行为
@@ -331,64 +341,28 @@ public class SpellChooseTask extends Behavior<Mob> {
         NavigableMap<Integer, MaidSpellAction> weightedSpells = new TreeMap<>();
         int total = 0;
 
-        // 第一阶段：支援类优先
-        int supportWeight = weights.getOrDefault(MaidSpellAction.SUPPORT, 0);
-        if (!usable(MaidSpellAction.SUPPORT).isEmpty() && supportWeight > 0) {
-            total += supportWeight;
-            weightedSpells.put(total, MaidSpellAction.SUPPORT);
-        }
-
+        // 第一阶段：支援队友
         LivingEntity supportTarget = mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get())
             .orElse(null);
         if (!nearbyAlliedEntities.isEmpty() || supportTarget != null) {
-            int positiveEffectWeight = weights.getOrDefault(MaidSpellAction.POSITIVE, 0);
-            int supportEffectWeight = weights.getOrDefault(MaidSpellAction.SUPPORT_OTHER, 0);
-
-            if (!usable(MaidSpellAction.POSITIVE).isEmpty() && positiveEffectWeight > 0) {
-                total += positiveEffectWeight;
-                weightedSpells.put(total, MaidSpellAction.POSITIVE);
-            }
-
-            if (!usable(MaidSpellAction.SUPPORT_OTHER).isEmpty() && supportEffectWeight > 0) {
-                total += supportEffectWeight;
-                weightedSpells.put(total, MaidSpellAction.SUPPORT_OTHER);
-            }
+            total = accumulate(weights, weightedSpells, total,
+                MaidSpellAction.POSITIVE, MaidSpellAction.SUPPORT_OTHER);
 
             if (total > 0) {
                 int seed = mob.getRandom().nextInt(total);
                 return weightedSpells.higherEntry(seed).getValue();
             }
+            // 有人等着救却拿不出治疗法术，冒个泡提示玩家配一本。这里不能拿 weights 里的
+            // SUPPORT_OTHER 判：它只在该桶非空时才有，用来判空桶恒不成立
             if (mob instanceof EntityMaid maid && usable(MaidSpellAction.SUPPORT_OTHER).isEmpty()
-                && supportEffectWeight > 0) {
+                && lastSupportOtherWeight > 0) {
                 MaidMagicManager.showCurrentSpellInChatBubble(maid, SpellData.EMPTY, true);
             }
         }
 
-        // 第二阶段：战斗类
-        int attackWeight = weights.getOrDefault(MaidSpellAction.ATTACK, 0);
-        int defenseWeight = weights.getOrDefault(MaidSpellAction.DEFENSE, 0);
-        int movementWeight = weights.getOrDefault(MaidSpellAction.MOVEMENT, 0);
-        int negativeEffectWeight = weights.getOrDefault(MaidSpellAction.NEGATIVE, 0);
-
-        if (!usable(MaidSpellAction.ATTACK).isEmpty() && attackWeight > 0) {
-            total += attackWeight;
-            weightedSpells.put(total, MaidSpellAction.ATTACK);
-        }
-
-        if (!usable(MaidSpellAction.DEFENSE).isEmpty() && defenseWeight > 0) {
-            total += defenseWeight;
-            weightedSpells.put(total, MaidSpellAction.DEFENSE);
-        }
-
-        if (!usable(MaidSpellAction.MOVEMENT).isEmpty() && movementWeight > 0) {
-            total += movementWeight;
-            weightedSpells.put(total, MaidSpellAction.MOVEMENT);
-        }
-
-        if (!usable(MaidSpellAction.NEGATIVE).isEmpty() && negativeEffectWeight > 0) {
-            total += negativeEffectWeight;
-            weightedSpells.put(total, MaidSpellAction.NEGATIVE);
-        }
+        // 第二阶段：自愈与战斗类同池竞争
+        total = accumulate(weights, weightedSpells, total, MaidSpellAction.SUPPORT, MaidSpellAction.ATTACK,
+            MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT, MaidSpellAction.NEGATIVE);
 
         if (total > 0) {
             int seed = mob.getRandom().nextInt(total);
@@ -396,6 +370,24 @@ public class SpellChooseTask extends Behavior<Mob> {
         }
 
         return null;
+    }
+
+    /**
+     * 把给定类别按权重累加进轮盘，返回新的总权重。权重非正或该类无可用法术的跳过。
+     * <p>
+     * 传入顺序即轮盘的落点顺序，改动会改变同一随机种子选中的类别。
+     */
+    private int accumulate(Map<MaidSpellAction, Integer> weights,
+                           NavigableMap<Integer, MaidSpellAction> weightedSpells,
+                           int total, MaidSpellAction... actions) {
+        for (MaidSpellAction action : actions) {
+            int weight = weights.getOrDefault(action, 0);
+            if (weight > 0 && !usable(action).isEmpty()) {
+                total += weight;
+                weightedSpells.put(total, action);
+            }
+        }
+        return total;
     }
 
     protected MaidSpellAction getNextSpellAction() {
