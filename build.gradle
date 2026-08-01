@@ -391,6 +391,9 @@ task publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge)
     mainFile.changelog = getChangelogForVersion(mod_version)
     mainFile.releaseType = version_type
     mainFile.addGameVersion(minecraft_version)
+    // CurseForge 要求每个文件至少带一个 environment 组的版本，缺了会被 API 以 1021 拒收；
+    // 本模组客户端与服务端都要装，两个都标
+    mainFile.addGameVersion('Client', 'Server')
     mainFile.addModLoader('neoforge')
     mainFile.addRequirement('touhou-little-maid', 'irons-spells-n-spellbooks')
     mainFile.withAdditionalFile(sourcesJar)
