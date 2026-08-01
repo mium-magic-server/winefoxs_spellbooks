@@ -13,6 +13,7 @@ import net.magicterra.winefoxsspellbooks.api.event.RegisterSpellTypeEvent;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.api.spell.SpellCategory;
 import net.magicterra.winefoxsspellbooks.api.spell.SpellFlag;
+import net.magicterra.winefoxsspellbooks.event.MaidEventHandler;
 import net.magicterra.winefoxsspellbooks.magic.data.SpellDataManager;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
@@ -68,6 +69,7 @@ public final class MaidSpellCatalog {
 
         // 初次进世界时本方法会被 WorldLoader 里的 TagsUpdatedEvent 触发一次，那时 SERVER 配置还没加载，
         // 读了会抛异常。跳过即可——ServerStartingEvent 会在配置加载后再整体刷一遍，配置项不会丢。
+        // 那一轮世界都还没建出来，也就没有女仆需要重扫，直接返回不会漏。
         if (!Config.isServerConfigLoaded()) {
             WinefoxsSpellbooks.LOGGER.debug("Server config not loaded yet, skipping configured spell merge; "
                 + "it will be redone on ServerStartingEvent");
@@ -76,6 +78,11 @@ public final class MaidSpellCatalog {
 
         BY_ACTION.forEach(MaidSpellCatalog::mergeConfigured);
         BY_FLAG.forEach(MaidSpellCatalog::mergeConfigured);
+
+        // 目录变了，存量女仆手上的法术快照就过期了。重建完在这里收口通知，而不是让下游再去
+        // 订阅一遍同样的两个事件、靠 EventPriority 排在本类之后——那种顺序耦合编译期看不见，
+        // 将来这里多一个重建触发点，下游就会悄悄漏掉。
+        MaidEventHandler.refreshLoadedMaidSpellData();
     }
 
     private static void reloadFromTag(SpellCategory category, Set<AbstractSpell> target) {

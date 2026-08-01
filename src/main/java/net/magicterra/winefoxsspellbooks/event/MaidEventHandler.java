@@ -23,16 +23,21 @@ import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
 import net.minecraft.core.NonNullList;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import net.neoforged.neoforge.items.wrapper.EmptyItemHandler;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.event.CurioChangeEvent;
 import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
@@ -86,6 +91,46 @@ public class MaidEventHandler {
         }
     }
 
+    /**
+     * 比目录重建更晚才加载进来的女仆（例如 {@code /reload} 之后才载入的区块）在这里补算。
+     */
+    @SubscribeEvent
+    public static void onMaidJoinLevel(EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide() || !(event.getEntity() instanceof EntityMaid maid)) {
+            return;
+        }
+        onMaidSpellDataChanged(maid);
+    }
+
+    /**
+     * 重扫当前服务器上全部已加载女仆的可用法术，由 {@link MaidSpellCatalog} 在重建完目录后调用。
+     * <p>
+     * 女仆手上的法术是一份存进附件、跟着实体落盘的快照，其余几个监听只在装备真的动了时才重算。 目录一变，存量女仆的快照不会跟着变——不补这一刀，被移出标签的法术会一直被已经拿着那本书的 女仆施放到玩家亲手动一下她的装备为止。
+     * <p>
+     * 只扫 {@link EntityMaid}。召唤女仆的法术来自配装随机而非法术书，走 {@link #onMaidSpellDataChanged} 会把她的法术表清空。
+     */
+    public static void refreshLoadedMaidSpellData() {
+        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        if (server == null) {
+            return;
+        }
+        int count = 0;
+        for (ServerLevel level : server.getAllLevels()) {
+            for (Entity entity : level.getAllEntities()) {
+                if (entity instanceof EntityMaid maid) {
+                    onMaidSpellDataChanged(maid);
+                    count++;
+                }
+            }
+        }
+        if (count > 0) {
+            WinefoxsSpellbooks.LOGGER.debug("Rebuilt maid spell data for {} loaded maids", count);
+        }
+    }
+
+    /**
+     * 按女仆当前装备重算她的可用法术表。
+     */
     public static void onMaidSpellDataChanged(EntityMaid maid) {
         if (maid.level().isClientSide()) {
             return;
