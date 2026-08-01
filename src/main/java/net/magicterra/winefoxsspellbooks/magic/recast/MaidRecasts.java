@@ -7,53 +7,36 @@ import io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts;
 import io.redspace.ironsspellbooks.capabilities.magic.RecastInstance;
 import io.redspace.ironsspellbooks.capabilities.magic.RecastResult;
 import io.redspace.ironsspellbooks.capabilities.magic.SummonedEntitiesCastData;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import net.magicterra.winefoxsspellbooks.mixin.PlayerRecastsAccessor;
+import net.magicterra.winefoxsspellbooks.mixin.RecastInstanceAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import org.apache.commons.lang3.reflect.FieldUtils;
 
 /**
  * 女仆版的 recast（二段咏唱）管理器。
  * <p>
- * 与玩家版 {@link PlayerRecasts} 的两点差别：
+ * 与玩家版 {@link PlayerRecasts} 的三点差别：
  * <ul>
  *   <li><b>不同步给客户端</b>——女仆的 recast 没有 UI，三个 {@code sync*} 方法全部留空；</li>
  *   <li><b>收尾动作要自己实现</b>——Iron's 把收尾写在玩家路径上（依赖 {@code ServerPlayer}），
- *       女仆走不到，故派发到 {@link RecastHandlers}。</li>
+ *       女仆走不到，故派发到 {@link RecastHandlers}；</li>
+ *   <li><b>计时自己推</b>——父类的 {@link #tick} 只认 {@code ServerPlayer}，女仆得自己扣
+ *       {@code remainingTicks}，靠 {@link RecastInstanceAccessor} 就地改字段。</li>
  * </ul>
+ * <p>
+ * 其余记账（入库、计次、序列化）刻意继续走父类，跟着 Iron's 一起变。
  * <p>
  * <b>本类只负责生命周期</b>（计时、超时清理、派发），具体某个法术结束时做什么在
  * {@code magic/recast/} 下按来源分文件：{@link IronsCoreRecasts} 管本体，{@code addon/} 下按模组一类。
- * <p>
- * 用反射读写 {@link PlayerRecasts#recastLookup} 与 {@link RecastInstance#remainingTicks} 是无奈之举：
- * Iron's 把它们设成 private 且没留 protected 访问器，而女仆需要按自己的节奏推进计时。
- * 字段句柄在类加载时解析一次并缓存，不是每次调用都查。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-07-27 18:26
  */
 public class MaidRecasts extends PlayerRecasts {
-    private static final Field RECAST_LOOKUP_FIELD = requireField(
-        FieldUtils.getDeclaredField(PlayerRecasts.class, "recastLookup", true), "PlayerRecasts#recastLookup");
-
-    private static final Field REMAINING_TICKS_FIELD = requireField(
-        FieldUtils.getDeclaredField(RecastInstance.class, "remainingTicks", true), "RecastInstance#remainingTicks");
-
     protected final LivingEntity maid;
-
-    /**
-     * {@link PlayerRecasts#recastLookup} 的引用，构造时反射取一次。
-     * <p>
-     * 该字段在父类里是 final、实例存活期间不换引用，故构造时反射取一次即可。
-     */
-    private final Map<String, RecastInstance> recastLookup;
 
     public MaidRecasts(LivingEntity maid) {
         this.maid = maid;
-        this.recastLookup = readRecastLookup();
     }
 
     // 玩家不可见 Recast
@@ -69,21 +52,27 @@ public class MaidRecasts extends PlayerRecasts {
     public void syncRemoveToPlayer(String spellId) {
     }
 
+    /**
+     * 摘表 + 派发收尾。
+     * <p>
+     * 不能用父类的 {@code removeRecast(String)} 摘表：它带 {@code @OnlyIn(Dist.CLIENT)}，专服上会被剥掉。
+     */
     @Override
     public void removeRecast(RecastInstance recastInstance, RecastResult recastResult) {
-        recastLookup.remove(recastInstance.getSpellId());
+        ((PlayerRecastsAccessor) this).getRecastLookup().remove(recastInstance.getSpellId());
         triggerRecastComplete(recastInstance, recastResult);
     }
 
     /**
      * 清空所有 recast。
      * <p>
-     * 必须重写：父类的实现走的是自己那个私有三参 {@code removeRecast}，绕过本类的收尾派发—— 冷却挂不上、召唤类 recast 不收召唤物，还会以 {@code serverPlayer == null} 调
-     * {@code spell.onRecastFinished}，附属里直接解引用它的实现会在服务端 tick 里抛 NPE。
+     * 必须重写：父类的实现走的是自己那个私有三参 {@code removeRecast}，绕过本类的收尾派发——冷却挂不上、
+     * 召唤类 recast 不收召唤物，还会以 {@code serverPlayer == null} 调 {@code spell.onRecastFinished}，
+     * 附属里直接解引用它的实现会在服务端 tick 里抛 NPE。
      */
     @Override
     public void removeAll(RecastResult recastResult) {
-        // getAllRecasts 返回的已是快照，可以边遍历边让 removeRecast 改动 recastLookup
+        // getAllRecasts 返回的已是快照，可以边遍历边让 removeRecast 改动底表
         getAllRecasts().forEach(instance -> removeRecast(instance, recastResult));
     }
 
@@ -103,26 +92,25 @@ public class MaidRecasts extends PlayerRecasts {
      */
     @Override
     public void tick(int actualTicks) {
-        if (maid == null || maid.level().getGameTime() % actualTicks != 0) {
+        if (maid == null || !hasRecastsActive()) {
             return;
         }
-        if (!(maid.level() instanceof ServerLevel level)) {
+        if (!(maid.level() instanceof ServerLevel level) || level.getGameTime() % actualTicks != 0) {
             return;
         }
 
-        // 先收集再移除：removeRecast 会改动 recastLookup，边遍历边删会 ConcurrentModificationException
-        List<RecastInstance> expired = new ArrayList<>();
-        for (RecastInstance instance : recastLookup.values()) {
-            setRemainingTicks(instance, instance.getTicksRemaining() - actualTicks);
-            if (instance.getTicksRemaining() <= 0 || summonsAllGone(level, instance.getCastData())) {
-                expired.add(instance);
+        // getAllRecasts 返回的已是快照，可以边遍历边让 removeRecast 改动底表
+        for (RecastInstance instance : getAllRecasts()) {
+            int remaining = instance.getTicksRemaining() - actualTicks;
+            ((RecastInstanceAccessor) instance).setRemainingTicks(remaining);
+            if (remaining <= 0 || summonsAllGone(level, instance.getCastData())) {
+                removeRecast(instance, RecastResult.TIMEOUT);
             }
         }
-        expired.forEach(instance -> removeRecast(instance, RecastResult.TIMEOUT));
     }
 
     /**
-     * 召唤类 recast 的额外结束条件：召唤物一个不剩时立刻结算，不必等计时走完 （否则「二段咏唱收回召唤物」会挂在一个空壳上）。
+     * 召唤类 recast 的额外结束条件：召唤物一个不剩时立刻结算，不必等计时走完（否则「二段咏唱收回召唤物」会挂在一个空壳上）。
      */
     private static boolean summonsAllGone(ServerLevel level, ICastDataSerializable castData) {
         if (!(castData instanceof SummonedEntitiesCastData summonData)) {
@@ -134,37 +122,5 @@ public class MaidRecasts extends PlayerRecasts {
             }
         }
         return true;
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, RecastInstance> readRecastLookup() {
-        try {
-            return (Map<String, RecastInstance>) FieldUtils.readField(RECAST_LOOKUP_FIELD, this);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Iron's Spellbooks changed PlayerRecasts#recastLookup", e);
-        }
-    }
-
-    private static void setRemainingTicks(RecastInstance recastInstance, int remainingTicks) {
-        try {
-            FieldUtils.writeField(REMAINING_TICKS_FIELD, recastInstance, remainingTicks);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Iron's Spellbooks changed RecastInstance#remainingTicks", e);
-        }
-    }
-
-    /**
-     * 字段没解析出来时给出可读的诊断，在类加载解析句柄时就地校验。
-     * <p>
-     * {@link FieldUtils#getDeclaredField} 找不到字段是返回 {@code null} 而非抛异常，直接把 {@code null} 交给
-     * {@code readField}/{@code writeField} 只会抛出 commons-lang 的 {@code NullPointerException: field}——
-     * 它不是 {@link IllegalAccessException}，接不住；而读写发生在女仆构造与逐 tick 计时期间，
-     * 玩家看到的就是一句没头没尾的空指针崩溃。
-     */
-    private static Field requireField(Field field, String description) {
-        if (field == null) {
-            throw new IllegalStateException("Iron's Spellbooks changed " + description);
-        }
-        return field;
     }
 }
