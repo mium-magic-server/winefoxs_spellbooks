@@ -15,6 +15,10 @@ import net.minecraft.tags.TagKey;
  *   <li>{@link #catalogName()} —— 法术标签 path 与实体附加数据字段（{@code support_effect_spells}）</li>
  *   <li>{@link #configName()} —— 服务端配置键（{@code extraSupportEffectSpells}）</li>
  * </ul>
+ * <p>
+ * 构造器最后一项是写进 toml 的英文说明，与 {@code en_us.json} 里
+ * {@code config.winefoxs_spellbooks.spell_compat.<translationSuffix>} 的值是同一句话的两份拷贝，
+ * 没有任何机制校验二者一致。改分类名时两处（含 {@code zh_cn.json}）必须一起改。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-11-03 01:39
