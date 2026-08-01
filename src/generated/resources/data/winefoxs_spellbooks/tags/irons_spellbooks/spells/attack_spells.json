@@ -1369,10 +1369,6 @@
       "required": false
     },
     {
-      "id": "monsterspellbooks:wither_bomb",
-      "required": false
-    },
-    {
       "id": "monsterspellbooks:wither_nova",
       "required": false
     },

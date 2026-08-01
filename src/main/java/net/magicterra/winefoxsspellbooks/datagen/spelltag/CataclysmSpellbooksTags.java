@@ -44,7 +44,10 @@ public final class CataclysmSpellbooksTags {
         ctx.attack().addOptional(SpellRegistries.CONJURE_AMETHYST_CRAB.get().getSpellResource());
         ctx.summon().addOptional(SpellRegistries.CONJURE_AMETHYST_CRAB.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistries.GRAVITATION_PULL.get().getSpellResource());
+        // 托特之证：首发召出幻影残骸，二段收回。必须打 summon 标签——
+        // RecastHandlers.resolve 靠它把收尾派发到 IronsCoreRecasts::summon，漏了召唤物就不回收
         ctx.attack().addOptional(SpellRegistries.THOTHS_WITNESS.get().getSpellResource());
+        ctx.summon().addOptional(SpellRegistries.THOTHS_WITNESS.get().getSpellResource());
         ctx.positiveEffect().addOptional(SpellRegistries.FORGONE_RAGE.get().getSpellResource());
         // PHARAOHS_WRATH: 攻击的同时给自己加增益
         ctx.attack().addOptional(SpellRegistries.PHARAOHS_WRATH.get().getSpellResource());

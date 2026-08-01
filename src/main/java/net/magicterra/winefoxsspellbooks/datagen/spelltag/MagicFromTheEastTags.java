@@ -26,7 +26,9 @@ public final class MagicFromTheEastTags {
         ctx.defense().addOptional(MFTESpellRegistries.BAGUA_ARRAY_CIRCLE_SPELL.get().getSpellResource());
         ctx.defense().addOptional(MFTESpellRegistries.DRAPES_OF_REFLECTION_SPELL.get().getSpellResource());
         ctx.attack().addOptional(MFTESpellRegistries.SOUL_CATALYST_SPELL.get().getSpellResource()); // 发射灵魂骷髅投射物
+        // 筋斗云：召出云朵坐骑代步，二段收回。summon 标签同样是收尾派发的依据，不能只留 movement
         ctx.movement().addOptional(MFTESpellRegistries.CLOUD_RIDE_SPELL.get().getSpellResource());
+        ctx.summon().addOptional(MFTESpellRegistries.CLOUD_RIDE_SPELL.get().getSpellResource());
         ctx.attack().addOptional(MFTESpellRegistries.JIANGSHI_INVOKE_SPELL.get().getSpellResource());
         ctx.summon().addOptional(MFTESpellRegistries.JIANGSHI_INVOKE_SPELL.get().getSpellResource());
         ctx.attack().addOptional(MFTESpellRegistries.UNDERWORLD_AID_SPELL.get().getSpellResource()); // AOE 伤害区域，非召唤物

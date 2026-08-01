@@ -8,6 +8,10 @@ public final class MonstersSpellbooksTags {
     }
 
     public static void contribute(SpellTagContext ctx) {
+        // WITHER_BOMB 的 onCast 整个函数体包在 entity instanceof Player 里且没有 else 分支，
+        // 女仆施放它不发弹、不挂 recast，纯粹白耗蓝和吟唱时间，故不给任何行为标签。
+        // audit:ignore WITHER_BOMB
+
         // ========== Aero ==========
         ctx.positiveEffect().addOptional(ModSpellRegistry.AIR_BUBBLE.get().getSpellResource());
         ctx.movement().addOptional(ModSpellRegistry.AIR_PROPULSION.get().getSpellResource());
@@ -129,7 +133,6 @@ public final class MonstersSpellbooksTags {
         ctx.attack().addOptional(ModSpellRegistry.STRAY_GRASP.get().getSpellResource());
         ctx.attack().addOptional(ModSpellRegistry.TORMENT_ARROW.get().getSpellResource());
         ctx.attack().addOptional(ModSpellRegistry.VILE_SLASH.get().getSpellResource());
-        ctx.attack().addOptional(ModSpellRegistry.WITHER_BOMB.get().getSpellResource());
         ctx.attack().addOptional(ModSpellRegistry.WITHER_NOVA.get().getSpellResource());
         ctx.attack().addOptional(ModSpellRegistry.SUMMON_DEATH_KNIGHT.get().getSpellResource());
         ctx.summon().addOptional(ModSpellRegistry.SUMMON_DEATH_KNIGHT.get().getSpellResource());

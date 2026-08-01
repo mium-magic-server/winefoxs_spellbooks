@@ -33,6 +33,10 @@
       "required": false
     },
     {
+      "id": "cataclysm_spellbooks:thoths_witness",
+      "required": false
+    },
+    {
       "id": "discerning_the_eldritch:conjure_forsaken_aid",
       "required": false
     },
@@ -102,6 +106,10 @@
     },
     {
       "id": "iss_magicfromtheeast:punishing_heaven",
+      "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:cloud_ride",
       "required": false
     },
     {
