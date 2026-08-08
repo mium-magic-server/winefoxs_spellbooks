@@ -22,13 +22,13 @@ import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 /**
  * 狐影伏击（Foxshade Ambush）触发系统事件监听器。
  * <p>
- * 持有 {@link WsbEffects#FOXSHADE_AMBUSH} 标记的施法者首次对敌人造成任意伤害时： 消费标记 → 在目标附近生成一只落地狐狸（{@link FoxshadeBiterEntity}），寻路跑向目标、腾身扑咬一口。 咬击打出酒狐巫法学派伤害；命中带残月烙印的敌人时经 {@link WinefoxDetonationHandler} 自动引爆。
+ * 持有 {@link WsbEffects#FOXSHADE_AMBUSH} 标记的施法者首次造成任意伤害时（近战、法术、 名下 AoE 的每 tick 伤害一概算数）： 消费标记 → 在目标附近生成一只落地狐狸（{@link FoxshadeBiterEntity}），寻路跑向目标、腾身扑咬一口。 咬击打出酒狐巫法学派伤害；命中带残月烙印的敌人时经 {@link WinefoxDetonationHandler} 自动引爆。
  * <p>
  * 「先消费再召唤」+「跳过狐咬自身伤害」双重防重入：标记在触发时即移除，且扑咬狐的伤害 （directEntity 为狐本体）被显式跳过，绝不自我链式召唤；同 tick 命中多个目标也只有首个触发（标记单次）。
  * <p>
  * 两道不触发的闸门，均在消费标记之前判定，因此标记完整留到下一次出手：
  * <ul>
- *   <li>目标不是敌对生物（{@link WinefoxHexHelper#isHostileTo}）—— 女仆、玩家、中立动物一概不算；</li>
+ *   <li>目标是自己人或打不疼（{@link WinefoxHexHelper#isAimTarget}）—— 自家女仆、召唤物、队友一概不算；</li>
  *   <li>目标悬空或周身找不到落脚点 —— 狐没地方落地，召出来也只是原地空放。</li>
  * </ul>
  *
@@ -71,9 +71,12 @@ public class FoxshadeAmbushHandler {
         if (!(target.level() instanceof ServerLevel level)) return;
         // 跳过扑咬狐自身造成的咬击伤害（directEntity 为狐本体）→ 杜绝链式自召唤
         if (event.getSource().getDirectEntity() instanceof FoxshadeBiterEntity) return;
-        // 伏击等的是敌人的第一击：复用学派统一的敌我判定（已含「不是自己」「还活着」）。
-        // 女仆/玩家/中立动物都不是 Enemy，打到它们既不触发也不消费标记
-        if (!WinefoxHexHelper.isHostileTo(target, attacker)) return;
+        // 伏击等的是标记生效后的第一次见血，不问这一下是怎么打出来的：近战、法术、
+        // 挂在施法者名下的雾团/酒池每 tick 的伤害都算数。判据用「指向目标」（已含
+        // 「不是自己」「还活着」），此处不该再问目标是不是 Enemy——那会让猪、铁傀儡
+        // 这类非敌对生物永远打不出扑咬。自家女仆与队友仍被阵营判定挡住，
+        // 打到它们既不触发也不消费标记
+        if (!WinefoxHexHelper.isAimTarget(target, attacker)) return;
 
         // 落脚点先于消费判定：目标悬空或周身无处落地时不生成，标记完整留给下一次出手
         Vec3 spawnPos = findSpawnPos(level, target, attacker.getRandom());
