@@ -72,13 +72,14 @@ public class CrescentBrandSpell extends AbstractSpell {
             return;
         }
         WinefoxHexHelper.spawnCastBurst(serverLevel, entity);
-        // 只烙敌人：主动选取用学派敌我，挂印才不会落到村民、牲畜、铁傀儡这些非敌对生物身上
-        // （阵营谓词 isFactionHostile 是给 AoE 波及用的，凡不同队即算敌，这里不能用）
+        // 玩家准星套住谁就烙谁：判据用「指向目标」而非「学派敌我」，否则猪、铁傀儡这类非敌对生物
+        // 永远挂不上印，连带引爆整套连招对它们失效。自家女仆、召唤物与队友仍由阵营判定挡住。
+        // 女仆施法走同一入口但没有准星，只认 AI 指派的交战对象（见 castRaycastFilter）
         var raycast = RaycastBuilder.begin(level, entity)
             .range(CAST_RANGE)
             .checkForBlocks(true)
             .bbInflation(0.35f)
-            .filter(WinefoxHexHelper.hostileRaycastFilter(entity))
+            .filter(WinefoxHexHelper.castRaycastFilter(entity))
             .build();
         if (raycast.getType() == EntityHitResult.Type.ENTITY
             && ((EntityHitResult) raycast).getEntity() instanceof LivingEntity target) {

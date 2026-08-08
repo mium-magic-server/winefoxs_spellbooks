@@ -95,6 +95,8 @@ public class CrescentBrandEffect extends MobEffect {
         // 自爆以带印者为中心：他本人必伤，周围只波及「敌对生物且与他不同阵营」的。
         // 阵营判定必须再叠一层敌对判定：印通常挂在敌人身上，而站在敌人旁边的玩家/女仆
         // 相对这个敌人正是「不同阵营」，只用阵营谓词会炸到上印的人自己。
+        // 这里参照的是带印者而非上印者（效果不记得谁上的印），所以波及面故意收窄到 Enemy：
+        // 印挂在猪身上时猪本人照样自爆受伤，只是不会顺带崩到旁边的猪——比误伤自己人划算。
         for (LivingEntity e : entity.level().getEntitiesOfClass(LivingEntity.class, box,
             victim -> victim == entity
                 || (WinefoxHexHelper.isHexEnemy(victim) && WinefoxHexHelper.isFactionHostile(victim, entity)))) {

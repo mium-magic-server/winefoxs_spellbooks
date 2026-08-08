@@ -182,12 +182,14 @@ public class FoxshadeWispsSpell extends AbstractSpell {
     private LivingEntity acquireTarget(ServerLevel level, LivingEntity caster) {
         if (caster instanceof Player) {
             // 玩家只认准星：没套住就直线前射，不走下面的兜底扫描（那会平白多出 16 格自动瞄准，
-            // 连身后侧面的怪都能锁上）
+            // 连身后侧面的怪都能锁上）。
+            // 判据用「指向目标」而非「学派敌我」：准星套住猪或铁傀儡就是要打它，
+            // 拿 Enemy 拦下来只会让弹体不追踪、直线飞过去空放
             HitResult hit = RaycastBuilder.begin(level, caster)
                 .range((float) SEARCH_RADIUS)
                 .checkForBlocks(true)
                 .bbInflation(0.5f)
-                .filter(WinefoxHexHelper.hostileRaycastFilter(caster))
+                .filter(WinefoxHexHelper.aimRaycastFilter(caster))
                 .build();
             return hit instanceof EntityHitResult ehr && ehr.getEntity() instanceof LivingEntity locked ? locked : null;
         }

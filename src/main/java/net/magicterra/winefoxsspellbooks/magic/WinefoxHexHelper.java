@@ -205,8 +205,11 @@ public final class WinefoxHexHelper {
     }
 
     // -----------------------------------------------------------------------
-    // 敌我判定：学派敌我（instanceof Enemy，用于主动选目标）与阵营敌我
-    // （isAlliedTo，用于 AoE 波及）语义不同，不可互换。
+    // 敌我判定三档，语义不同不可互换：
+    //   学派敌我 isHostileTo    —— instanceof Enemy，用于「自动挑目标」（女仆索敌等）
+    //   指向目标 isAimTarget    —— 非自己人即可，用于「已由施法者指定了目标」（准星锁定、出手命中）
+    //   阵营敌我 isFactionHostile —— 非自己人即可，用于 AoE 无差别波及
+    // isAimTarget 与 isFactionHostile 判据同源，差别是前者额外排除打不疼的目标（无敌标记、创造玩家）。
     // -----------------------------------------------------------------------
 
     /**
@@ -217,12 +220,34 @@ public final class WinefoxHexHelper {
     }
 
     /**
-     * 【学派敌我】「存活的敌对目标且不是自己」——<b>主动目标选取</b>的统一谓词 （狐影弹选目标、伏击触发判定等共用，避免各处手写三连判定）。
+     * 【学派敌我】「存活的敌对目标且不是自己」——<b>自动目标选取</b>的统一谓词 （女仆无指派时的索敌兜底等共用，避免各处手写三连判定）。
      * <p>
-     * AoE 波及范围请用 {@link #isFactionHostile}，两者语义不同，见本节顶部说明。
+     * 只用在「由代码替施法者挑目标」的场合：判据收紧到 {@code Enemy}，女仆才不会自作主张 去点村民的猪和铁傀儡。施法者已经自己指定了目标（准星、AI 指派、出手命中）时请用 {@link #isAimTarget}，AoE 无差别波及请用 {@link #isFactionHostile}。
      */
     public static boolean isHostileTo(LivingEntity candidate, @Nullable Entity self) {
         return candidate != self && candidate.isAlive() && isHexEnemy(candidate);
+    }
+
+    /**
+     * 【指向目标】「存活、打得疼、不是自己人」——<b>施法者已自行指定目标</b>时的统一谓词。
+     * <p>
+     * 与 {@link #isHostileTo} 的区别在于不看 {@code Enemy}：玩家把准星套在猪或铁傀儡上、 或直接一刀砍上去，就是明确要打它，这时再按「是不是敌对生物」拦一道只会让法术失效。 自家女仆、召唤物与队友仍由阵营判定挡住，不会被误锁误咬。
+     *
+     * @param candidate 施法者指向的目标
+     * @param self      施法者，可为 {@code null}（无归因时视作谁都不是自己人）
+     */
+    public static boolean isAimTarget(LivingEntity candidate, @Nullable Entity self) {
+        return isFactionHostile(candidate, self) && !isDamageImmune(candidate);
+    }
+
+    /**
+     * 是否根本挨不了打——挡在身前也不该吸走准星锁定，否则烙印、狐火弹全打在空处。
+     * <p>
+     * 两类要各查一遍：带 {@code Invulnerable} 标记的实体走 {@link Entity#isInvulnerable}； 创造模式玩家的免伤原版压根不在那里，而是 {@code Player#hurt} 里现查 {@code abilities.invulnerable}， 只问前者会漏。 {@code Entity#isAttackable} 帮不上忙：原版只有经验球、掉落物这些非 {@link LivingEntity} 覆写它，恒返回 {@code true}。
+     */
+    private static boolean isDamageImmune(LivingEntity candidate) {
+        return candidate.isInvulnerable()
+            || (candidate instanceof Player player && player.getAbilities().invulnerable);
     }
 
     /**
@@ -278,6 +303,49 @@ public final class WinefoxHexHelper {
      */
     public static Predicate<Entity> hostileRaycastFilter(LivingEntity self) {
         return raycastFilter(target -> isHostileTo(target, self));
+    }
+
+    /**
+     * 准星锁定用的射线判据：套住谁就是谁，只让自己人穿过去。 判据见 {@link #isAimTarget}。
+     */
+    public static Predicate<Entity> aimRaycastFilter(LivingEntity self) {
+        return raycastFilter(target -> isAimTarget(target, self));
+    }
+
+    /**
+     * 按施法者分流的射线判据——法术的 {@code onCast} 是玩家与女仆共用的入口，两者选目标的方式不同：
+     * <ul>
+     *   <li>玩家有准星，套住谁就是谁 → {@link #aimRaycastFilter}；</li>
+     *   <li>女仆等由 AI 代为出手，此时射线只是「朝交战对象拉一条线」，只认那一个目标：
+     *       不这么收紧的话，恰好站在中间的村民、牲畜会先被射线命中，法术全落在它们身上。</li>
+     * </ul>
+     * 指派目标不再复查 {@code Enemy}：女仆在 TLM 攻击列表里把猪设成敌对、或主人先动手打了猪时，
+     * 猪本来就会被写进 {@code ATTACK_TARGET}，法术必须打得到它。没有指派目标时才退回 {@link #hostileRaycastFilter}。
+     */
+    public static Predicate<Entity> castRaycastFilter(LivingEntity self) {
+        if (self instanceof Player) {
+            return aimRaycastFilter(self);
+        }
+        LivingEntity assigned = assignedTarget(self);
+        return assigned == null
+               ? hostileRaycastFilter(self)
+               : raycastFilter(target -> target == assigned && isAimTarget(target, self));
+    }
+
+    /**
+     * AI 当前指派的交战对象；没有（或已死、就是自己）时返回 {@code null}。
+     * <p>
+     * 女仆一类 brain 生物记在 {@link MemoryModuleType#ATTACK_TARGET} 里，其余 {@link Mob} 读 {@code getTarget()}。 {@code hasMemoryValue} 是必要的前置：记忆模块没注册时 {@code getMemory} 直接抛 ISE。
+     */
+    @Nullable
+    private static LivingEntity assignedTarget(LivingEntity self) {
+        if (!(self instanceof Mob mob)) {
+            return null;
+        }
+        LivingEntity assigned = mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
+                                ? mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null)
+                                : mob.getTarget();
+        return assigned != null && assigned != self && assigned.isAlive() ? assigned : null;
     }
 
     /**
