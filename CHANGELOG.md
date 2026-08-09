@@ -1,5 +1,18 @@
 # Changelog / 变更日志
 
+## 1.0.1
+
+1. **目标选取放宽至视线所指 (Target Selection Widened to the Line of Sight)** — 残月烙印、酒杯狐影与醉狐之雾不再限定敌对生物：视线所指的中立生物（猪、铁傀儡等）同样可被选中，其身上的残月烙印亦可照常引爆。  
+   Crescent Brand, Foxshade Wisps and Tipsy Mist are no longer restricted to hostile mobs: a neutral creature in your line of sight — a pig, an iron golem — can now be selected, and a Crescent Brand placed on it detonates as usual.
+
+2. **女仆施法仅指向交战目标 (Maid Casts Confined to Her Combat Target)** — 女仆施法时仅选取其 AI 已指定的交战目标，途经视线的村民与牲畜不再被误加残月烙印；在「女仆攻击列表」中设为「敌对」的生物，以及主人已先行攻击的中立生物，仍可正常作为目标。  
+   A maid's cast now takes only the target her AI has engaged, so villagers and livestock crossing her line of sight are no longer branded by mistake; creatures set to Hostile in the Maid Attack List, and neutral ones the owner has already attacked, remain valid targets.
+
+3. **狐影伏击的触发条件放宽 (Foxshade Ambush Trigger Relaxed)** — 蓄势状态改由施法者造成的任意伤害触发，近战、法术及其名下酒雾、酒池的持续伤害均计入；触发目标亦不再限定为敌对生物。  
+   The coiled state is now released by any damage credited to the caster — melee, spells, and the lingering damage of their own tipsy mists and wine pools — and the entity that triggers it no longer has to be a hostile mob.
+
+---
+
 ## 1.0.0
 
 1. **酒狐巫法学派 (Winefox Hex Spell School)** — 新增独立学派，自带伤害类型与焦点物品「灵狐精魂」，`召唤女仆`、`魔力转移` 归入其中。  
