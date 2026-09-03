@@ -2,6 +2,7 @@ package net.magicterra.winefoxsspellbooks.mixin;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
+import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
 import java.util.Objects;
@@ -17,6 +18,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -166,7 +168,70 @@ public abstract class MaidEntityMixin extends PathfinderMob implements MagicMaid
     // ==================== 施法委托 ====================
 
     /**
-     * {@link MagicMaidDelegate} 唯一要求实现的方法；其余转发全走接口默认实现。
+     * 这些方法本可全部依赖 {@link MagicMaidDelegate} 的接口默认实现，但 Java 方法解析规则是
+     * 「祖先类的具体方法 > 接口默认方法」：一旦有第三方 mixin 往 {@link PathfinderMob}
+     * 这类祖先类里塞了同名的具体方法（例如 irons_spells_js 的 PathfinderMobMixin 给
+     * 所有 PathfinderMob 加了一份 IMagicEntity 空实现），EntityMaid 上的调用就会被解析到那份
+     * 无关实现，而不是转发到 {@link #magicAdapter}。写成本类的具体覆写能保证解析结果不受
+     * 祖先类被第三方注入了什么影响。
+     */
+    @Override
+    public MagicData getMagicData() {
+        return magicAdapter.getMagicData();
+    }
+
+    @Override
+    public void setSyncedSpellData(SyncedSpellData syncedSpellData) {
+        magicAdapter.setSyncedSpellData(syncedSpellData);
+    }
+
+    @Override
+    public boolean isCasting() {
+        return magicAdapter.isCasting();
+    }
+
+    @Override
+    public void initiateCastSpell(AbstractSpell spell, int spellLevel) {
+        magicAdapter.initiateCastSpell(spell, spellLevel);
+    }
+
+    @Override
+    public void cancelCast() {
+        magicAdapter.cancelCast();
+    }
+
+    @Override
+    public void castComplete() {
+        magicAdapter.castComplete();
+    }
+
+    @Override
+    public void notifyDangerousProjectile(Projectile projectile) {
+        magicAdapter.notifyDangerousProjectile(projectile);
+    }
+
+    @Override
+    public boolean setTeleportLocationBehindTarget(int distance) {
+        return magicAdapter.setTeleportLocationBehindTarget(distance);
+    }
+
+    @Override
+    public void setBurningDashDirectionData() {
+        magicAdapter.setBurningDashDirectionData();
+    }
+
+    @Override
+    public boolean isDrinkingPotion() {
+        return magicAdapter.isDrinkingPotion();
+    }
+
+    @Override
+    public void startDrinkingPotion() {
+        magicAdapter.startDrinkingPotion();
+    }
+
+    /**
+     * {@link MagicMaidDelegate} 唯一要求实现的方法。
      */
     @Override
     public MagicMaidAdapter winefoxsSpellbooks$getMagicMaidAdapter() {
