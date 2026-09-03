@@ -9,6 +9,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import com.github.tartaricacid.touhoulittlemaid.util.ParseI18n;
 import com.mojang.serialization.Dynamic;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
+import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
@@ -64,6 +65,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -465,8 +467,8 @@ public class SummonedEntityMaid extends PathfinderMob implements MagicMaidDelega
         return false;
     }
 
-    // IMagicEntity / MaidMagicEntity 的全部转发由 MagicMaidDelegate 的默认实现提供，
-    // 本类只需交出适配器本身（见文件末尾的 winefoxsSpellbooks$getMagicMaidAdapter）
+    // IMagicEntity 相关方法在下方"施法委托"一节里以具体方法覆写（不依赖 MagicMaidDelegate
+    // 的接口默认实现），原因见该节注释。MaidMagicEntity 的其余方法沿用接口默认转发。
 
     // ==================== IMagicSummon 接口实现 ====================
 
@@ -609,7 +611,80 @@ public class SummonedEntityMaid extends PathfinderMob implements MagicMaidDelega
     // ==================== 施法委托 ====================
 
     /**
-     * {@link MagicMaidDelegate} 唯一要求实现的方法；其余转发全走默认实现。
+     * 这些方法本可全部依赖 {@link MagicMaidDelegate} 的接口默认实现，但 Java 方法解析规则是
+     * 「祖先类的具体方法 > 接口默认方法」：本类是 {@link PathfinderMob} 的直接子类，一旦有第三方
+     * mixin 往 PathfinderMob 里塞了同名的具体方法（例如 irons_spells_js 的 PathfinderMobMixin
+     * 给所有 PathfinderMob 加了一份 IMagicEntity 空实现），这里的调用就会被解析到那份无关实现，
+     * 而不是转发到 {@link #magicAdapter}。写成本类的具体覆写能保证解析结果不受祖先类被第三方
+     * 注入了什么影响。
+     */
+    @Override
+    public MagicData getMagicData() {
+        return magicAdapter.getMagicData();
+    }
+
+    @Override
+    public void setSyncedSpellData(SyncedSpellData syncedSpellData) {
+        magicAdapter.setSyncedSpellData(syncedSpellData);
+    }
+
+    @Override
+    public boolean isCasting() {
+        return magicAdapter.isCasting();
+    }
+
+    @Override
+    public void initiateCastSpell(AbstractSpell spell, int spellLevel) {
+        magicAdapter.initiateCastSpell(spell, spellLevel);
+    }
+
+    @Override
+    public void cancelCast() {
+        magicAdapter.cancelCast();
+    }
+
+    @Override
+    public void castComplete() {
+        magicAdapter.castComplete();
+    }
+
+    @Override
+    public void notifyDangerousProjectile(Projectile projectile) {
+        magicAdapter.notifyDangerousProjectile(projectile);
+    }
+
+    @Override
+    public boolean setTeleportLocationBehindTarget(int distance) {
+        return magicAdapter.setTeleportLocationBehindTarget(distance);
+    }
+
+    @Override
+    public void setBurningDashDirectionData() {
+        magicAdapter.setBurningDashDirectionData();
+    }
+
+    @Override
+    public boolean isDrinkingPotion() {
+        return magicAdapter.isDrinkingPotion();
+    }
+
+    @Override
+    public void startDrinkingPotion() {
+        magicAdapter.startDrinkingPotion();
+    }
+
+    @Override
+    public boolean getHasUsedSingleAttack() {
+        return magicAdapter.getHasUsedSingleAttack();
+    }
+
+    @Override
+    public void setHasUsedSingleAttack(boolean hasUsedSingleAttack) {
+        magicAdapter.setHasUsedSingleAttack(hasUsedSingleAttack);
+    }
+
+    /**
+     * {@link MagicMaidDelegate} 唯一要求实现的方法。
      */
     @Override
     public MagicMaidAdapter winefoxsSpellbooks$getMagicMaidAdapter() {
