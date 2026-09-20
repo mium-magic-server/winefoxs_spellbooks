@@ -255,6 +255,8 @@ dependencies {
     // 工具和前置
     // Advanced Loot Info：JEI/EMI/REI 战利品页插件。
     implementation("maven.modrinth:advanced-loot-info:${advanced_loot_info_version}")
+    // ALI 2.x 把 com.yanny.aci.* 拆到独立的 ACI，WsbAliPlugin 编译期就要用其 RangeValue / TooltipNode。
+    implementation("maven.modrinth:advanced-core-info:${advanced_core_info_version}")
     // 灾变
     implementation("maven.modrinth:l_enders-cataclysm:${l_enders_cataclysm_version}-${minecraft_version}")
     implementation("maven.modrinth:azurelib:${azurelib_version}")

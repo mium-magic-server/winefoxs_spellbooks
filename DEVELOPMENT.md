@@ -166,7 +166,15 @@ SummonMaidSpell / /wsb summon
 
 例：`mixin.ali.ConfigUtilsMixin` 仅在安装了 `ali` 时应用。直接位于 `mixin` 包根下的（如 `MaidEntityMixin`）视为硬依赖，一律应用。`defaultRequire: 1`，注入失败将直接崩溃——升级 TLM / Iron's 后编译通过不代表 mixin 仍能注入，务必实际启动验证。
 
-### 3.8 对外事件 API
+### 3.8 第三方插件 API 的软依赖
+
+`compat/` 下的插件类直接实现第三方模组的接口，编译时锁定的是 `gradle.properties` 里那一个版本，但 `neoforge.mods.toml` 把它们都声明为 `versionRange = "*"` 的可选前置——玩家装的可能是别的版本。挑接口时要挑**跨版本签名稳定**的那个：抽象方法对不上时，轻则整个插件类加载失败，重则被宿主调到时抛 `AbstractMethodError`。
+
+`compat/ali/WsbAliPlugin` 是现成的例子。ALI 的 `IForgePlugin` 在 2.2.0 变成了空接口（旧版声明 `registerGlobalLootModifier(IRegistry, ILootTableIdConditionPredicate)`，而这个 predicate 类在新版里已删除），`IGlobalLootModifierPlugin.registerGlobalLootModifier(IRegistry)` 则两版一致，所以实现后者。代价是 ALI < 2.2.0 的 NeoForge 分支只回调 `IForgePlugin`，本类会被登记但永不调用——宝箱条目退回 ALI 自带的自动识别渲染，不报错、不刷日志。改这类插件后，务必拿新旧两个版本的 jar 各做一次类加载验证，别只看编译通过。
+
+另外 ALI 2.1.0 起把 `com.yanny.aci.*` 拆到独立的 ACI 模组，1.x 则打包在 ALI 自己的 jar 里；两边都能解析到符号，`mods.toml` 不必再声明 `aci`。
+
+### 3.9 对外事件 API
 
 `api/event/` 下共四个事件：
 

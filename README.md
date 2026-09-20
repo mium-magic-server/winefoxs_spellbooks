@@ -410,7 +410,7 @@ Both require permission level 2:
 - **Curios** — spellbooks occupy the spellbook slot defined by Iron's Spells; a maid wears at most one. Accessories is supported as an alternative.
 - **Jade** — point at a maid to see her mana; point at a summoned maid to also see her spell count, and hold Shift for the full list.
 - **JEI** — every item from this mod has an info page (the "i" in the top right).
-- **Advanced Loot Info** — the loot this mod injects into chests, and the maid morning gift, both show their odds in JEI / EMI / REI.
+- **Advanced Loot Info** — the loot this mod injects into chests, and the maid morning gift, both show their odds in JEI / EMI / REI. The tailored chest entries need ALI 2.2.0 or newer; on older ALI they fall back to ALI's own auto-detected entry.
 - **Patchouli** — 12 guide entries under the "Winefox's Spellbooks" category of Touhou Little Maid's *Memorizable Gensokyo*, covering mana, casting media, tasks, animations, mod integration, troubleshooting, the school with its items and spells (summoned maids included), datapacks, commands and config.
 
 ---
