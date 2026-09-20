@@ -53,7 +53,8 @@ public class AddItemLootModifier extends LootModifier {
     }
 
     /**
-     * 生效条件（不叫 {@code getConditions()}：ALI 的 Accessor Mixin 已占用该名）。
+     * 生效条件（{@code conditions} 在 {@link LootModifier} 里是 protected，compat 包读不到）。
+     * 不叫 {@code getConditions()}：第三方 accessor mixin 会往 {@code LootModifier} 注入同名方法，重名会把它们顶掉。
      */
     public LootItemCondition[] getLootConditions() {
         return conditions;
