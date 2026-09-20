@@ -1,5 +1,12 @@
 # Changelog / 变更日志
 
+## 1.0.2-alpha.1
+
+1. **Advanced Loot Info 2.2 支持 (Advanced Loot Info 2.2 Support)** — 战利品查询插件改为对接 ALI 2.2.0 的新接口。宝箱条目的精细展示需要 ALI 2.2.0 及以上（ALI 自 2.1 起另需前置 Advanced Core Info），更早的版本会退回 ALI 自带的自动识别条目；「女仆的晨间礼物」分类页不受影响。  
+   The loot lookup plugin now targets ALI 2.2.0's new API. The tailored chest entries need ALI 2.2.0 or newer (ALI itself has required Advanced Core Info since 2.1); on older ALI they fall back to its own auto-detected entry. The Maid Morning Gift category page is unaffected.
+
+---
+
 ## 1.0.1
 
 1. **目标选取放宽至视线所指 (Target Selection Widened to the Line of Sight)** — 残月烙印、酒杯狐影与醉狐之雾不再限定敌对生物：视线所指的中立生物（猪、铁傀儡等）同样可被选中，其身上的残月烙印亦可照常引爆。  
