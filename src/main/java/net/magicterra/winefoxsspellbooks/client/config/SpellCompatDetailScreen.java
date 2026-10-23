@@ -44,8 +44,10 @@ public class SpellCompatDetailScreen extends SpellCompatScreenBase {
     @Override
     protected Collection<? extends Element> createSyntheticValues() {
         List<Element> elements = new ArrayList<>();
-        elements.add(new Element(tr("detail.id"), tr("detail.id"),
-            label(Component.literal(info.id()).withStyle(ChatFormatting.GRAY)), false));
+        // StringWidget 超宽会截尾，这里先按框宽截头，完整 id 放进悬浮提示
+        StringWidget idLabel = label(Component.literal(truncateStart(font, info.id(), Button.DEFAULT_WIDTH)).withStyle(ChatFormatting.GRAY));
+        idLabel.setTooltip(Tooltip.create(Component.literal(info.id())));
+        elements.add(new Element(tr("detail.id"), tr("detail.id"), idLabel, false));
         elements.add(new Element(tr("detail.mod"), tr("detail.mod"), label(info.modName()), false));
 
         for (SpellCategory category : SpellCompatModel.CATEGORIES) {

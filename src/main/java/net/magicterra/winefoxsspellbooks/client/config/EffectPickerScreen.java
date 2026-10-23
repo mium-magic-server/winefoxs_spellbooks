@@ -320,7 +320,7 @@ public class EffectPickerScreen extends Screen {
                 int textWidth = categoryX - 6 - (left + 22);
                 graphics.drawString(font, font.plainSubstrByWidth(effect.getDisplayName().getString(), textWidth),
                     left + 22, top + 1, 0xFFFFFF);
-                graphics.drawString(font, font.plainSubstrByWidth(info.id(), textWidth), left + 22, top + 11, 0x808080);
+                graphics.drawString(font, SpellCompatScreenBase.truncateStart(font, info.id(), textWidth), left + 22, top + 11, 0x808080);
                 graphics.drawString(font, category, categoryX, top + (height - 9) / 2, 0xFFFFFF);
             }
 

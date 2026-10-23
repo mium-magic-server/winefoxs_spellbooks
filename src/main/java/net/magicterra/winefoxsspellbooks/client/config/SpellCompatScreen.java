@@ -460,7 +460,7 @@ public class SpellCompatScreen extends SpellCompatScreenBase {
                 moreButton.setPosition(rightEdge() - TOGGLE_SIZE, top);
                 moreButton.render(graphics, mouseX, mouseY, partialTick);
 
-                // 名称与 id，超宽截断
+                // 名称与 id，超宽截断：名称截尾，id 截头
                 int textX = left + 20;
                 int textWidth = toggleX(0) - 4 - textX;
                 boolean modified = model.isModified(info);
@@ -472,7 +472,7 @@ public class SpellCompatScreen extends SpellCompatScreenBase {
                 }
                 graphics.drawString(font, truncate(info.name().getString(), textWidth - prefixWidth), textX + prefixWidth, top + 1,
                     unclassified ? 0xA0A0A0 : 0xFFFFFF);
-                graphics.drawString(font, truncate(info.id(), textWidth), textX, top + 11, 0x808080);
+                graphics.drawString(font, truncateStart(font, info.id(), textWidth), textX, top + 11, 0x808080);
 
                 if (mouseX >= left && mouseX < left + 20 + textWidth && mouseY >= top && mouseY < top + height) {
                     MutableComponent tip = Component.empty().append(info.name().copy().withStyle(ChatFormatting.BOLD))

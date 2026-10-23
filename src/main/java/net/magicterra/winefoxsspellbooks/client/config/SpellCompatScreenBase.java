@@ -15,6 +15,7 @@ import net.magicterra.winefoxsspellbooks.client.config.SpellCompatModel.Category
 import net.magicterra.winefoxsspellbooks.client.config.SpellCompatModel.Change;
 import net.magicterra.winefoxsspellbooks.client.config.SpellCompatModel.SpellInfo;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -139,6 +140,16 @@ abstract class SpellCompatScreenBase extends ConfigurationSectionScreen {
     private static String configKey(SpellCategory category, CategoryState state) {
         return state == CategoryState.BUILTIN || state == CategoryState.REMOVED
             ? category.removedConfigName() : category.configName();
+    }
+
+    /**
+     * 超宽时截掉开头、以「...」起头。用于 id：命名空间在前、关键的路径在后，截尾会把能区分条目的部分丢掉。
+     */
+    static String truncateStart(Font font, String text, int maxWidth) {
+        if (font.width(text) <= maxWidth) {
+            return text;
+        }
+        return "..." + font.plainSubstrByWidth(text, Math.max(0, maxWidth - font.width("...")), true);
     }
 
     /**
