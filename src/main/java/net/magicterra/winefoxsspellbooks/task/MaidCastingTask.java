@@ -18,6 +18,7 @@ import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.DrinkPotionsTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.MagicMeleeAttack;
+import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.MaidLeash;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellAttackWalkToTarget;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellCastingTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellChooseTask;
@@ -65,16 +66,18 @@ public class MaidCastingTask implements IRangedAttackTask {
     /**
      * 索敌：在 TLM {@link IRangedAttackTask#findFirstValidAttackTarget} 的基础上加一条挂印优先。
      * <p>
-     * 先反击最近打自己的怪，再从近邻表里挑「挂印优先、其次最近」的目标。近邻表按
-     * {@link #searchRadius} 填充，换成可见表会把索敌距离压回原版 16 格，够不着远程法术射程。
+     * 先反击最近打自己的怪，再从近邻表里挑「挂印优先、其次最近」的目标。近邻表按 {@link #searchRadius} 填充，换成可见表会把索敌距离压回原版 16 格，够不着远程法术射程。
      */
     private static Optional<? extends LivingEntity> findAttackTargetPreferBranded(EntityMaid maid) {
+        // 跟随模式下站在活动范围边缘也够不着的目标不锁定，否则女仆会一直抱着它、放不出法术
+        Predicate<LivingEntity> canEngage = MaidLeash.canEngage(maid);
         LivingEntity lastAttacker = maid.getLastHurtByMob();
-        if (lastAttacker != null && maid.canAttack(lastAttacker) && maid.canSee(lastAttacker)) {
+        if (lastAttacker != null && maid.canAttack(lastAttacker) && maid.canSee(lastAttacker)
+            && canEngage.test(lastAttacker)) {
             return Optional.of(lastAttacker);
         }
         return WinefoxHexHelper.findNearbyTargetPreferBranded(maid,
-            target -> maid.canAttack(target) && maid.canSee(target));
+            target -> maid.canAttack(target) && maid.canSee(target) && canEngage.test(target));
     }
 
     @Override
@@ -183,7 +186,10 @@ public class MaidCastingTask implements IRangedAttackTask {
         return spellDataHolder.hasAnyOf(allowedActions());
     }
 
+    /**
+     * 目标是否已超出可接战范围：离女仆超过索敌半径，或在跟随模式下站在活动范围边缘也够不着。
+     */
     protected boolean farAway(LivingEntity target, EntityMaid maid) {
-        return maid.distanceTo(target) > this.searchRadius(maid);
+        return maid.distanceTo(target) > this.searchRadius(maid) || !MaidLeash.canEngage(maid).test(target);
     }
 }

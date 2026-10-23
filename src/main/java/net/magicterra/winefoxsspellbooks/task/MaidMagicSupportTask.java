@@ -8,9 +8,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
+import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.MaidLeash;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellAttackWalkToTarget;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellCastingTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellChooseTask;
@@ -66,10 +68,13 @@ public class MaidMagicSupportTask extends MaidCastingTask {
     }
 
     static Optional<? extends LivingEntity> findNearbyFriendsAttackTarget(EntityMaid maid) {
+        // 跟随模式下站在活动范围边缘也够不着的目标不锁定，口径见 MaidLeash
+        Predicate<LivingEntity> canEngage = MaidLeash.canEngage(maid);
         // 检查攻击主人的对象
         LivingEntity owner = maid.getOwner();
         LivingEntity lastAttacker = owner != null ? owner.getLastHurtByMob() : null;
-        if (lastAttacker != null && maid.canAttack(lastAttacker) && maid.canSee(lastAttacker)) {
+        if (lastAttacker != null && maid.canAttack(lastAttacker) && maid.canSee(lastAttacker)
+            && canEngage.test(lastAttacker)) {
             return Optional.of(lastAttacker);
         }
         // 检查附近女仆正在攻击的对象
@@ -84,7 +89,7 @@ public class MaidMagicSupportTask extends MaidCastingTask {
                 continue;
             }
             LivingEntity attackTarget = e.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElseThrow();
-            if (maid.canAttack(attackTarget) && maid.canSee(attackTarget)) {
+            if (maid.canAttack(attackTarget) && maid.canSee(attackTarget) && canEngage.test(attackTarget)) {
                 return Optional.of(attackTarget);
             }
         }
