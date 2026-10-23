@@ -11,9 +11,9 @@ import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastSource;
+import io.redspace.ironsspellbooks.api.spells.CastType;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.api.util.Utils;
-import io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts;
 import io.redspace.ironsspellbooks.config.ServerConfigs;
 import io.redspace.ironsspellbooks.network.SyncManaPacket;
 import java.util.Objects;
@@ -29,12 +29,12 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import net.neoforged.neoforge.items.wrapper.EmptyItemHandler;
+import net.neoforged.neoforge.network.PacketDistributor;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
 
@@ -65,14 +65,7 @@ public class MaidMagicManager {
         int maxMana = (int) getMaxMana(entity);
         var mana = magicData.getMana();
         if (mana < maxMana) {
-            float manaRegenMultiplier;
-            if (Config.isLightningManaRegenEnabled()
-                && entity instanceof EntityMaid maid && maid.isStruckByLightning()) {
-                manaRegenMultiplier = LIGHTNING_MANA_REGEN_MULTIPLIER; // 雷击加速恢复
-            } else {
-                manaRegenMultiplier = (float) entity.getAttributeValue(AttributeRegistry.MANA_REGEN);
-            }
-            var increment = maxMana * manaRegenMultiplier * .01f * ServerConfigs.MANA_REGEN_MULTIPLIER.get().floatValue();
+            var increment = getManaRegenPerInterval(entity);
             setMana(entity, Mth.clamp(magicData.getMana() + increment, 0, maxMana));
             return true;
         } else {
@@ -81,10 +74,32 @@ public class MaidMagicManager {
     }
 
     /**
+     * 每个 {@link #MANA_REGEN_TICKS} 周期能恢复的魔力量，公式与 {@link #regenMana} 保持一致（含魔力紊乱短路）。
+     * <p>
+     * 供 {@link SpellCastPlanner} 推演「再等几个周期才能凑够某个法术的魔力」用，不产生任何副作用。
+     *
+     * @param entity 实体
+     * @return 每周期恢复量，被禁用回魔时为 0
+     */
+    public static float getManaRegenPerInterval(LivingEntity entity) {
+        if (entity.hasEffect(WsbEffects.MANA_DISRUPTION)) {
+            return 0f;
+        }
+        int maxMana = (int) getMaxMana(entity);
+        float manaRegenMultiplier;
+        if (Config.isLightningManaRegenEnabled()
+            && entity instanceof EntityMaid maid && maid.isStruckByLightning()) {
+            manaRegenMultiplier = LIGHTNING_MANA_REGEN_MULTIPLIER; // 雷击加速恢复
+        } else {
+            manaRegenMultiplier = (float) entity.getAttributeValue(AttributeRegistry.MANA_REGEN);
+        }
+        return maxMana * manaRegenMultiplier * .01f * ServerConfigs.MANA_REGEN_MULTIPLIER.get().floatValue();
+    }
+
+    /**
      * 读实体当前魔力：女仆走适配器，其余走 Iron's 的 {@link MagicData}。
      * <p>
-     * 女仆的真实魔力存在 {@link net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter} 里，
-     * {@link MagicData#getPlayerMagicData} 对女仆返回的是无人读写的孤儿附件，从那里读恒为 0。
+     * 女仆的真实魔力存在 {@link net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter} 里， {@link MagicData#getPlayerMagicData} 对女仆返回的是无人读写的孤儿附件，从那里读恒为 0。
      *
      * @param entity 实体
      * @return 当前魔力值
@@ -102,8 +117,7 @@ public class MaidMagicManager {
     /**
      * 写实体魔力，路由同 {@link #getMana}。
      * <p>
-     * 女仆必须走 {@code winefoxsSpellbooks$setMana}：它在写 {@link MagicData} 之外还同步
-     * {@code MAID_MANA} 附件，只写前者的话魔力条与可用性判定都不会变。
+     * 女仆必须走 {@code winefoxsSpellbooks$setMana}：它在写 {@link MagicData} 之外还同步 {@code MAID_MANA} 附件，只写前者的话魔力条与可用性判定都不会变。
      *
      * @param entity 实体
      * @param mana   目标魔力值
@@ -188,8 +202,7 @@ public class MaidMagicManager {
     /**
      * 计入饰品亲和加成后的实际施法等级。
      *
-     * @param gearView {@link #getSpellGearView} 的结果。视图由调用方建一次传进来： 一次重算要跑一整本法术书，每个法术各建一遍的话，Curios
-     *                 那边每次都会现场新建一个合并 wrapper
+     * @param gearView {@link #getSpellGearView} 的结果。视图由调用方建一次传进来： 一次重算要跑一整本法术书，每个法术各建一遍的话，Curios 那边每次都会现场新建一个合并 wrapper
      */
     public static int getLevelFor(EntityMaid maid, IItemHandler gearView, AbstractSpell spell, int level) {
         int addition = 0;
@@ -206,32 +219,102 @@ public class MaidMagicManager {
         return levelEvent.getLevel();
     }
 
-    public static boolean isSpellUsable(Mob mob, SpellData spellData) {
+    /**
+     * 法术是否就绪：二段咏唱状态允许、且不在冷却中——唯独不看魔力够不够。
+     * <p>
+     * 供 {@link SpellCastPlanner} 判断「这法术攒蓝等得到吗」：还在冷却的法术， 魔力攒够了也没用，不该进规划的候选池；只是魔力不够的法术则相反，值得等。
+     *
+     * @param mob       施法者
+     * @param spellData 待检查的法术
+     * @return 法术是否就绪（不考虑魔力）
+     */
+    public static boolean isSpellReady(Mob mob, SpellData spellData) {
         if (!(mob instanceof IMagicEntity spellCastingMob)) {
             return false;
         }
-        if (!(mob instanceof MaidMagicEntity magicMaid)) {
+        if (!(mob instanceof MaidMagicEntity)) {
             return false;
         }
-        PlayerRecasts playerRecasts = spellCastingMob.getMagicData().getPlayerRecasts();
-        float mana = spellCastingMob.getMagicData().getMana();
-        int manaCost = magicMaid.winefoxsSpellbooks$getManaCost(spellData.getSpell(), spellData.getLevel());
-        boolean hasRecastForSpell = playerRecasts.hasRecastForSpell(spellData.getSpell());
+        boolean hasRecastForSpell = hasRecast(mob, spellData);
         if (hasRecastForSpell && !MaidSpellCatalog.maidMayRepeatCast(spellData.getSpell())) {
             // 二段咏唱，例如:
             // 炽焰追踪弹幕、火墙术 需要二段咏唱才能施放
             // 而召唤术二段咏唱会收回召唤物
             return false;
         }
-        if (!hasRecastForSpell && mana < manaCost) {
-            // 魔力不足
-            return false;
+        return !spellCastingMob.getMagicData().getPlayerCooldowns().isOnCooldown(spellData.getSpell());
+    }
+
+    public static boolean isSpellUsable(Mob mob, SpellData spellData) {
+        return isSpellReady(mob, spellData) && hasManaFor(mob, spellData);
+    }
+
+    /**
+     * 当前魔力是否够完整放出这个法术（二段咏唱中途不扣蓝，恒为够）。调用方需先确认 {@link #isSpellReady} 为真。 持续施法按整段引导计价，见 {@link #getEffectiveManaCost}。
+     *
+     * @param mob       施法者
+     * @param spellData 待检查的法术
+     * @return 魔力是否足够
+     */
+    public static boolean hasManaFor(Mob mob, SpellData spellData) {
+        return ((IMagicEntity) mob).getMagicData().getMana() >= getEffectiveManaCost(mob, spellData);
+    }
+
+    /**
+     * 完整施放一次实际要扣的魔力：二段咏唱中途不二次扣魔（见 {@code MagicMaidAdapter#castSpell}），为 0。 持续施法每个引导间隔扣一次，按整段引导的总价算，超过魔力上限时按上限算。
+     * <p>
+     * 只按单跳计价时，余额刚够一两跳的持续法术也会被当作可立即施放：起手后余额不足两跳即提前收尾并进入冷却， 既打不出伤害，也不会交给规划器攒蓝。
+     *
+     * @param mob       施法者，须为 {@link MaidMagicEntity}
+     * @param spellData 法术
+     * @return 实际蓝耗
+     */
+    public static float getEffectiveManaCost(Mob mob, SpellData spellData) {
+        if (hasRecast(mob, spellData)) {
+            return 0;
         }
-        if (spellCastingMob.getMagicData().getPlayerCooldowns().isOnCooldown(spellData.getSpell())) {
-            // 冷却中
-            return false;
+        AbstractSpell spell = spellData.getSpell();
+        int perCast = ((MaidMagicEntity) mob).winefoxsSpellbooks$getManaCost(spell, spellData.getLevel());
+        if (spell.getCastType() != CastType.CONTINUOUS) {
+            return perCast;
         }
-        return true;
+        int castTicks = Math.max(0, spell.getEffectiveCastTime(spellData.getLevel(), mob));
+        return fullChannelManaCost(perCast, castTicks, (float) getMaxMana(mob));
+    }
+
+    /**
+     * 持续施法整段引导的总蓝耗：每 {@link #CONTINUOUS_CAST_TICK_INTERVAL} 刻扣一次单跳蓝耗， 超过魔力上限时按上限算（攒满蓝就是能引导的最长一段）。
+     *
+     * @param perCast   单跳蓝耗
+     * @param castTicks 引导总时长
+     * @param maxMana   魔力上限
+     * @return 整段引导的总蓝耗
+     */
+    public static float fullChannelManaCost(float perCast, int castTicks, float maxMana) {
+        int intervals = Math.max(1, Mth.ceil((float) castTicks / CONTINUOUS_CAST_TICK_INTERVAL));
+        return Math.min(Math.max(1f, maxMana), perCast * intervals);
+    }
+
+    /**
+     * 法术是否正处于二段咏唱中途。
+     */
+    public static boolean hasRecast(Mob mob, SpellData spellData) {
+        return mob instanceof IMagicEntity magicEntity
+            && magicEntity.getMagicData().getPlayerRecasts().hasRecastForSpell(spellData.getSpell());
+    }
+
+    /**
+     * 两个回魔周期内即可恢复、且二段咏唱允许的法术。选法和实际 onCast 会相差一 tick， 只看一个周期会漏掉“上轮施法后还剩 11 tick”的常见情况。
+     */
+    public static int getSoonReadyTicks(Mob mob, SpellData spellData) {
+        if (!(mob instanceof IMagicEntity magicEntity)
+            || hasRecast(mob, spellData) && !MaidSpellCatalog.maidMayRepeatCast(spellData.getSpell())) {
+            return 0;
+        }
+        var cooldown = magicEntity.getMagicData().getPlayerCooldowns().getSpellCooldowns()
+            .get(spellData.getSpell().getSpellId());
+        int ticks = cooldown != null ? cooldown.getCooldownRemaining() : 0;
+        return ticks > 0 && ticks <= MANA_REGEN_TICKS * 2 ? ticks : 0;
     }
 
     public static void showCurrentSpellInChatBubble(EntityMaid maid, SpellData spellData, boolean explainFailure) {

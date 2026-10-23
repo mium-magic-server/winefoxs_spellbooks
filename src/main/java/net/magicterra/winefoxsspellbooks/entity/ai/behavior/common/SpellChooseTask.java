@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Predicate;
+import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.api.event.MaidSpellActionChooseEvent;
 import net.magicterra.winefoxsspellbooks.api.event.MaidSpellChooseEvent;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
@@ -24,6 +25,7 @@ import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
+import net.magicterra.winefoxsspellbooks.magic.SpellCastPlanner;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.magic.spell.ManaTransferSpell;
 import net.minecraft.core.Holder;
@@ -63,6 +65,18 @@ public class SpellChooseTask extends Behavior<Mob> {
      * 本轮筛出的可用法术，按行为类别分桶。桶实例在构造时建好后不再更换—— 子类（如 {@code SpellTestChooseTask}）持有它们的引用直接填充。
      */
     protected final Map<MaidSpellAction, List<SpellData>> usableSpells = new EnumMap<>(MaidSpellAction.class);
+
+    /**
+     * 本轮筛出的攻击法术：冷却已经好、但魔力还不够的那些（{@link MaidMagicManager#isSpellReady} 为真、 {@link MaidMagicManager#isSpellUsable} 为假）。只服务 {@link #spellCastPlanner}——它要知道 「攒够蓝之后还能放什么」，才能判断值不值得等。
+     */
+    protected final List<SpellData> pendingAttackSpells = new ArrayList<>();
+
+    protected final List<SpellData> coolingAttackSpells = new ArrayList<>();
+
+    /**
+     * 攻击法术的攒蓝/出手规划器，每个女仆一份，随本任务实例的生存期存在。
+     */
+    protected final SpellCastPlanner spellCastPlanner = new SpellCastPlanner();
 
     protected final List<LivingEntity> nearbyAlliedEntities = new ArrayList<>();
 
@@ -133,6 +147,11 @@ public class SpellChooseTask extends Behavior<Mob> {
         // 初始化所有可用法术 （先清空）
         MaidMagicEntity maidMagicEntity = (MaidMagicEntity) owner;
         MaidSpellDataHolder spellDataHolder = maidMagicEntity.winefoxsSpellbooks$getSpellDataHolder();
+        // 规划器在为攻击法术攒蓝时，别的类别不许把蓝花过预留线（豁免哪些类别由规划器决定）
+        float reservation = spellCastPlanner.activeReservation(owner,
+            owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null), level.getGameTime());
+        pendingAttackSpells.clear();
+        coolingAttackSpells.clear();
         for (MaidSpellAction action : MaidSpellAction.ALL) {
             List<SpellData> bucket = usableSpells.get(action);
             bucket.clear();
@@ -140,8 +159,19 @@ public class SpellChooseTask extends Behavior<Mob> {
                 continue;
             }
             for (SpellData spellData : spellDataHolder.get(action)) {
-                if (MaidMagicManager.isSpellUsable(owner, spellData)) {
-                    bucket.add(spellData);
+                if (!MaidMagicManager.isSpellReady(owner, spellData)) {
+                    if (action == MaidSpellAction.ATTACK && MaidMagicManager.getSoonReadyTicks(owner, spellData) > 0) {
+                        coolingAttackSpells.add(spellData);
+                    }
+                    continue;
+                }
+                if (MaidMagicManager.hasManaFor(owner, spellData)) {
+                    if (!SpellCastPlanner.wouldSpendReservedMana(owner, spellData, action, reservation)) {
+                        bucket.add(spellData);
+                    }
+                } else if (action == MaidSpellAction.ATTACK) {
+                    // 冷却好了但魔力还不够的攻击法术，喂给规划器判断值不值得等
+                    pendingAttackSpells.add(spellData);
                 }
             }
         }
@@ -196,14 +226,22 @@ public class SpellChooseTask extends Behavior<Mob> {
         NeoForge.EVENT_BUS.post(spellEvent);
         SpellData spellData = spellEvent.getSelectedSpell();
         if (spellData == null) {
-            // 未被事件指定，使用默认随机选择
-            spellData = availableSpells.get(entity.getRandom().nextInt(availableSpells.size()));
+            if (nextSpellAction == MaidSpellAction.ATTACK && Config.isSpellPlanningEnabled()) {
+                // 未被事件指定：攻击法术走攒蓝/出手规划，而不是在能打的法术里碰运气
+                spellData = spellCastPlanner.plan(entity, availableSpells, pendingAttackSpells, coolingAttackSpells,
+                    attackTarget, gameTime);
+                if (spellData == null) {
+                    // 规划器判断值得攒蓝，本轮不出手
+                    return;
+                }
+            } else {
+                // 其余类别（以及关掉规划时的攻击法术）维持原有的均匀随机选择
+                spellData = availableSpells.get(entity.getRandom().nextInt(availableSpells.size()));
+            }
         }
 
+        // 法术名气泡改在真正起手时由 SpellCastingTask 显示，选中后可能还要走位、等冷却
         entity.getBrain().setMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get(), spellData);
-        if (entity instanceof EntityMaid maid) {
-            MaidMagicManager.showCurrentSpellInChatBubble(maid, spellData, false);
-        }
 
         if (nextSpellAction == MaidSpellAction.SUPPORT_OTHER || nextSpellAction == MaidSpellAction.POSITIVE) {
             for (LivingEntity nearbyAlliedEntity : nearbyAlliedEntities) {
@@ -241,6 +279,8 @@ public class SpellChooseTask extends Behavior<Mob> {
         entity.getBrain().eraseMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get());
         // 清理可用法术避免泄露
         usableSpells.values().forEach(List::clear);
+        pendingAttackSpells.clear();
+        coolingAttackSpells.clear();
         // 清理队友列表
         nearbyAlliedEntities.clear();
     }
@@ -329,8 +369,7 @@ public class SpellChooseTask extends Behavior<Mob> {
     }
 
     /**
-     * 两阶段加权随机：先看能不能救队友（POSITIVE / SUPPORT_OTHER），救不成再从自己这边挑
-     * （SUPPORT / ATTACK / DEFENSE / MOVEMENT / NEGATIVE）。
+     * 两阶段加权随机：先看能不能救队友（POSITIVE / SUPPORT_OTHER），救不成再从自己这边挑 （SUPPORT / ATTACK / DEFENSE / MOVEMENT / NEGATIVE）。
      * <p>
      * 自愈（SUPPORT）归第二阶段：它若参与第一阶段的早退判断，只要附近站着任何一个盟友——哪怕 不需要救——半血女仆就会无条件重选自愈而不还手。「优先」的对象是队友，不是自己。
      *

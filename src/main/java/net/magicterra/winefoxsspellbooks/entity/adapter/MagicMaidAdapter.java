@@ -15,12 +15,19 @@ import io.redspace.ironsspellbooks.api.util.Utils;
 import io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData;
 import io.redspace.ironsspellbooks.spells.ender.TeleportSpell;
 import io.redspace.ironsspellbooks.spells.fire.BurningDashSpell;
+import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
+import net.magicterra.winefoxsspellbooks.event.SpellDamageLearningHandler;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicData;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
+import net.magicterra.winefoxsspellbooks.magic.MaidSpellMemory;
+import net.magicterra.winefoxsspellbooks.magic.SpellAimPredictor;
 import net.magicterra.winefoxsspellbooks.magic.animation.MagicCastingAnimateStateHolder;
+import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.sounds.SoundEvents;
@@ -59,6 +66,8 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
     private final MagicCastingAnimateStateHolder magicCastingAnimateStateHolder;
 
+    private final SpellAimPredictor aimPredictor = new SpellAimPredictor();
+
     private SpellData castingSpell = SpellData.EMPTY;
 
     /**
@@ -75,10 +84,20 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
     private boolean bypassCastCheck = false;
 
     /**
-     * 施法时是否跳过扣蓝。与 {@link #bypassCastCheck} 分开两个开关：前置检查放行只是让蓝量不足也能起手，
-     * 扣蓝仍在 {@link #castSpell} 里照扣，指令施法要的正是这个语义。
+     * 施法时是否跳过扣蓝。与 {@link #bypassCastCheck} 分开两个开关：前置检查放行只是让蓝量不足也能起手， 扣蓝仍在 {@link #castSpell} 里照扣，指令施法要的正是这个语义。
      */
     private boolean bypassManaCost = false;
+
+    /**
+     * 本次施法是否已经在 {@link MaidSpellMemory} 里开过观测窗。持续施法会反复调 {@link #castSpell}，只记第一次。
+     */
+    private boolean castRecorded = false;
+
+    /**
+     * 本次施法的观测记录；没开观测窗（非攻击法术或没有攻击目标）时为 null。
+     */
+    @Nullable
+    private MaidSpellMemory.CastRecord observedCast;
 
     public MagicMaidAdapter(LivingEntity delegatedEntity) {
         this.delegatedEntity = delegatedEntity;
@@ -146,6 +165,8 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         }
 
         castingSpell = new SpellData(spell, spellLevel);
+        castRecorded = false;
+        observedCast = null;
 
         LivingEntity target = getTargetFromBrain();
         if (target != null) {
@@ -157,7 +178,11 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             delegatedEntity.stopUsingItem();
         }
 
-        if (!bypassCastCheck && !delegatedEntity.level().isClientSide && !(canCast(spell, spellLevel) && castingSpell.getSpell().checkPreCastConditions(delegatedEntity.level(), spellLevel, delegatedEntity, maidMagicData))) {
+        if (bypassCastCheck && !delegatedEntity.level().isClientSide) {
+            // 放行只跳过可用性与蓝量门槛。法术自身的前置检查还负责写入目标等施法数据，
+            // 连锁闪电、暴风雪这类指向型法术缺了它会在 onCast 里直接放空，所以照调、只忽略结果。
+            castingSpell.getSpell().checkPreCastConditions(delegatedEntity.level(), spellLevel, delegatedEntity, maidMagicData);
+        } else if (!delegatedEntity.level().isClientSide && !(canCast(spell, spellLevel) && castingSpell.getSpell().checkPreCastConditions(delegatedEntity.level(), spellLevel, delegatedEntity, maidMagicData))) {
             if (WinefoxsSpellbooks.DEBUG) {
                 WinefoxsSpellbooks.LOGGER.debug("MagicMaidAdapter.precastfailed: spellType:{} spellLevel:{}, isClient:{}", spell.getSpellId(), spellLevel, delegatedEntity.level().isClientSide);
             }
@@ -196,6 +221,10 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
     public void castComplete() {
         if (!delegatedEntity.level().isClientSide) {
             if (castingSpell != SpellData.EMPTY) {
+                if (observedCast != null && castingSpell.getSpell().getCastType() == CastType.CONTINUOUS
+                    && maidMagicData.getCastDurationRemaining() >= MaidMagicManager.CONTINUOUS_CAST_TICK_INTERVAL) {
+                    observedCast.markTruncated();
+                }
                 castingSpell.getSpell().onServerCastComplete(delegatedEntity.level(), castingSpell.getLevel(), delegatedEntity, maidMagicData, false);
             }
         } else {
@@ -340,6 +369,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         }
 
         // 魔力恢复
+        aimPredictor.observe(getTargetFromBrain(), delegatedEntity.level().getGameTime());
         boolean doManaRegen = serverTickCount % MaidMagicManager.MANA_REGEN_TICKS == 0;
         if (doManaRegen) {
             MaidMagicManager.regenMana(delegatedEntity, maidMagicData);
@@ -349,6 +379,12 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         // 冷却更新
         maidMagicData.getPlayerCooldowns().tick(1);
         maidMagicData.getPlayerRecasts().tick(2);
+
+        // 观测窗按时关闭：拖到下次施法才结算的话，目标在窗口外死亡也会被当成截断
+        MaidSpellMemory spellMemory = delegatedEntity.getExistingDataOrNull(WsbAttachments.MAID_SPELL_MEMORY);
+        if (spellMemory != null) {
+            spellMemory.expire(delegatedEntity.level().getGameTime());
+        }
     }
 
     /**
@@ -399,9 +435,20 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
                 }
             } else if (spell.getCastType() == CastType.CONTINUOUS) {
                 if ((maidMagicData.getCastDurationRemaining() + 1) % MaidMagicManager.CONTINUOUS_CAST_TICK_INTERVAL == 0) {
+                    // 女仆统一使用 MOB 来源，但使用自己的魔力池；MOB.consumesMana() 为 false，
+                    // 不能用它跳过余额检查，否则扣到零后仍会免费引导到结束。
+                    boolean paysMana = !bypassManaCost
+                        && !maidMagicData.getPlayerRecasts().hasRecastForSpell(spell.getSpellId());
+                    int manaCost = getManaCost(spell, maidMagicData.getCastingSpellLevel());
+                    if (paysMana && maidMagicData.getMana() < manaCost) {
+                        // 与正常收尾的 castSpell(…, true) 一致，任何持续法术提前结束都进冷却，
+                        // 否则回魔到刚够一次就会被重新选中、引导一下又被截断
+                        MaidMagicManager.addCooldown(delegatedEntity, spell, CastSource.MOB);
+                        castComplete();
+                        return;
+                    }
                     if (maidMagicData.getCastDurationRemaining() < MaidMagicManager.CONTINUOUS_CAST_TICK_INTERVAL ||
-                        (!bypassManaCost && maidMagicData.getCastSource().consumesMana() &&
-                            maidMagicData.getMana() - getManaCost(spell, maidMagicData.getCastingSpellLevel()) * 2 < 0)) {
+                        (paysMana && maidMagicData.getMana() < manaCost * 2)) {
                         castSpell(spell, maidMagicData.getCastingSpellLevel(), true);
                         castComplete();
                     } else {
@@ -429,16 +476,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         if (target == null) {
             return;
         }
-        double dx = target.getX() - delegatedEntity.getX();
-        double dz = target.getZ() - delegatedEntity.getZ();
-        double dy = target.getEyeY() - delegatedEntity.getEyeY();
-        double horizontalDist = Math.sqrt(dx * dx + dz * dz);
-
-        float yRot = (float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - 90.0F;
-        float xRot = (float) (-(Mth.atan2(dy, horizontalDist) * Mth.RAD_TO_DEG));
-
-        delegatedEntity.setXRot(xRot % 360.0F);
-        delegatedEntity.setYRot(yRot % 360.0F);
+        forceLookAtPoint(target.getEyePosition());
 
         // 同步 LOOK_TARGET 记忆，与 Brain 系统保持一致
         if (delegatedEntity instanceof Mob mob) {
@@ -447,6 +485,17 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
                 brain.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(target, true));
             }
         }
+    }
+
+    private void forceLookAtPoint(Vec3 point) {
+        double dx = point.x - delegatedEntity.getX();
+        double dz = point.z - delegatedEntity.getZ();
+        double dy = point.y - delegatedEntity.getEyeY();
+        double horizontalDist = Math.sqrt(dx * dx + dz * dz);
+        float yRot = (float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - 90.0F;
+        float xRot = (float) (-(Mth.atan2(dy, horizontalDist) * Mth.RAD_TO_DEG));
+        delegatedEntity.setXRot(xRot % 360.0F);
+        delegatedEntity.setYRot(yRot % 360.0F);
     }
 
     /**
@@ -473,9 +522,39 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             winefoxsSpellbooks$setMana(newMana);
         }
 
+        // 观测窗必须在 onCast 之前开：光线、瞬发打击类法术在 onCast 里同步结算伤害，晚一步就全漏了
+        boolean firstCast = !castRecorded && !delegatedEntity.level().isClientSide;
+        if (firstCast) {
+            castRecorded = true;
+            // 只观测攻击法术对攻击目标的施法：规划器只为攻击服务，支援、增益法术的「伤害」没有意义，
+            // 给它们开窗还会把同一时段弹射物打出的伤害抢过去
+            LivingEntity target = getTargetFromBrain();
+            if (target != null && MaidSpellCatalog.spellsOf(MaidSpellAction.ATTACK).contains(spell)) {
+                // 只有持续施法在生效后还要继续引导；瞬发与读条法术生效即结束
+                int castTicks = spell.getCastType() == CastType.CONTINUOUS ? maidMagicData.getCastDuration() : 0;
+                observedCast = delegatedEntity.getData(WsbAttachments.MAID_SPELL_MEMORY).recordCast(delegatedEntity,
+                    castingSpell, target, delegatedEntity.level().getGameTime(), castTicks);
+            }
+        }
+        // 持续施法后续每次 onCast 生成的弹射物也归到同一个观测窗
+        MaidSpellMemory.CastRecord previousCast = SpellDamageLearningHandler.beginCastScope(observedCast);
+
         try {
+            // 放在实际释放之前，避免读条或 Brain 的看向行为覆盖提前量；不修改生成后的弹速或散射。
+            if (!delegatedEntity.level().isClientSide) {
+                Vec3 aim = aimPredictor.predict(delegatedEntity, getTargetFromBrain(), spell,
+                    delegatedEntity.level().getGameTime());
+                if (aim != null) {
+                    forceLookAtPoint(aim);
+                }
+            }
             spell.onCast(delegatedEntity.level(), spellLevel, delegatedEntity, CastSource.MOB, maidMagicData);
         } catch (Throwable t) {
+            if (observedCast != null && firstCast) {
+                // 法术没真正打出去，不该记成一次零伤害的样本
+                delegatedEntity.getData(WsbAttachments.MAID_SPELL_MEMORY).abortCast(observedCast);
+                observedCast = null;
+            }
             // 附属 mod 的法术实现出错不该把服务端一起带走：女仆是在实体 tick 里施法的，
             // 异常冒泡到 guardEntityTick 就是一份崩溃报告。捕 Throwable 而非 Exception，
             // 是因为附属与 Iron's 版本漂移抛的往往是 NoSuchMethodError 这类 Error。
@@ -485,6 +564,8 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             // 强制进冷却，免得 AI 下一 tick 又挑中同一个坏法术反复报错
             MaidMagicManager.addCooldown(delegatedEntity, spell, CastSource.MOB);
             return;
+        } finally {
+            SpellDamageLearningHandler.endCastScope(previousCast);
         }
 
         var mobHasRecastsLeft = mobRecasts.hasRecastForSpell(spell);

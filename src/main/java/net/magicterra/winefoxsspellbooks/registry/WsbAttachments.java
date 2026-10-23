@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
+import net.magicterra.winefoxsspellbooks.magic.MaidSpellMemory;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -38,8 +39,7 @@ public class WsbAttachments {
     /**
      * 缓存的顶层召唤者 UUID
      * <p>
-     * 用于快速判断召唤链关系，避免每次都遍历召唤链。 附件不存在表示尚未查询过；存在但为 {@code Optional.empty()} 表示实体不是召唤物。
-     * 追溯中途主人不可达时不写入，留待下次重试。
+     * 用于快速判断召唤链关系，避免每次都遍历召唤链。 附件不存在表示尚未查询过；存在但为 {@code Optional.empty()} 表示实体不是召唤物。 追溯中途主人不可达时不写入，留待下次重试。
      */
     public static final Supplier<AttachmentType<Optional<UUID>>> ROOT_SUMMONER_UUID = ATTACHMENT_TYPES.register(
         "root_summoner_uuid", () -> AttachmentType.<Optional<UUID>>builder(Optional::empty)
@@ -71,6 +71,13 @@ public class WsbAttachments {
      */
     public static final Supplier<AttachmentType<MutableInt>> SUMMONED_MAID_COUNT = ATTACHMENT_TYPES.register(
         "summoned_maid_count", () -> AttachmentType.builder(() -> new MutableInt()).build()
+    );
+
+    /**
+     * 女仆对自己攻击法术的实战记忆，供攻击法术规划器估算伤害，见 {@link MaidSpellMemory}。 随女仆存档：女仆越打越熟，不必每次进世界重新学。
+     */
+    public static final Supplier<AttachmentType<MaidSpellMemory>> MAID_SPELL_MEMORY = ATTACHMENT_TYPES.register(
+        "maid_spell_memory", () -> AttachmentType.builder(() -> new MaidSpellMemory()).serialize(MaidSpellMemory.CODEC).build()
     );
 
     public static void register(IEventBus modBus) {

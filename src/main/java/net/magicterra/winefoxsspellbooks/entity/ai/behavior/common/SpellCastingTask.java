@@ -4,9 +4,11 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
+import io.redspace.ironsspellbooks.api.spells.CastType;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
+import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.server.level.ServerLevel;
@@ -30,6 +32,11 @@ public class SpellCastingTask extends Behavior<Mob> {
     protected SpellData currentSpell = SpellData.EMPTY;
 
     protected int seeTime = 0;
+
+    /**
+     * 本次施法开始时是否有攻击或支援目标
+     */
+    protected boolean castWithTarget = false;
 
     public SpellCastingTask(IMagicEntity magicEntity) {
         super(ImmutableMap.of(
@@ -110,7 +117,8 @@ public class SpellCastingTask extends Behavior<Mob> {
             .or(() -> mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
             .orElse(null);
         if (target == null) {
-            return true;
+            // 对着目标起手的持续法术，目标被击杀或丢失后停止，避免对空气继续引导、空耗法力
+            return !(castWithTarget && magicData.getCastingSpell().getSpell().getCastType() == CastType.CONTINUOUS);
         }
         if (target.isDeadOrDying()) {
             return false;
@@ -145,6 +153,7 @@ public class SpellCastingTask extends Behavior<Mob> {
     @Override
     protected void stop(ServerLevel worldIn, Mob mob, long gameTimeIn) {
         seeTime = 0;
+        castWithTarget = false;
         mob.setAggressive(false);
         if (magicEntity.isCasting()) {
             magicEntity.cancelCast();
@@ -171,11 +180,16 @@ public class SpellCastingTask extends Behavior<Mob> {
             LivingEntity target = mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
                 .or(() -> mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
                 .orElse(null);
+            castWithTarget = target != null;
             if (target != null) {
                 mob.setYRot(Mth.rotateIfNecessary(mob.getYRot(), mob.yHeadRot, 0.0F));
                 mob.lookAt(EntityAnchorArgument.Anchor.EYES, target.getEyePosition());
             }
             magicEntity.initiateCastSpell(spell, spellLevel);
+            // 起手成功才报法术名：蓝量不足、前置检查失败时 initiateCastSpell 不会进入施法状态
+            if (mob instanceof EntityMaid maid && magicEntity.isCasting()) {
+                MaidMagicManager.showCurrentSpellInChatBubble(maid, spellData, false);
+            }
         }
     }
 }

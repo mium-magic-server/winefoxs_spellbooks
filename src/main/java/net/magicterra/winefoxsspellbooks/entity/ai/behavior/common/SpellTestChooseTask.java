@@ -13,7 +13,6 @@ import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
-import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -173,10 +172,8 @@ public class SpellTestChooseTask extends SpellChooseTask {
         SpellData spellData = availableSpells.get(currentSpellIndex);
         spellIndices.put(nextSpellAction, (currentSpellIndex + 1) % availableSpells.size());
 
+        // 法术名气泡改在真正起手时由 SpellCastingTask 显示，选中后可能还要走位、等冷却
         entity.getBrain().setMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get(), spellData);
-        if (entity instanceof EntityMaid maid) {
-            MaidMagicManager.showCurrentSpellInChatBubble(maid, spellData, false);
-        }
 
         // 支援类动作需要选择队友目标
         if (nextSpellAction == MaidSpellAction.SUPPORT_OTHER || nextSpellAction == MaidSpellAction.POSITIVE) {
@@ -205,11 +202,9 @@ public class SpellTestChooseTask extends SpellChooseTask {
     }
 
     /**
-     * 测试要的是「每个法术都轮得到、且轮得完」，所以蓝量既不当门槛也不扣：只放行前置检查的话，
-     * 女仆开场几发就把蓝烧干，之后蓝条一直趴在 0，看不出任何东西。
+     * 测试要的是「每个法术都轮得到、且轮得完」，所以蓝量既不当门槛也不扣：只放行前置检查的话， 女仆开场几发就把蓝烧干，之后蓝条一直趴在 0，看不出任何东西。
      * <p>
-     * 两个开关跟着行为的 start/stop 走。换任务时 {@code EntityMaid#refreshBrain} 会先
-     * {@code stopAll} 再重建行为，stop 必然被调到，标志不会漏在 true 上。
+     * 两个开关跟着行为的 start/stop 走。换任务时 {@code EntityMaid#refreshBrain} 会先 {@code stopAll} 再重建行为，stop 必然被调到，标志不会漏在 true 上。
      */
     private static void setBypass(Mob entity, boolean bypass) {
         if (entity instanceof MaidMagicEntity maid) {

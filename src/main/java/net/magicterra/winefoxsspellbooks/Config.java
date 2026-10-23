@@ -37,6 +37,8 @@ public class Config {
 
     private static ModConfigSpec.IntValue MAX_COMBO_DELAY_TICK;
 
+    private static ModConfigSpec.BooleanValue SPELL_PLANNING_ENABLED;
+
     private static ModConfigSpec.BooleanValue DRINK_POTION_IN_BATTLE;
 
     private static ModConfigSpec.BooleanValue SHOW_CHAT_BUBBLES;
@@ -64,6 +66,8 @@ public class Config {
     private static ModConfigSpec.ConfigValue<com.electronwill.nightconfig.core.Config> EXTRA_SPELL_CASTING_RANGE;
 
     private static ModConfigSpec.ConfigValue<com.electronwill.nightconfig.core.Config> EXTRA_SPELL_CAUSED_EFFECTS;
+
+    private static ModConfigSpec.ConfigValue<com.electronwill.nightconfig.core.Config> EXTRA_SPELL_VALUE;
 
     private static ModConfigSpec.BooleanValue VULPINE_GIFT_ENABLED;
 
@@ -120,6 +124,13 @@ public class Config {
             .translation(translateKey("max_combo_delay_tick"))
             .defineInRange("maxComboDelayTick", 10, 1, 600);
 
+        SPELL_PLANNING_ENABLED = builder.comment(
+                "Pick attack spells to kill the current target as fast as possible, using damage each maid learns ",
+                "from her own casts; lets a maid save mana for a stronger spell instead of always spamming the cheapest one. ",
+                "Disable to restore the old uniform-random pick (Default: true)")
+            .translation(translateKey("spell_planning_enabled"))
+            .define("spellPlanningEnabled", true);
+
         DRINK_POTION_IN_BATTLE = builder.comment("Maids below 60% health drink a healing potion without consuming an item (Default: false)")
             .translation(translateKey("drink_potion_in_battle"))
             .define("drinkPotionInSpellBattle", false);
@@ -172,11 +183,16 @@ public class Config {
 
         EXTRA_SPELL_CASTING_RANGE = builder.comment("Extra spell casting range (spell id => range). Default values are loaded from datapack.")
             .translation(translateKey("spell_compat.extra_spell_casting_range")).worldRestart()
-            .define("extra_spell_casting_range", EMPTY_CONFIG, Config::checkSpellCastingRangeMap);
+            .define("extra_spell_casting_range", EMPTY_CONFIG, Config::checkSpellNumberMap);
 
         EXTRA_SPELL_CAUSED_EFFECTS = builder.comment("Extra spell caused effects (spell id => effect id). Default values are loaded from datapack.")
             .translation(translateKey("spell_compat.extra_spell_caused_effects")).worldRestart()
             .define("extra_spell_caused_effects", EMPTY_CONFIG, Config::checkSpellCausedEffectsMap);
+
+        EXTRA_SPELL_VALUE = builder.comment("Extra attack spell damage priors (spell id => estimated level-1 total damage). Maids learn spell damage ",
+                "from their own casts; this only replaces the starting guess for spells they cannot learn well. Empty by default.")
+            .translation(translateKey("spell_compat.extra_spell_value")).worldRestart()
+            .define("extra_spell_value", EMPTY_CONFIG, Config::checkSpellNumberMap);
 
         builder.pop();
 
@@ -275,6 +291,10 @@ public class Config {
         return MAX_COMBO_DELAY_TICK.getAsInt();
     }
 
+    public static boolean isSpellPlanningEnabled() {
+        return SPELL_PLANNING_ENABLED.getAsBoolean();
+    }
+
     public static boolean getDrinkPotionInBattle() {
         return DRINK_POTION_IN_BATTLE.getAsBoolean();
     }
@@ -322,11 +342,7 @@ public class Config {
     }
 
     public static Map<String, Float> getExtraSpellCastingRange() {
-        Map<String, Float> map = new LinkedHashMap<>();
-        for (com.electronwill.nightconfig.core.Config.Entry entry : EXTRA_SPELL_CASTING_RANGE.get().entrySet()) {
-            map.put(entry.getKey(), entry.getValue());
-        }
-        return map;
+        return readSpellNumberMap(EXTRA_SPELL_CASTING_RANGE, "extra_spell_casting_range");
     }
 
     public static boolean isVulpineGiftEnabled() {
@@ -379,6 +395,30 @@ public class Config {
         return map;
     }
 
+    public static Map<String, Float> getExtraSpellValue() {
+        return readSpellNumberMap(EXTRA_SPELL_VALUE, "extra_spell_value");
+    }
+
+    /**
+     * 读取「法术 id => 正数」表。取值显式走 {@link Number#floatValue()}：toml 里写的整数会被 NightConfig 存成 Integer/Double，直接按 Float 取出来会 ClassCastException。非正数没有意义，跳过并告警。
+     */
+    private static Map<String, Float> readSpellNumberMap(
+        ModConfigSpec.ConfigValue<com.electronwill.nightconfig.core.Config> configValue, String name) {
+        Map<String, Float> map = new LinkedHashMap<>();
+        for (com.electronwill.nightconfig.core.Config.Entry entry : configValue.get().entrySet()) {
+            if (entry.getValue() instanceof Number number) {
+                float value = number.floatValue();
+                if (value > 0) {
+                    map.put(entry.getKey(), value);
+                } else {
+                    WinefoxsSpellbooks.LOGGER.warn("{}: ignoring non-positive value {} for spell '{}'",
+                        name, value, entry.getKey());
+                }
+            }
+        }
+        return map;
+    }
+
     private static String translateKey(String key) {
         return TRANSLATE_KEY + "." + key;
     }
@@ -387,23 +427,26 @@ public class Config {
         return value instanceof String s && LittleMaidSpellbooksCompat.isSpellId(s);
     }
 
-    private static boolean checkSpellCastingRangeMap(Object value) {
+    /**
+     * 校验「法术 id => 数值」表，施法范围与伤害先验共用。数值的取值范围由读取方 {@link #readSpellNumberMap} 把关： 这里一条不合法就整表作废，太严了不划算。
+     */
+    private static boolean checkSpellNumberMap(Object value) {
         if (!(value instanceof com.electronwill.nightconfig.core.Config config)) {
             return false;
         }
         for (var entry : config.entrySet()) {
             String key = entry.getKey();
-            Object range = entry.getValue();
+            Object number = entry.getValue();
             if (ResourceLocation.tryParse(key) == null) {
                 return false;
             }
             if (!checkIsSpellId(key)) {
                 WinefoxsSpellbooks.LOGGER.error("spell id '{}' does not exist", key);
             }
-            if (!(range instanceof Number num)) {
+            if (!(number instanceof Number num)) {
                 return false;
             }
-            if (!(range instanceof Float)) {
+            if (!(number instanceof Float)) {
                 entry.setValue(num.floatValue());
             }
         }

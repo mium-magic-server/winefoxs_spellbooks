@@ -25,8 +25,7 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 /**
  * 女仆法术目录：把「哪些法术女仆能用、分别归哪一类」的答案缓存下来。
  * <p>
- * 先读法术标签，再并入服务端配置里的额外法术；类别集合由 {@link MaidSpellAction} 与
- * {@link SpellFlag} 驱动。在 {@code ServerStartingEvent} 与 {@code TagsUpdatedEvent} 上整体重建。
+ * 先读法术标签，再并入服务端配置里的额外法术；类别集合由 {@link MaidSpellAction} 与 {@link SpellFlag} 驱动。在 {@code ServerStartingEvent} 与 {@code TagsUpdatedEvent} 上整体重建。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-07-25 23:14
@@ -176,5 +175,12 @@ public final class MaidSpellCatalog {
      */
     public static Holder<MobEffect> getSpellCausedEffect(AbstractSpell spell) {
         return SpellDataManager.getInstance().getSpellCausedEffect(spell);
+    }
+
+    /**
+     * 配置里手动给定的法术伤害先验（1 级一次完整施放的总伤害），未给出时为 0。
+     */
+    public static float getSpellValue(AbstractSpell spell) {
+        return SpellDataManager.getInstance().getSpellValue(spell);
     }
 }

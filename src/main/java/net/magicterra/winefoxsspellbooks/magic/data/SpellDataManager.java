@@ -41,6 +41,11 @@ public class SpellDataManager extends SimpleJsonResourceReloadListener {
     private Map<AbstractSpell, Holder<MobEffect>> spellEffectMap = new HashMap<>();
 
     /**
+     * 法术伤害先验（只来自配置，没有数据包默认值）。规划器对攻击法术的伤害估计以女仆实战学习为主， 见 {@link net.magicterra.winefoxsspellbooks.magic.MaidSpellMemory}；这里只是给学不准的法术一个手动修正入口。
+     */
+    private Map<AbstractSpell, Float> spellValueMap = new HashMap<>();
+
+    /**
      * 仅数据包解析结果，保留下来供 {@link #applyConfigOverrides()} 重新叠加配置，免得重解析 JSON
      */
     private Map<AbstractSpell, Float> packRangeMap = new HashMap<>();
@@ -102,17 +107,18 @@ public class SpellDataManager extends SimpleJsonResourceReloadListener {
     }
 
     /**
-     * 把配置覆盖叠回数据包解析结果之上。须在 {@code ServerAboutToStartEvent} 上再调一次：
-     * 初次进世界的数据包重载早于 SERVER 配置加载，那一趟 {@link #apply} 读不到配置。
+     * 把配置覆盖叠回数据包解析结果之上。须在 {@code ServerAboutToStartEvent} 上再调一次： 初次进世界的数据包重载早于 SERVER 配置加载，那一趟 {@link #apply} 读不到配置。
      */
     public void applyConfigOverrides() {
         Map<AbstractSpell, Float> rangeMap = new HashMap<>(this.packRangeMap);
         Map<AbstractSpell, Holder<MobEffect>> effectMap = new HashMap<>(this.packEffectMap);
+        Map<AbstractSpell, Float> valueMap = new HashMap<>();
         if (Config.isServerConfigLoaded()) {
-            loadExtraFromConfig(rangeMap, effectMap);
+            loadExtraFromConfig(rangeMap, effectMap, valueMap);
         }
         this.spellRangeMap = rangeMap;
         this.spellEffectMap = effectMap;
+        this.spellValueMap = valueMap;
     }
 
     /**
@@ -156,7 +162,8 @@ public class SpellDataManager extends SimpleJsonResourceReloadListener {
         return skipped;
     }
 
-    private void loadExtraFromConfig(Map<AbstractSpell, Float> rangeMap, Map<AbstractSpell, Holder<MobEffect>> effectMap) {
+    private void loadExtraFromConfig(Map<AbstractSpell, Float> rangeMap, Map<AbstractSpell, Holder<MobEffect>> effectMap,
+                                     Map<AbstractSpell, Float> valueMap) {
         for (var entry : Config.getExtraSpellCastingRange().entrySet()) {
             SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(entry.getKey()))
                 .ifPresent(spell -> rangeMap.put(spell, entry.getValue()));
@@ -169,6 +176,11 @@ public class SpellDataManager extends SimpleJsonResourceReloadListener {
             if (spellOpt.isPresent() && effectOpt.isPresent()) {
                 effectMap.put(spellOpt.get(), Holder.direct(effectOpt.get()));
             }
+        }
+
+        for (var entry : Config.getExtraSpellValue().entrySet()) {
+            SpellRegistry.REGISTRY.getOptional(ResourceLocation.parse(entry.getKey()))
+                .ifPresent(spell -> valueMap.put(spell, entry.getValue()));
         }
     }
 
@@ -190,6 +202,16 @@ public class SpellDataManager extends SimpleJsonResourceReloadListener {
      */
     public Holder<MobEffect> getSpellCausedEffect(AbstractSpell spell) {
         return spellEffectMap.get(spell);
+    }
+
+    /**
+     * 获取配置里给定的法术伤害先验
+     *
+     * @param spell 法术
+     * @return 1 级时一次完整施放的预期总伤害；配置未给出时返回 0
+     */
+    public float getSpellValue(AbstractSpell spell) {
+        return spellValueMap.getOrDefault(spell, 0F);
     }
 
     /**

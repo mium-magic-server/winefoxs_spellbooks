@@ -219,11 +219,15 @@ public class SummonedEntityMaid extends PathfinderMob implements MagicMaidDelega
 
     @Override
     public void tick() {
+        // 必须先于 super.tick()：施法发生在其中的 customServerAiStep，瞄准预测要求本刻已采样，
+        // 与 MaidEntityMixin 注入在 TamableAnimal.tick() 之前的时机保持一致
+        if (!this.level().isClientSide) {
+            magicAdapter.tickMagicLogic(this.level().getServer().getTickCount());
+        }
         super.tick();
         if (this.level().isClientSide) {
             return;
         }
-        magicAdapter.tickMagicLogic(this.level().getServer().getTickCount());
 
         // 骑乘关系的恢复由 SummonedMaidBroom.tryRestoreRiding 负责
         if (!airForceInitialized && isAirForce() && this.isPassenger()
