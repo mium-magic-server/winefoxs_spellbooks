@@ -63,6 +63,12 @@ public class Config {
     private static final Map<SpellCategory, ModConfigSpec.ConfigValue<List<String>>> EXTRA_SPELLS =
         new LinkedHashMap<>();
 
+    /**
+     * 各法术类别的「移除法术 id」列表配置项，同样由枚举驱动。在标签与额外法术之后生效，可以移除数据包内置的法术。
+     */
+    private static final Map<SpellCategory, ModConfigSpec.ConfigValue<List<String>>> REMOVED_SPELLS =
+        new LinkedHashMap<>();
+
     private static ModConfigSpec.ConfigValue<com.electronwill.nightconfig.core.Config> EXTRA_SPELL_CASTING_RANGE;
 
     private static ModConfigSpec.ConfigValue<com.electronwill.nightconfig.core.Config> EXTRA_SPELL_CAUSED_EFFECTS;
@@ -181,6 +187,14 @@ public class Config {
             EXTRA_SPELLS.put(flag, defineExtraSpells(builder, flag, placeholderSupplier, spellElementChecker));
         }
 
+        REMOVED_SPELLS.clear();
+        for (MaidSpellAction action : MaidSpellAction.ALL) {
+            REMOVED_SPELLS.put(action, defineRemovedSpells(builder, action, placeholderSupplier, spellElementChecker));
+        }
+        for (SpellFlag flag : SpellFlag.ALL) {
+            REMOVED_SPELLS.put(flag, defineRemovedSpells(builder, flag, placeholderSupplier, spellElementChecker));
+        }
+
         EXTRA_SPELL_CASTING_RANGE = builder.comment("Extra spell casting range (spell id => range). Default values are loaded from datapack.")
             .translation(translateKey("spell_compat.extra_spell_casting_range")).worldRestart()
             .define("extra_spell_casting_range", EMPTY_CONFIG, Config::checkSpellNumberMap);
@@ -252,6 +266,20 @@ public class Config {
             builder.comment(category.comment()).worldRestart()
                 .translation(translateKey("spell_compat." + category.translationSuffix()))
                 .defineListAllowEmpty(category.configName(), Collections::emptyList,
+                    placeholderSupplier, elementChecker);
+    }
+
+    /**
+     * 为一个法术类别定义「移除法术 id」列表配置项，转型原因同 {@link #defineExtraSpells}。
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static ModConfigSpec.ConfigValue<List<String>> defineRemovedSpells(
+        ModConfigSpec.Builder builder, SpellCategory category,
+        Supplier<String> placeholderSupplier, Predicate<Object> elementChecker) {
+        return (ModConfigSpec.ConfigValue<List<String>>) (ModConfigSpec.ConfigValue)
+            builder.comment(category.removedComment()).worldRestart()
+                .translation(translateKey("spell_compat." + category.removedTranslationSuffix()))
+                .defineListAllowEmpty(category.removedConfigName(), Collections::emptyList,
                     placeholderSupplier, elementChecker);
     }
 
@@ -338,6 +366,16 @@ public class Config {
      */
     public static List<String> getExtraSpells(SpellCategory category) {
         ModConfigSpec.ConfigValue<List<String>> value = EXTRA_SPELLS.get(category);
+        return value == null ? List.of() : value.get();
+    }
+
+    /**
+     * 取某个法术类别配置的「移除法术 id」列表；类别未定义时返回空表。
+     *
+     * @param category 行为类别或标记
+     */
+    public static List<String> getRemovedSpells(SpellCategory category) {
+        ModConfigSpec.ConfigValue<List<String>> value = REMOVED_SPELLS.get(category);
         return value == null ? List.of() : value.get();
     }
 

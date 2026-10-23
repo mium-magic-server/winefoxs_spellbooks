@@ -47,4 +47,31 @@ public sealed interface SpellCategory permits MaidSpellAction, SpellFlag {
      * 该类别的法术标签。
      */
     TagKey<AbstractSpell> tag();
+
+    /**
+     * 服务端配置里「移除法术」列表的键名，由 {@link #catalogName()} 转驼峰拼出，如 {@code removedAttackSpells}。
+     * <p>
+     * 已落盘的配置键，改 {@code catalogName} 时这里跟着变，存量 toml 里的对应项会失效。
+     */
+    default String removedConfigName() {
+        StringBuilder sb = new StringBuilder("removed");
+        for (String part : catalogName().split("_")) {
+            sb.append(Character.toUpperCase(part.charAt(0))).append(part, 1, part.length());
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 「移除法术」列表的翻译键后缀，挂在 {@code config.winefoxs_spellbooks.spell_compat.} 之下。
+     */
+    default String removedTranslationSuffix() {
+        return "removed_" + catalogName();
+    }
+
+    /**
+     * 「移除法术」列表写进 toml 的英文注释。
+     */
+    default String removedComment() {
+        return "Spell ids removed from '" + catalogName() + "', including ones tagged by datapacks. Applied after the extra list.";
+    }
 }

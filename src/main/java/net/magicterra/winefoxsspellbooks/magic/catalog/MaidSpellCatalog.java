@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.event.RegisterSpellTypeEvent;
@@ -25,7 +26,7 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 /**
  * 女仆法术目录：把「哪些法术女仆能用、分别归哪一类」的答案缓存下来。
  * <p>
- * 先读法术标签，再并入服务端配置里的额外法术；类别集合由 {@link MaidSpellAction} 与 {@link SpellFlag} 驱动。在 {@code ServerStartingEvent} 与 {@code TagsUpdatedEvent} 上整体重建。
+ * 先读法术标签，再并入服务端配置里的额外法术、剔除配置里的移除法术；类别集合由 {@link MaidSpellAction} 与 {@link SpellFlag} 驱动。在 {@code ServerStartingEvent} 与 {@code TagsUpdatedEvent} 上整体重建。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-07-25 23:14
@@ -89,19 +90,27 @@ public final class MaidSpellCatalog {
         SpellRegistry.REGISTRY.getOrCreateTag(category.tag()).forEach(holder -> target.add(holder.value()));
     }
 
+    /**
+     * 先并入「额外法术」，再剔除「移除法术」。移除放最后，同一法术两边都写时以移除为准，
+     * 且能剔掉标签与 {@link RegisterSpellTypeEvent} 加进来的法术。
+     */
     private static void mergeConfigured(SpellCategory category, Set<AbstractSpell> target) {
-        List<String> extraSpellIds = Config.getExtraSpells(category);
-        for (String extraSpellId : extraSpellIds) {
-            if (extraSpellId == null) {
-                WinefoxsSpellbooks.LOGGER.warn("Invalid null spell id in config '{}'", category.configName());
+        forEachConfiguredSpell(Config.getExtraSpells(category), category.configName(), target::add);
+        forEachConfiguredSpell(Config.getRemovedSpells(category), category.removedConfigName(), target::remove);
+    }
+
+    private static void forEachConfiguredSpell(List<String> spellIds, String configName, Consumer<AbstractSpell> action) {
+        for (String rawId : spellIds) {
+            if (rawId == null) {
+                WinefoxsSpellbooks.LOGGER.warn("Invalid null spell id in config '{}'", configName);
                 continue;
             }
-            ResourceLocation spellId = ResourceLocation.tryParse(extraSpellId);
+            ResourceLocation spellId = ResourceLocation.tryParse(rawId);
             if (spellId == null) {
-                WinefoxsSpellbooks.LOGGER.warn("Invalid spell id '{}' in config '{}'", extraSpellId, category.configName());
+                WinefoxsSpellbooks.LOGGER.warn("Invalid spell id '{}' in config '{}'", rawId, configName);
                 continue;
             }
-            SpellRegistry.REGISTRY.getOptional(spellId).ifPresent(target::add);
+            SpellRegistry.REGISTRY.getOptional(spellId).ifPresent(action);
         }
     }
 

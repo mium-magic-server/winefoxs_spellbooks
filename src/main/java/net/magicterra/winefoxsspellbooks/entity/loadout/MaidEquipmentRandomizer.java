@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
@@ -25,6 +26,7 @@ import net.magicterra.winefoxsspellbooks.entity.loadout.entry.SpellEntry;
 import net.magicterra.winefoxsspellbooks.entity.loadout.entry.SpellTagEntry;
 import net.magicterra.winefoxsspellbooks.entity.loadout.pool.ItemPool;
 import net.magicterra.winefoxsspellbooks.entity.loadout.pool.SpellPool;
+import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -39,6 +41,8 @@ import net.minecraft.world.item.Items;
  * <p>
  * 法术一路额外受三个运行时配置约束（学派准入、稀有度上限、等级上限），不合格的法术在展开池子时
  * 就剔除，剩下的再按等级上限定级，判据见 {@link #isEligible}。三者只会往下压，压不出比数据包更强的配装。
+ * <p>
+ * 此外法术必须在 {@link MaidSpellCatalog} 里属于法术池对应的类别，服务端配置移除的法术因此不会进池。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-01-20
@@ -279,7 +283,7 @@ public final class MaidEquipmentRandomizer {
         for (MaidSpellAction action : MaidSpellAction.ALL) {
             config.pool(action).ifPresent(pool -> {
                 List<SpellWithLevel> rolled = new ArrayList<>();
-                addSpellsFromPool(pool, spellLevelCap, rolled, random);
+                addSpellsFromPool(action, pool, spellLevelCap, rolled, random);
                 if (!rolled.isEmpty()) {
                     byAction.put(action, rolled);
                 }
@@ -290,8 +294,11 @@ public final class MaidEquipmentRandomizer {
 
     /**
      * 从法术池添加法术
+     *
+     * @param action 法术池所属的行为类别，抽到的法术会直接按这一类交给召唤女仆施放
      */
     private static void addSpellsFromPool(
+        MaidSpellAction action,
         SpellPool pool,
         int spellLevelCap,
         List<SpellWithLevel> spells,
@@ -305,10 +312,15 @@ public final class MaidEquipmentRandomizer {
         // 配装分层上限与全局配置上限在这里合成一个，入池筛选与定级都按它来，两处不会各算各的
         int levelCap = Math.min(spellLevelCap, Config.getSummonedMaidMaxSpellLevel());
 
+        // 召唤女仆不经过 MaidSpellCatalog.actionOf 归类，抽到什么就按池子的类别施放。
+        // 所以入池时必须按目录核对一遍：标签是数据包原样，配置里移除的法术还在标签里，不核对就会被照常施放
+        Set<AbstractSpell> catalog = MaidSpellCatalog.spellsOf(action);
+        Predicate<AbstractSpell> eligible = spell -> catalog.contains(spell) && isEligible(spell, levelCap);
+
         // 展开所有法术条目
         List<WeightedSpell> expandedSpells = new ArrayList<>();
         for (LoadoutEntry entry : pool.entries()) {
-            expandSpellEntry(entry, expandedSpells, levelCap);
+            expandSpellEntry(entry, expandedSpells, eligible);
         }
 
         if (expandedSpells.isEmpty()) {
@@ -398,10 +410,10 @@ public final class MaidEquipmentRandomizer {
         return Math.max(1, spell.getMinLevel()) <= levelCap;
     }
 
-    private static void expandSpellEntry(LoadoutEntry entry, List<WeightedSpell> result, int levelCap) {
+    private static void expandSpellEntry(LoadoutEntry entry, List<WeightedSpell> result, Predicate<AbstractSpell> eligible) {
         if (entry instanceof SpellEntry(ResourceLocation name, int weight)) {
             SpellRegistry.REGISTRY.getOptional(name)
-                .filter(spell -> isEligible(spell, levelCap))
+                .filter(eligible)
                 .ifPresent(spell -> result.add(new WeightedSingleSpell(spell, weight)));
         } else if (entry instanceof SpellTagEntry(ResourceLocation name, int weight, boolean expand)) {
             TagKey<AbstractSpell> tagKey = TagKey.create(SpellRegistry.SPELL_REGISTRY_KEY, name);
@@ -409,7 +421,7 @@ public final class MaidEquipmentRandomizer {
                 // 展开标签
                 SpellRegistry.REGISTRY.getTag(tagKey).ifPresent(tag -> {
                     tag.forEach(holder -> {
-                        if (isEligible(holder.value(), levelCap)) {
+                        if (eligible.test(holder.value())) {
                             result.add(new WeightedSingleSpell(holder.value(), 1));
                         }
                     });
@@ -419,7 +431,7 @@ public final class MaidEquipmentRandomizer {
                 List<AbstractSpell> spells = new ArrayList<>();
                 SpellRegistry.REGISTRY.getTag(tagKey).ifPresent(tag -> {
                     tag.forEach(holder -> {
-                        if (isEligible(holder.value(), levelCap)) {
+                        if (eligible.test(holder.value())) {
                             spells.add(holder.value());
                         }
                     });
