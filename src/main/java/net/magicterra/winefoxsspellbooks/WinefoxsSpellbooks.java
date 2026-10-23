@@ -3,6 +3,7 @@ package net.magicterra.winefoxsspellbooks;
 import com.mojang.logging.LogUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import net.magicterra.winefoxsspellbooks.client.config.WsbConfigScreens;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidLoadoutManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSummonManager;
@@ -28,7 +29,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.loading.FMLPaths;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
@@ -71,7 +71,7 @@ public class WinefoxsSpellbooks {
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
         warnAboutOrphanedCommonConfig();
         if (dist == Dist.CLIENT) {
-            modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+            modContainer.registerExtensionPoint(IConfigScreenFactory.class, WsbConfigScreens::create);
         }
     }
 

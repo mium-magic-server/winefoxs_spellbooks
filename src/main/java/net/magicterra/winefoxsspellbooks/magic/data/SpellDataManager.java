@@ -7,6 +7,7 @@ import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.minecraft.core.Holder;
@@ -27,6 +28,11 @@ public class SpellDataManager extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private static final String DIRECTORY = "magic_maid_spell_data";
+
+    /**
+     * 数据包与配置都未给出施法范围时的默认值
+     */
+    public static final float DEFAULT_SPELL_RANGE = 10.0F;
 
     private static SpellDataManager instance;
 
@@ -188,10 +194,26 @@ public class SpellDataManager extends SimpleJsonResourceReloadListener {
      * 获取法术施法范围
      *
      * @param spell 法术
-     * @return 施法范围，默认返回 10.0F
+     * @return 施法范围，默认返回 {@link #DEFAULT_SPELL_RANGE}
      */
     public float getSpellRange(AbstractSpell spell) {
-        return spellRangeMap.getOrDefault(spell, 10.0F);
+        return spellRangeMap.getOrDefault(spell, DEFAULT_SPELL_RANGE);
+    }
+
+    /**
+     * 仅数据包给出的施法范围，不含配置覆盖；未给出时为 null。供配置界面显示默认值。
+     */
+    @Nullable
+    public Float getPackSpellRange(AbstractSpell spell) {
+        return packRangeMap.get(spell);
+    }
+
+    /**
+     * 仅数据包给出的法术导致效果，不含配置覆盖；未给出时为 null。供配置界面显示默认值。
+     */
+    @Nullable
+    public Holder<MobEffect> getPackSpellCausedEffect(AbstractSpell spell) {
+        return packEffectMap.get(spell);
     }
 
     /**
