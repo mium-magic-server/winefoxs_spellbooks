@@ -26,7 +26,9 @@ public final class SomakeSpellsTags {
 
         // ========== Blood ==========
         ctx.defense().addOptional(ModSpells.BLOOD_CUT.get().getSpellResource());
-        ctx.attack().addOptional(ModSpells.BLOODMARK.get().getSpellResource());
+        // BLOODMARK: onCast 对非 ServerPlayer 施法者直接返回，女仆放了只是白耗蓝。
+        // audit:ignore BLOODMARK
+        // ctx.attack().addOptional(ModSpells.BLOODMARK.get().getSpellResource());
         ctx.defense().addOptional(ModSpells.BLOOD_RUSH.get().getSpellResource());
         ctx.attack().addOptional(ModSpells.BLOODY_LEGACY.get().getSpellResource());
         // CURSED_CONNECTION: 在两个敌人之间建链，伤害互相镜像
@@ -104,7 +106,7 @@ public final class SomakeSpellsTags {
 
         // 需要多次施放（recast）的法术
         ctx.maidShouldRecast().addOptional(ModSpells.BLESSED_CONNECTION.get().getSpellResource());
-        ctx.maidShouldRecast().addOptional(ModSpells.BLOODMARK.get().getSpellResource());
+        // ctx.maidShouldRecast().addOptional(ModSpells.BLOODMARK.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(ModSpells.CHAIN_CONNECTION.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(ModSpells.CURSED_CONNECTION.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(ModSpells.FIRE_ORBS.get().getSpellResource());

@@ -46,7 +46,9 @@ public final class HazenNStuffTags {
         ctx.attack().addOptional(HnSSpellRegistries.SOUL_FLAME_BOLT.get().getSpellResource());
         ctx.attack().addOptional(HnSSpellRegistries.SOUL_FLAMING_STRIKE.get().getSpellResource());
         ctx.attack().addOptional(HnSSpellRegistries.TRIDENT_JETSTREAM.get().getSpellResource());
-        ctx.attack().addOptional(HnSSpellRegistries.VIOLENT_REGURGITATION.get().getSpellResource());
+        // VIOLENT_REGURGITATION: 消耗施法者当前生命的 40%。规划器不计自伤，伤害数字又高，学到后会反复使用。
+        // audit:ignore VIOLENT_REGURGITATION
+        // ctx.attack().addOptional(HnSSpellRegistries.VIOLENT_REGURGITATION.get().getSpellResource());
         ctx.attack().addOptional(HnSSpellRegistries.WATER_BOLT.get().getSpellResource());
 
         // 需要多次施放（recast）的法术

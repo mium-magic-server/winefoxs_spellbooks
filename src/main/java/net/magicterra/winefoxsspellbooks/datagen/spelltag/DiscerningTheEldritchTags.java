@@ -30,12 +30,14 @@ public final class DiscerningTheEldritchTags {
         ctx.negativeEffect().addOptional(SpellRegistries.SILENCE.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistries.CONJURE_FORSAKE_AID.get().getSpellResource());
         ctx.summon().addOptional(SpellRegistries.CONJURE_FORSAKE_AID.get().getSpellResource());
-        // CALL_ASCENDED_ONE: 仪式召唤会主动索敌的 Boss
-        ctx.attack().addOptional(SpellRegistries.CALL_ASCENDED_ONE.get().getSpellResource());
-        ctx.summon().addOptional(SpellRegistries.CALL_ASCENDED_ONE.get().getSpellResource());
-        // CONJURE_GAOLER: 召唤狱卒，施法前先给 15 格内目标挂黑暗
-        ctx.attack().addOptional(SpellRegistries.CONJURE_GAOLER.get().getSpellResource());
-        ctx.summon().addOptional(SpellRegistries.CONJURE_GAOLER.get().getSpellResource());
+        // 以下两个不给女仆分类：规划器把无估值的攻击法术当未知法术，冷启动会去尝试。
+        // CALL_ASCENDED_ONE: 召唤的 AscendedOneBoss 没有主人，索敌目标是玩家，会去攻击女仆的主人。
+        // CONJURE_GAOLER: 非玩家施法者走 isFeral 分支，召唤物生成后立即移除。
+        // audit:ignore CALL_ASCENDED_ONE, CONJURE_GAOLER
+        // ctx.attack().addOptional(SpellRegistries.CALL_ASCENDED_ONE.get().getSpellResource());
+        // ctx.summon().addOptional(SpellRegistries.CALL_ASCENDED_ONE.get().getSpellResource());
+        // ctx.attack().addOptional(SpellRegistries.CONJURE_GAOLER.get().getSpellResource());
+        // ctx.summon().addOptional(SpellRegistries.CONJURE_GAOLER.get().getSpellResource());
 
         // CRYSTALLINE_CARVER: 多段近战，命中施加 CHILLED 减速 debuff
         ctx.attack().addOptional(SpellRegistries.CRYSTALLINE_CARVER.get().getSpellResource());

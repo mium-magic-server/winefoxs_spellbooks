@@ -41,14 +41,6 @@
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:call_ascended_one",
-      "required": false
-    },
-    {
-      "id": "discerning_the_eldritch:conjure_gaoler",
-      "required": false
-    },
-    {
       "id": "ess_requiem:summon_skulls",
       "required": false
     },
@@ -74,10 +66,6 @@
     },
     {
       "id": "ess_requiem:maggot_burst",
-      "required": false
-    },
-    {
-      "id": "gametechbcs_spellbooks:call_forth_the_dead_king",
       "required": false
     },
     {

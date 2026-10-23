@@ -54,7 +54,9 @@ public final class EndersSpellsRequiemTags {
         ctx.attack().addOptional(GGSpellRegistry.MALEVOLENT_SLASHING.get().getSpellResource());
         ctx.movement().addOptional(GGSpellRegistry.DISAPPEARING_ACT.get().getSpellResource());
         ctx.positiveEffect().addOptional(GGSpellRegistry.ADRENALINE_RUSH.get().getSpellResource());
-        ctx.attack().addOptional(GGSpellRegistry.SWITCHAROO.get().getSpellResource());
+        // SWITCHAROO: 用 setHealth 交换双方当前生命，女仆比目标健康时等于给敌人回血、自己濒死。
+        // audit:ignore SWITCHAROO
+        // ctx.attack().addOptional(GGSpellRegistry.SWITCHAROO.get().getSpellResource());
         ctx.attack().addOptional(GGSpellRegistry.GILDED_SWORD_SUMMON.get().getSpellResource());
         ctx.summon().addOptional(GGSpellRegistry.GILDED_SWORD_SUMMON.get().getSpellResource());
         ctx.attack().addOptional(GGSpellRegistry.SLASHING_ABILITY.get().getSpellResource());
@@ -68,15 +70,17 @@ public final class EndersSpellsRequiemTags {
         // CORPSE_EXPLOSION / GLACIAL_SCULPTING: 引爆己方召唤物造成 AOE 伤害
         ctx.attack().addOptional(GGSpellRegistry.CORPSE_EXPLOSION.get().getSpellResource());
         ctx.attack().addOptional(GGSpellRegistry.GLACIAL_SCULPTING.get().getSpellResource());
-        // NIGHT_VEIL / OVERWHELMING_LIGHT: 多次施放的攻击 + 同时给自己加增益
-        ctx.attack().addOptional(GGSpellRegistry.NIGHT_VEIL.get().getSpellResource());
-        ctx.attack().addOptional(GGSpellRegistry.OVERWHELMING_LIGHT.get().getSpellResource());
+        // NIGHT_VEIL / OVERWHELMING_LIGHT: 多次施放的攻击 + 同时给自己加增益。
+        // 两者的 onCast 都只在施法者为 ServerPlayer 时生效，女仆放了只是白耗蓝。
+        // audit:ignore NIGHT_VEIL, OVERWHELMING_LIGHT
+        // ctx.attack().addOptional(GGSpellRegistry.NIGHT_VEIL.get().getSpellResource());
+        // ctx.attack().addOptional(GGSpellRegistry.OVERWHELMING_LIGHT.get().getSpellResource());
 
         // 需要多次施放（recast）的法术
         ctx.maidShouldRecast().addOptional(GGSpellRegistry.CLAW.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(GGSpellRegistry.BOILING_BLOOD.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(GGSpellRegistry.TWILIGHT_ASSAULT.get().getSpellResource());
-        ctx.maidShouldRecast().addOptional(GGSpellRegistry.NIGHT_VEIL.get().getSpellResource());
-        ctx.maidShouldRecast().addOptional(GGSpellRegistry.OVERWHELMING_LIGHT.get().getSpellResource());
+        // ctx.maidShouldRecast().addOptional(GGSpellRegistry.NIGHT_VEIL.get().getSpellResource());
+        // ctx.maidShouldRecast().addOptional(GGSpellRegistry.OVERWHELMING_LIGHT.get().getSpellResource());
     }
 }

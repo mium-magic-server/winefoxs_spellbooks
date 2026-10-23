@@ -345,14 +345,6 @@
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:call_ascended_one",
-      "required": false
-    },
-    {
-      "id": "discerning_the_eldritch:conjure_gaoler",
-      "required": false
-    },
-    {
       "id": "discerning_the_eldritch:crystalline_carver",
       "required": false
     },
@@ -457,10 +449,6 @@
       "required": false
     },
     {
-      "id": "ess_requiem:switcharoo",
-      "required": false
-    },
-    {
       "id": "ess_requiem:gild_summon",
       "required": false
     },
@@ -474,14 +462,6 @@
     },
     {
       "id": "ess_requiem:glacial_sculpting",
-      "required": false
-    },
-    {
-      "id": "ess_requiem:nights_cover",
-      "required": false
-    },
-    {
-      "id": "ess_requiem:overwhelming_light",
       "required": false
     },
     {
@@ -581,19 +561,11 @@
       "required": false
     },
     {
-      "id": "gametechbcs_spellbooks:nullflare",
-      "required": false
-    },
-    {
       "id": "gametechbcs_spellbooks:psychic_bolt",
       "required": false
     },
     {
       "id": "gametechbcs_spellbooks:shatterpoint",
-      "required": false
-    },
-    {
-      "id": "gametechbcs_spellbooks:call_forth_the_dead_king",
       "required": false
     },
     {
@@ -718,10 +690,6 @@
     },
     {
       "id": "hazennstuff:trident_jetstream",
-      "required": false
-    },
-    {
-      "id": "hazennstuff:violent_regurgitation",
       "required": false
     },
     {
@@ -1506,10 +1474,6 @@
     },
     {
       "id": "somakespells:incinerator_slash",
-      "required": false
-    },
-    {
-      "id": "somakespells:bloodmark",
       "required": false
     },
     {

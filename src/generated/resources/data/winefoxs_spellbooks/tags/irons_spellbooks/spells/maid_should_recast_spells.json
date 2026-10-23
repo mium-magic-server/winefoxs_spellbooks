@@ -125,14 +125,6 @@
       "required": false
     },
     {
-      "id": "ess_requiem:nights_cover",
-      "required": false
-    },
-    {
-      "id": "ess_requiem:overwhelming_light",
-      "required": false
-    },
-    {
       "id": "firesenderexpansion:hollow_crystal",
       "required": false
     },
@@ -154,10 +146,6 @@
     },
     {
       "id": "gametechbcs_spellbooks:ashen_breath",
-      "required": false
-    },
-    {
-      "id": "gametechbcs_spellbooks:nullflare",
       "required": false
     },
     {
@@ -302,10 +290,6 @@
     },
     {
       "id": "somakespells:blessed_connection",
-      "required": false
-    },
-    {
-      "id": "somakespells:bloodmark",
       "required": false
     },
     {
