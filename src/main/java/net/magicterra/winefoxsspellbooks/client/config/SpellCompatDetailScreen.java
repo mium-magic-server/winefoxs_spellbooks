@@ -68,9 +68,8 @@ public class SpellCompatDetailScreen extends SpellCompatScreenBase {
                 : tr("detail.range.hint", formatNumber(SpellDataManager.DEFAULT_SPELL_RANGE)), v -> model.setRange(info, v))));
 
         Holder<MobEffect> packEffect = SpellDataManager.getInstance().getPackSpellCausedEffect(info.spell());
-        ResourceLocation packEffectId = packEffect != null ? BuiltInRegistries.MOB_EFFECT.getKey(packEffect.value()) : null;
         elements.add(new Element(tr("detail.effect"), tooltip(tr("detail.effect"), tr("detail.effect.tooltip")),
-            effectBox(packEffectId)));
+            effectButton(packEffect)));
 
         elements.add(new Element(tr("detail.value"), tooltip(tr("detail.value"), tr("detail.value.tooltip")),
             numberBox(model.value(info), tr("detail.value.hint"), v -> model.setValue(info, v))));
@@ -125,36 +124,44 @@ public class SpellCompatDetailScreen extends SpellCompatScreenBase {
     }
 
     /**
-     * 药水效果 id 输入框：只接受已注册的效果。
+     * 药水效果按钮：显示当前效果，点击打开选择页。
+     * <p>
+     * 已覆盖的显示为黄色；覆盖值是未注册的 id（对应模组未安装）时原样显示并标红，不会被悄悄丢掉；
+     * 未覆盖时显示数据包默认值。
      */
-    private EditBox effectBox(@Nullable ResourceLocation packEffectId) {
-        EditBox box = new EditBox(font, 0, 0, Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT, tr("detail.effect"));
-        box.setMaxLength(128);
-        Component hint = packEffectId != null ? Component.literal(packEffectId.toString()) : tr("detail.effect.none");
-        box.setHint(fitHint(hint));
+    private Button effectButton(@Nullable Holder<MobEffect> packEffect) {
         String current = model.effect(info);
-        box.setValue(current != null ? current : "");
-        box.setResponder(text -> {
-            String trimmed = text.trim();
-            if (trimmed.isEmpty()) {
-                box.setTextColor(0xE0E0E0);
-                commit(model.setEffect(info, null));
-                return;
-            }
-            ResourceLocation id = ResourceLocation.tryParse(trimmed);
-            if (id == null || !BuiltInRegistries.MOB_EFFECT.containsKey(id)) {
-                box.setTextColor(0xFF5555);
-                return;
-            }
-            box.setTextColor(0xE0E0E0);
-            commit(model.setEffect(info, id.toString()));
-        });
-        return box;
+        Component label;
+        if (current != null) {
+            ResourceLocation id = ResourceLocation.tryParse(current);
+            label = id != null && BuiltInRegistries.MOB_EFFECT.containsKey(id)
+                ? BuiltInRegistries.MOB_EFFECT.get(id).getDisplayName().copy().withStyle(ChatFormatting.YELLOW)
+                : Component.literal(current).withStyle(ChatFormatting.RED);
+        } else if (packEffect != null) {
+            label = tr("detail.effect.pack_default", packEffect.value().getDisplayName());
+        } else {
+            label = tr("detail.effect.none");
+        }
+        return Button.builder(label, b -> minecraft.setScreen(new EffectPickerScreen(this, current, packEffect,
+                effectId -> commit(model.setEffect(info, effectId)))))
+            .width(Button.DEFAULT_WIDTH)
+            .tooltip(Tooltip.create(tooltip(tr("detail.effect"), tr("detail.effect.tooltip"))))
+            .build();
+    }
+
+    /**
+     * 从效果选择页返回时界面不会重新 init，在这里重建一次以刷新按钮文字。
+     * 首次打开时列表尚未创建，基类的 rebuild 会跳过。
+     */
+    @Override
+    public void added() {
+        super.added();
+        rebuild();
     }
 
     @Override
     protected void onCommitted() {
-        // 输入框的修改不重建列表，免得丢焦点；分类按钮在点击回调里自行 rebuild
+        // 输入框的修改不重建列表，免得丢焦点；分类按钮在点击回调里自行 rebuild，效果选择在返回时由 added 重建
     }
 
     @Override
