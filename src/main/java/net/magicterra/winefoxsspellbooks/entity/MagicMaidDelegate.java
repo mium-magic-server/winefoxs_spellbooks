@@ -10,11 +10,11 @@ import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.minecraft.world.entity.projectile.Projectile;
 
 /**
- * 把 {@link IMagicEntity} 与 {@link MaidMagicEntity} 的全部方法转发到 {@link MagicMaidAdapter}。
+ * 把 {@link IMagicEntity} 与 {@link MaidMagicEntity} 的全部方法转发到 {@link MagicMaidAdapter}， 转发逻辑只在这里写一份；实现方只需提供 {@link #winefoxsSpellbooks$getMagicMaidAdapter()}。
  * <p>
- * 两种会施法的女仆（{@code MaidEntityMixin} 与 {@code SummonedEntityMaid}）各持一个适配器，
- * 转发样板收在这里。实现方只需提供 {@link #winefoxsSpellbooks$getMagicMaidAdapter()}；
- * 需要不同行为时在实现类里覆写同名方法即可。
+ * <b>注意：</b>凡是继承 {@code PathfinderMob} 的实现类（目前两种会施法的女仆，
+ * {@code MaidEntityMixin} 与 {@code SummonedEntityMaid}，都是），必须在实现类里把 {@link IMagicEntity} 的每个方法都显式覆写一遍（方法体可以只是 {@code MagicMaidDelegate.super.xxx()}）， 不能指望下面这些默认方法直接生效：Java 方法解析规则是「祖先类的具体方法 > 接口默认方法」， 一旦有第三方 mixin 往 PathfinderMob 里塞了同名的具体方法（例如
+ * irons_spells_js 的 PathfinderMobMixin 给所有 PathfinderMob 加了一份 IMagicEntity 空实现），不显式覆写就会被 解析到那份无关实现，而不是这里的转发逻辑。需要不同行为时，也在实现类里覆写同名方法即可。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-07-29

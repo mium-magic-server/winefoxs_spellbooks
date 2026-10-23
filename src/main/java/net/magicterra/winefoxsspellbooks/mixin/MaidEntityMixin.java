@@ -168,66 +168,61 @@ public abstract class MaidEntityMixin extends PathfinderMob implements MagicMaid
     // ==================== 施法委托 ====================
 
     /**
-     * 这些方法本可全部依赖 {@link MagicMaidDelegate} 的接口默认实现，但 Java 方法解析规则是
-     * 「祖先类的具体方法 > 接口默认方法」：一旦有第三方 mixin 往 {@link PathfinderMob}
-     * 这类祖先类里塞了同名的具体方法（例如 irons_spells_js 的 PathfinderMobMixin 给
-     * 所有 PathfinderMob 加了一份 IMagicEntity 空实现），EntityMaid 上的调用就会被解析到那份
-     * 无关实现，而不是转发到 {@link #magicAdapter}。写成本类的具体覆写能保证解析结果不受
-     * 祖先类被第三方注入了什么影响。
+     * 显式覆写的原因见 {@link MagicMaidDelegate} 类注释；方法体转调接口默认实现， 保持转发逻辑只有一份。
      */
     @Override
     public MagicData getMagicData() {
-        return magicAdapter.getMagicData();
+        return MagicMaidDelegate.super.getMagicData();
     }
 
     @Override
     public void setSyncedSpellData(SyncedSpellData syncedSpellData) {
-        magicAdapter.setSyncedSpellData(syncedSpellData);
+        MagicMaidDelegate.super.setSyncedSpellData(syncedSpellData);
     }
 
     @Override
     public boolean isCasting() {
-        return magicAdapter.isCasting();
+        return MagicMaidDelegate.super.isCasting();
     }
 
     @Override
     public void initiateCastSpell(AbstractSpell spell, int spellLevel) {
-        magicAdapter.initiateCastSpell(spell, spellLevel);
+        MagicMaidDelegate.super.initiateCastSpell(spell, spellLevel);
     }
 
     @Override
     public void cancelCast() {
-        magicAdapter.cancelCast();
+        MagicMaidDelegate.super.cancelCast();
     }
 
     @Override
     public void castComplete() {
-        magicAdapter.castComplete();
+        MagicMaidDelegate.super.castComplete();
     }
 
     @Override
     public void notifyDangerousProjectile(Projectile projectile) {
-        magicAdapter.notifyDangerousProjectile(projectile);
+        MagicMaidDelegate.super.notifyDangerousProjectile(projectile);
     }
 
     @Override
     public boolean setTeleportLocationBehindTarget(int distance) {
-        return magicAdapter.setTeleportLocationBehindTarget(distance);
+        return MagicMaidDelegate.super.setTeleportLocationBehindTarget(distance);
     }
 
     @Override
     public void setBurningDashDirectionData() {
-        magicAdapter.setBurningDashDirectionData();
+        MagicMaidDelegate.super.setBurningDashDirectionData();
     }
 
     @Override
     public boolean isDrinkingPotion() {
-        return magicAdapter.isDrinkingPotion();
+        return MagicMaidDelegate.super.isDrinkingPotion();
     }
 
     @Override
     public void startDrinkingPotion() {
-        magicAdapter.startDrinkingPotion();
+        MagicMaidDelegate.super.startDrinkingPotion();
     }
 
     /**
