@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.api.spell.SpellCategory;
 import net.magicterra.winefoxsspellbooks.client.config.SpellCompatModel.CategoryState;
 import net.magicterra.winefoxsspellbooks.client.config.SpellCompatModel.SpellInfo;
+import net.magicterra.winefoxsspellbooks.compat.jech.PinyinMatch;
 import net.magicterra.winefoxsspellbooks.magic.data.SpellDataManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -207,8 +208,7 @@ public class SpellCompatScreen extends SpellCompatScreenBase {
         if (!modFilter.isEmpty() && !modFilter.equals(info.namespace())) {
             return false;
         }
-        if (!query.isEmpty() && !info.id().contains(query)
-            && !info.name().getString().toLowerCase(Locale.ROOT).contains(query)) {
+        if (!info.id().contains(query) && !PinyinMatch.contains(info.name().getString(), query)) {
             return false;
         }
         boolean statusOk = switch (statusFilter) {

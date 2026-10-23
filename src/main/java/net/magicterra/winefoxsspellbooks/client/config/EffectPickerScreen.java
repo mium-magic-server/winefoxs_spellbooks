@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import net.magicterra.winefoxsspellbooks.compat.jech.PinyinMatch;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -201,8 +202,7 @@ public class EffectPickerScreen extends Screen {
         if (categoryFilter != null && info.holder().value().getCategory() != categoryFilter) {
             return false;
         }
-        return query.isEmpty() || info.id().contains(query)
-            || info.holder().value().getDisplayName().getString().toLowerCase(Locale.ROOT).contains(query);
+        return info.id().contains(query) || PinyinMatch.contains(info.holder().value().getDisplayName().getString(), query);
     }
 
     /**
