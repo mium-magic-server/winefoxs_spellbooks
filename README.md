@@ -11,7 +11,7 @@
 - [Mod Overview](#-mod-overview)
 - [Quick Start](#-quick-start)
 - [Maid Spellcasting](#-maid-spellcasting)
-- [Winefox Hex School](#-winefox-hex-school)
+- [Vulpine School](#-vulpine-school)
 - [Addon Support](#-addon-support)
 - [Configuration](#️-configuration)
 - [Datapack Customisation](#-datapack-customisation)
@@ -31,7 +31,7 @@
 
 Beyond that main line, the mod also provides:
 
-- **Winefox Hex** — a standalone school with its own damage type and attributes, built around **player–maid teamwork**: the player opens, the maid follows up, and fighting together pays far better than fighting apart;
+- **Vulpine** — a standalone school with its own damage type and attributes, built around **player–maid teamwork**: the player opens, the maid follows up, and fighting together pays far better than fighting apart;
 - **Addon compatibility** — behaviour classifications for several hundred spells across 15 Iron's Spells addons. Installed addons take effect automatically; missing ones cause no errors.
 
 About the name: casting animations only play on GeckoLib maid models, and "Winefox" is one such model.
@@ -111,7 +111,7 @@ Rules of thumb for the weights:
 - If an ally lacks a buff, or carries a debuff that can be cleansed, the matching spell's weight rises sharply;
 - If Defense / Negative Effect was picked last round, both weights drop, so she does not spam the same category.
 
-The search radius comes from *Maximum spell attack search range* (64 blocks by default), and **enemies carrying a [Crescent Brand](#-winefox-hex-school) are preferred**. She has to close to *Start spell casting range* (15 blocks by default), or the spell's own casting distance, before she starts.
+The search radius comes from *Maximum spell attack search range* (64 blocks by default), and **enemies carrying a [Crescent Brand](#-vulpine-school) are preferred**. She has to close to *Start spell casting range* (15 blocks by default), or the spell's own casting distance, before she starts.
 
 Other combat behaviour:
 
@@ -128,9 +128,9 @@ Model pack authors can define animation clips prefixed with `iss:` in their own 
 
 ---
 
-## 🍶 Winefox Hex School
+## 🍶 Vulpine School
 
-**Winefox Hex** is the standalone school added by this mod, with its own damage type and two attributes (Winefox Hex Spell Power / Winefox Hex Magic Resist), stackable with mage gear affixes from Iron's Spells itself.
+**Vulpine** is the standalone school added by this mod, with its own damage type and two attributes (Vulpine Spell Power / Vulpine Magic Resist), stackable with mage gear affixes from Iron's Spells itself.
 
 It is designed **for "player + maid"**: its spells pass value back and forth between the two — the player brands, the maid follows up and detonates, and the mantle and cleanse the player casts also cover nearby maids. Solo play works, but a squad of maids is its complete form.
 
@@ -164,7 +164,7 @@ The school's scrolls also appear by chance in stronghold libraries, nether fortr
 Currently the clearest expression of "player + maid" teamwork in the school:
 
 1. Brand an enemy with **Crescent Brand** (12s base, +1s per level).
-2. Deal any **Winefox Hex damage** to it — Foxshade Wisps, the Foxshade Ambush bite and a direct Vintner's Bomb hit all qualify.
+2. Deal any **Vulpine damage** to it — Foxshade Wisps, the Foxshade Ambush bite and a direct Vintner's Bomb hit all qualify.
 3. The brand detonates at once: damage = 10 base + the spell power at the time it was applied.
    - **Detonated by the player**: 3-block radius, no chaining;
    - **Detonated by your own maid**: ×1.5 damage, 4-block radius (5 blocks at full player Brewsurge), and it can **chain-detonate** the next branded target.
