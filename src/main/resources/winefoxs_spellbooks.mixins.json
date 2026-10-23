@@ -10,6 +10,7 @@
     "EntityAllyMixin",
     "IMagicSummonMixin",
     "MagicDataAccessor",
+    "MaidBegTaskMixin",
     "MaidEntityMixin",
     "PlayerRecastsAccessor",
     "RecastInstanceAccessor",

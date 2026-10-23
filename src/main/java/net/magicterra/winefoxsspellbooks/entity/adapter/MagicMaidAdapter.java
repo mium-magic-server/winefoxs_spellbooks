@@ -29,6 +29,7 @@ import net.magicterra.winefoxsspellbooks.magic.SpellAimPredictor;
 import net.magicterra.winefoxsspellbooks.magic.animation.MagicCastingAnimateStateHolder;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
+import net.magicterra.winefoxsspellbooks.task.MaidCastingTask;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -98,6 +99,11 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
      */
     @Nullable
     private MaidSpellMemory.CastRecord observedCast;
+
+    /**
+     * 上一刻由 {@link #syncSpellCombatFlag} 写入的战斗状态
+     */
+    private boolean spellCombatFlag = false;
 
     public MagicMaidAdapter(LivingEntity delegatedEntity) {
         this.delegatedEntity = delegatedEntity;
@@ -395,6 +401,8 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             return;
         }
 
+        syncSpellCombatFlag();
+
         if (castingSpell.getSpell() == SpellRegistry.none() && isCasting()) {
             maidMagicData.resetCastingState();
             return;
@@ -410,6 +418,30 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
         // 处理施法逻辑
         handleCastingLogic();
+    }
+
+    /**
+     * 用原版已同步到客户端的 aggressive 标志表示「正在法术战斗或支援」：有攻击目标、支援目标，或正在施法。
+     * <p>
+     * 客户端据此在站定时不播放待机动作（见 {@code SpellCombatIdleAnimation}），服务端据此屏蔽 TLM 的讨食行为 （见 {@code MaidBegTaskMixin}）。每刻在 Brain 之后写入，{@code SpellCastingTask} 起止时设的值会被这里覆盖， 两次施法之间的间隙也保持为战斗状态。女仆切到非施法任务时只清除一次本类写入的值，不干预其他任务。
+     */
+    private void syncSpellCombatFlag() {
+        if (!(delegatedEntity instanceof Mob mob)) {
+            return;
+        }
+        if (mob instanceof EntityMaid maid && !(maid.getTask() instanceof MaidCastingTask)) {
+            if (spellCombatFlag) {
+                spellCombatFlag = false;
+                mob.setAggressive(false);
+            }
+            return;
+        }
+        Brain<?> brain = mob.getBrain();
+        spellCombatFlag = isCasting() || brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
+            || brain.hasMemoryValue(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get());
+        if (mob.isAggressive() != spellCombatFlag) {
+            mob.setAggressive(spellCombatFlag);
+        }
     }
 
     /**

@@ -18,5 +18,7 @@ public class MagicAnimationExtension implements ILittleMaid {
     @OnlyIn(Dist.CLIENT)
     public void registerMagicCastingAnimation(MagicCastingAnimationManager manager) {
         manager.register(new ISSCastingAnimationProvider());
+        // TLM 没有单独的主动画注册回调，借这个客户端初始化时机一并注册
+        SpellCombatIdleAnimation.register();
     }
 }
