@@ -37,10 +37,11 @@ public final class IronsSpellbooksTags {
         ctx.defense().addOptional(SpellRegistry.ABYSSAL_SHROUD_SPELL.get().getSpellResource());
 
         // ========== Ender ==========
-        ctx.attack().addOptional(SpellRegistry.ARCANE_SHACKLE_SPELL.get().getSpellResource()); // 锁链拉拽，自身不造成伤害
+        // ARCANE_SHACKLE / GRAVITY_FISSURE 自身不造成伤害，按负面效果归类，两个任务都会对敌人施放
+        ctx.negativeEffect().addOptional(SpellRegistry.ARCANE_SHACKLE_SPELL.get().getSpellResource()); // 锁链拉拽
         ctx.attack().addOptional(SpellRegistry.BLACK_HOLE_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.DRAGON_BREATH_SPELL.get().getSpellResource());
-        ctx.attack().addOptional(SpellRegistry.GRAVITY_FISSURE.get().getSpellResource()); // 黑洞吸附，自身不造成伤害
+        ctx.negativeEffect().addOptional(SpellRegistry.GRAVITY_FISSURE.get().getSpellResource()); // 黑洞吸附
         ctx.attack().addOptional(SpellRegistry.MAGIC_ARROW_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.MAGIC_MISSILE_SPELL.get().getSpellResource());
         ctx.attack().addOptional(SpellRegistry.SHADOW_SLASH.get().getSpellResource());

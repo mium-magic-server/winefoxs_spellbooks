@@ -33,6 +33,14 @@
       "required": false
     },
     {
+      "id": "irons_spellbooks:arcane_shackle",
+      "required": false
+    },
+    {
+      "id": "irons_spellbooks:gravity_fissure",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:slow",
       "required": false
     },

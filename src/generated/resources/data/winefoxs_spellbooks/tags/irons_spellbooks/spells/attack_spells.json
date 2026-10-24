@@ -741,19 +741,11 @@
       "required": false
     },
     {
-      "id": "irons_spellbooks:arcane_shackle",
-      "required": false
-    },
-    {
       "id": "irons_spellbooks:black_hole",
       "required": false
     },
     {
       "id": "irons_spellbooks:dragon_breath",
-      "required": false
-    },
-    {
-      "id": "irons_spellbooks:gravity_fissure",
       "required": false
     },
     {
