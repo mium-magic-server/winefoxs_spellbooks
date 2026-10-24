@@ -192,7 +192,8 @@ public class ManaTransferSpell extends AbstractSpell {
             .checkForBlocks(true)
             .bbInflation(0.35f)
             .filter(WinefoxHexHelper.raycastFilter(
-                candidate -> isValidTarget(candidate) && !WinefoxHexHelper.isHostileTo(candidate, caster)))
+                candidate -> isValidTarget(candidate) && !WinefoxHexHelper.isHostileTo(candidate, caster)
+                    && !WinefoxHexHelper.isOwnMount(candidate, caster)))
             .build();
         if (raycast.getType() != EntityHitResult.Type.ENTITY) {
             return null;

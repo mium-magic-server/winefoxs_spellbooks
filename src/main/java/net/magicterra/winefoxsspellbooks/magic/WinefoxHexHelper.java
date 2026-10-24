@@ -225,7 +225,19 @@ public final class WinefoxHexHelper {
      * 只用在「由代码替施法者挑目标」的场合：判据收紧到 {@code Enemy}，女仆才不会自作主张 去点村民的猪和铁傀儡。施法者已经自己指定了目标（准星、AI 指派、出手命中）时请用 {@link #isAimTarget}，AoE 无差别波及请用 {@link #isFactionHostile}。
      */
     public static boolean isHostileTo(LivingEntity candidate, @Nullable Entity self) {
-        return candidate != self && candidate.isAlive() && isHexEnemy(candidate);
+        return candidate != self && candidate.isAlive() && isHexEnemy(candidate) && !isOwnMount(candidate, self);
+    }
+
+    /**
+     * 候选者是否为施法者（直接或间接）骑着的坐骑——召唤女仆的扫帚、女仆或玩家骑的马等。
+     * <p>
+     * 骑乘施法时坐骑既不是敌人也不是要照顾的队友：扫帚与女仆同阵营，不排除的话会被当作队友挂增益； 玩家骑的马与玩家不同阵营，不排除的话会被自己的 AoE 波及。 只排除坐骑本身，同乘一辆载具的其他乘客照常处理。
+     *
+     * @param candidate 候选实体
+     * @param self      施法者，可为 {@code null}
+     */
+    public static boolean isOwnMount(Entity candidate, @Nullable Entity self) {
+        return self != null && candidate != self && candidate.hasIndirectPassenger(self);
     }
 
     /**
@@ -251,7 +263,7 @@ public final class WinefoxHexHelper {
     }
 
     /**
-     * 【阵营敌我】「存活、不是施法者本人、且不与施法者同阵营」——<b>AoE 波及</b>的统一谓词。
+     * 【阵营敌我】「存活、不是施法者本人或其坐骑、且不与施法者同阵营」——<b>AoE 波及</b>的统一谓词。
      * <p>
      * {@code attacker} 允许为 {@code null}（环境学派伤害 / {@code /damage} 无 {@code by} 注入的测试）。此时必须短路，不能落到 {@code isAlliedTo(null)}—— {@code Entity#isAlliedTo} 会对参数调 {@code getTeam()}，传 null 直接 NPE 崩 tick。 无归因时视作「谁都不是自己人」，全部波及。
      *
@@ -261,7 +273,8 @@ public final class WinefoxHexHelper {
     public static boolean isFactionHostile(LivingEntity candidate, @Nullable Entity attacker) {
         return candidate != attacker
             && candidate.isAlive()
-            && (attacker == null || !isSameFaction(candidate, attacker));
+            && (attacker == null || !isSameFaction(candidate, attacker))
+            && !isOwnMount(candidate, attacker);
     }
 
     /**

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
+import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.util.LineOfSightGuard;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -167,6 +168,11 @@ public class StartSupporting {
 
             // 必须存活
             if (!entity.isAlive()) {
+                continue;
+            }
+
+            // 骑着的坐骑不是要支援的队友
+            if (WinefoxHexHelper.isOwnMount(entity, mob)) {
                 continue;
             }
 

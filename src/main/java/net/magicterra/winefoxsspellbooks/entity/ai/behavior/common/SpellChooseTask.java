@@ -26,6 +26,7 @@ import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModul
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.magicterra.winefoxsspellbooks.magic.SpellCastPlanner;
+import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.magic.spell.ManaTransferSpell;
 import net.minecraft.core.Holder;
@@ -115,6 +116,10 @@ public class SpellChooseTask extends Behavior<Mob> {
                 return false;
             }
             if (entity.isDeadOrDying()) {
+                return false;
+            }
+            if (WinefoxHexHelper.isOwnMount(entity, mob)) {
+                // 骑着的扫帚、马与女仆同阵营也不算要照顾的队友
                 return false;
             }
             if (mob instanceof TamableAnimal tamableAnimal && Objects.equals(tamableAnimal.getOwner(), entity)) {
