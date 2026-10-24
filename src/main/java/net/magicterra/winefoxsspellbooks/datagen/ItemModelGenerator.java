@@ -5,6 +5,7 @@ import net.magicterra.winefoxsspellbooks.registry.WsbItems;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
+import net.neoforged.neoforge.client.model.generators.loaders.ItemLayerModelBuilder;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 /**
@@ -23,7 +24,11 @@ public class ItemModelGenerator extends ItemModelProvider {
         basicItem(WsbItems.CASTING_TASK_ICON.get());
         basicItem(WsbItems.MAGIC_SUPPORT_TASK_ICON.get());
         basicItem(WsbItems.CRESCENT_BLOOD_VINTAGE.get());
-        basicItem(WsbItems.VULPINE_ANIMA.get());
+        // 灵狐精魂全亮显示，掉落、手持、展示框里都不受环境光影响；地面光斑见 VulpineAnimaGroundGlow
+        basicItem(WsbItems.VULPINE_ANIMA.get())
+            .customLoader(ItemLayerModelBuilder::begin)
+            .emissive(15, 15, 0)
+            .end();
 
         // 学派卷轴 / 姻缘戒指：主模组按 SchoolType id 动态加载，需要无 Item 绑定的独立模型条目
         schoolItemModel("scroll_", WsbSchools.WINEFOX_HEX_RESOURCE.getPath());
