@@ -254,14 +254,13 @@ public class SpellChooseTask extends Behavior<Mob> {
                              getSupportOtherWeightForSpecifiedEntity(nearbyAlliedEntity) :
                              getPositiveWeightForSpecifiedEntity(nearbyAlliedEntity);
                 if (weight > 0) {
+                    // 攻击目标保留：支援目标与它并存，走位与施法按法术类别经 MaidSpellTargets 取目标，
+                    // 本轮结束（stop）清掉支援目标后接着打原来的敌人，不必重新索敌
                     mob.getBrain().setMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get(), nearbyAlliedEntity);
-                    if (mob.getBrain().checkMemory(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT)) {
-                        // 转换目标
-                        mob.getNavigation().stop();
-                        mob.getMoveControl().strafe(0, 0);
-                        mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
-                        mob.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
-                    }
+                    // 停下对敌人的走位，让走向队友的路径立即生效
+                    mob.getNavigation().stop();
+                    mob.getMoveControl().strafe(0, 0);
+                    mob.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
                     break;
                 }
             }

@@ -11,8 +11,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
-import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
+import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidSpellTargets;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -434,18 +434,7 @@ public class SummonedMaidBroom extends EntityBroom implements IMagicSummon {
      */
     @Nullable
     private LivingEntity getCombatTarget(SummonedEntityMaid maid) {
-        MaidSpellAction action = maid.getBrain()
-            .getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get())
-            .orElse(MaidSpellAction.ATTACK);
-
-        return switch (action) {
-            case POSITIVE, SUPPORT_OTHER -> maid.getBrain()
-                .getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get())
-                .orElseGet(() -> maid.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null));
-            default -> maid.getBrain()
-                .getMemory(MemoryModuleType.ATTACK_TARGET)
-                .orElse(null);
-        };
+        return MaidSpellTargets.current(maid.getBrain());
     }
 
     /**

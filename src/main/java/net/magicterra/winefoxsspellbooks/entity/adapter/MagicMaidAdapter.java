@@ -20,6 +20,7 @@ import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
+import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidSpellTargets;
 import net.magicterra.winefoxsspellbooks.event.SpellDamageLearningHandler;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicData;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
@@ -247,7 +248,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
     @Override
     public boolean setTeleportLocationBehindTarget(int distance) {
-        var target = getTargetFromBrain();
+        var target = getAttackTargetFromBrain();
         boolean valid = false;
         if (target != null) {
             var rotation = target.getLookAngle().normalize().scale(-distance);
@@ -375,7 +376,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         }
 
         // 魔力恢复
-        aimPredictor.observe(getTargetFromBrain(), delegatedEntity.level().getGameTime());
+        aimPredictor.observe(getAttackTargetFromBrain(), delegatedEntity.level().getGameTime());
         boolean doManaRegen = serverTickCount % MaidMagicManager.MANA_REGEN_TICKS == 0;
         if (doManaRegen) {
             MaidMagicManager.regenMana(delegatedEntity, maidMagicData);
@@ -573,8 +574,9 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
         try {
             // 放在实际释放之前，避免读条或 Brain 的看向行为覆盖提前量；不修改生成后的弹速或散射。
-            if (!delegatedEntity.level().isClientSide) {
-                Vec3 aim = aimPredictor.predict(delegatedEntity, getTargetFromBrain(), spell,
+            // 提前量只对敌人有意义：预测器的采样一直跟着攻击目标，支援法术沿用施法期间对队友的朝向
+            if (!delegatedEntity.level().isClientSide && !MaidSpellTargets.isSupportAction(delegatedEntity.getBrain())) {
+                Vec3 aim = aimPredictor.predict(delegatedEntity, getAttackTargetFromBrain(), spell,
                     delegatedEntity.level().getGameTime());
                 if (aim != null) {
                     forceLookAtPoint(aim);
@@ -628,7 +630,18 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         this.bypassManaCost = bypassManaCost;
     }
 
+    /**
+     * 当前法术指向的目标：支援类取支援目标，其余取攻击目标，见 {@link MaidSpellTargets}。
+     * 施法期间的朝向与瞄准都用它，否则支援目标与攻击目标并存时，指向型支援法术会对着敌人放
+     */
     protected final LivingEntity getTargetFromBrain() {
+        return MaidSpellTargets.current(delegatedEntity.getBrain());
+    }
+
+    /**
+     * 交战中的敌人，不随当前法术类别切换。瞄准预测的采样、绕背传送等只与敌人有关的逻辑用它
+     */
+    protected final LivingEntity getAttackTargetFromBrain() {
         Brain<?> brain = delegatedEntity.getBrain();
         if (brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {
             return brain.getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);

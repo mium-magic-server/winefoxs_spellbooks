@@ -2,8 +2,8 @@ package net.magicterra.winefoxsspellbooks.entity.ai.behavior.summon;
 
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import java.util.Map;
-import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
+import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidSpellTargets;
 import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
 import net.magicterra.winefoxsspellbooks.entity.summon.SummonedMaidBroom;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
@@ -196,18 +196,7 @@ public class SummonedMaidFlyStrafingTask extends Behavior<SummonedEntityMaid> {
      * 获取当前目标（攻击目标或支援目标）
      */
     private LivingEntity getTarget(SummonedEntityMaid maid) {
-        MaidSpellAction action = maid.getBrain()
-            .getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get())
-            .orElse(MaidSpellAction.ATTACK);
-
-        return switch (action) {
-            case POSITIVE, SUPPORT_OTHER -> maid.getBrain()
-                .getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get())
-                .orElseGet(() -> maid.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null));
-            default -> maid.getBrain()
-                .getMemory(MemoryModuleType.ATTACK_TARGET)
-                .orElse(null);
-        };
+        return MaidSpellTargets.current(maid.getBrain());
     }
 
     /**

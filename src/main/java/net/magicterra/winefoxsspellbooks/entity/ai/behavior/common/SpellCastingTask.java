@@ -8,6 +8,7 @@ import io.redspace.ironsspellbooks.api.spells.CastType;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
+import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidSpellTargets;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
@@ -71,9 +72,7 @@ public class SpellCastingTask extends Behavior<Mob> {
             return false;
         }
 
-        LivingEntity target = mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
-            .or(() -> mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
-            .orElse(null);
+        LivingEntity target = MaidSpellTargets.current(mob.getBrain());
         if (target == null) {
             return true;
         }
@@ -113,9 +112,7 @@ public class SpellCastingTask extends Behavior<Mob> {
         if (!magicData.isCasting()) {
             return false;
         }
-        LivingEntity target = mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
-            .or(() -> mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
-            .orElse(null);
+        LivingEntity target = MaidSpellTargets.current(mob.getBrain());
         if (target == null) {
             // 对着目标起手的持续法术，目标被击杀或丢失后停止，避免对空气继续引导、空耗法力
             return !(castWithTarget && magicData.getCastingSpell().getSpell().getCastType() == CastType.CONTINUOUS);
@@ -177,9 +174,7 @@ public class SpellCastingTask extends Behavior<Mob> {
         // 存在未完成的二段咏唱时，只对允许女仆逐发的法术继续施放
         if (currentSpell != SpellData.EMPTY
             && (!hasRecastForSpell || MaidSpellCatalog.maidMayRepeatCast(spell))) {
-            LivingEntity target = mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
-                .or(() -> mob.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
-                .orElse(null);
+            LivingEntity target = MaidSpellTargets.current(mob.getBrain());
             castWithTarget = target != null;
             if (target != null) {
                 mob.setYRot(Mth.rotateIfNecessary(mob.getYRot(), mob.yHeadRot, 0.0F));

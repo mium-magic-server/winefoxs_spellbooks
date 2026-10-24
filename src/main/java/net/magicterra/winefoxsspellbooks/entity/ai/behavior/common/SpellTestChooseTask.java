@@ -18,7 +18,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.phys.AABB;
 
 /**
@@ -178,14 +177,11 @@ public class SpellTestChooseTask extends SpellChooseTask {
         // 支援类动作需要选择队友目标
         if (nextSpellAction == MaidSpellAction.SUPPORT_OTHER || nextSpellAction == MaidSpellAction.POSITIVE) {
             for (LivingEntity nearbyAlliedEntity : nearbyAlliedEntities) {
+                // 攻击目标保留，与支援目标并存，见 MaidSpellTargets
                 mob.getBrain().setMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get(), nearbyAlliedEntity);
-                if (mob.getBrain().checkMemory(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT)) {
-                    // 转换目标
-                    mob.getNavigation().stop();
-                    mob.getMoveControl().strafe(0, 0);
-                    mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
-                    mob.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
-                }
+                mob.getNavigation().stop();
+                mob.getMoveControl().strafe(0, 0);
+                mob.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
                 break;
             }
         }

@@ -29,6 +29,7 @@ import net.magicterra.winefoxsspellbooks.entity.SummonedMaidPresence;
 import net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter;
 import net.magicterra.winefoxsspellbooks.entity.ai.brain.SummonedMaidBrain;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
+import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidSpellTargets;
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidEquipmentRandomizer;
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidEquipmentRandomizer.CategorizedSpells;
 import net.magicterra.winefoxsspellbooks.entity.loadout.MaidEquipmentRandomizer.EquipmentResult;
@@ -389,9 +390,7 @@ public class SummonedEntityMaid extends PathfinderMob implements MagicMaidDelega
     @Override
     public LivingEntity getTarget() {
         if (super.getTarget() == null && hasCombatTarget()) {
-            return getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
-                .or(() -> getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()))
-                .orElse(null);
+            return MaidSpellTargets.current(getBrain());
         }
         return super.getTarget();
     }

@@ -1,6 +1,7 @@
 package net.magicterra.winefoxsspellbooks.entity.ai.behavior.common;
 
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
+import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidSpellTargets;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -33,6 +34,10 @@ public class MagicMeleeAttack {
                     (level, mob, gameTick) -> {
                         LivingEntity target = instance.get(attackTargetMemory);
                         if (mob instanceof IMagicEntity magicEntity && magicEntity.isCasting()) {
+                            return false;
+                        }
+                        if (MaidSpellTargets.isSupportAction(mob.getBrain())) {
+                            // 正赶去支援队友，攻击目标只是保留着，不顺手补刀把视线拉回敌人
                             return false;
                         }
                         if (isHoldingUsableWeapon(mob) && mob.canAttack(target) && mob.isWithinMeleeAttackRange(target) && instance.get(nearestEntitiesMemory).contains(target)) {

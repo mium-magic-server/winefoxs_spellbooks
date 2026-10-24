@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Optional;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
+import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidSpellTargets;
 import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
 import net.magicterra.winefoxsspellbooks.entity.summon.SummonedMaidBroom;
 import net.minecraft.server.level.ServerLevel;
@@ -58,7 +59,9 @@ public class SummonedMaidPilotBroomTask extends Behavior<SummonedEntityMaid> {
         // 获取攻击目标
         Optional<LivingEntity> attackTarget = maid.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET);
 
-        if (attackTarget.isPresent() && attackTarget.get().isAlive()) {
+        // 支援期间攻击目标仍保留（见 MaidSpellTargets），此时不追击敌人，交给飞行走位去靠近队友，
+        // 与以前选中支援即擦除攻击目标时的走向一致
+        if (attackTarget.isPresent() && attackTarget.get().isAlive() && !MaidSpellTargets.isSupportAction(maid.getBrain())) {
             // 有攻击目标：追击或悬停攻击，并看向目标
             handleCombatFlight(maid, broom, attackTarget.get());
         } else {

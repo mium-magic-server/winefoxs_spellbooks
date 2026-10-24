@@ -5,8 +5,8 @@ import com.google.common.collect.ImmutableMap;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import javax.annotation.Nullable;
-import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
+import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidSpellTargets;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -81,14 +81,7 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
         if (!(owner instanceof IMagicEntity magicEntity)) {
             return;
         }
-        MaidSpellAction maidSpellAction = owner.getBrain().getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get()).orElse(MaidSpellAction.ATTACK);
-        LivingEntity attackTarget = owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
-        LivingEntity supportTarget = owner.getBrain().getMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get()).orElse(null);
-        LivingEntity target;
-        switch (maidSpellAction) {
-            case POSITIVE, SUPPORT_OTHER -> target = supportTarget;
-            default -> target = attackTarget;
-        }
+        LivingEntity target = MaidSpellTargets.current(owner.getBrain());
         SpellData spellData = owner.getBrain().getMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get()).orElse(null);
 
         // 如果目标为空，提前返回
@@ -171,9 +164,11 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
             if (owner.horizontalCollision && owner.getRandom().nextFloat() < .1f) {
                 tryJump(owner);
             }
-        } else if (distanceSquared > spellRangeSqr && canSee) {
+        } else if (distanceSquared > spellRangeSqr) {
             // 超出施法范围，拉近。跟随模式下不自行寻路：随机点可能落在活动范围外，
-            // 由 SpellAttackWalkToTarget 走到活动范围边缘的接战点
+            // 由 SpellAttackWalkToTarget 走到活动范围边缘的接战点。
+            // 看不见也要拉近：看不见时攻击权重为 0、选不出法术，SpellAttackWalkToTarget 不会运行，
+            // 女仆去远处支援完队友回来时敌人常已出了可见范围，不靠这里她会带着攻击目标原地不动
             if (leashOwner == null) {
                 Vec3 towards = DefaultRandomPos.getPosTowards(owner, Mth.floor(spellRange), 4, target.position(), Mth.HALF_PI);
                 if (towards != null) {

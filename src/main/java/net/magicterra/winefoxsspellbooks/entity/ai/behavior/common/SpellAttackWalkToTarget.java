@@ -7,6 +7,7 @@ import io.redspace.ironsspellbooks.api.spells.SpellData;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
+import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidSpellTargets;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
@@ -61,9 +62,8 @@ public class SpellAttackWalkToTarget {
                                           MemoryAccessor<OptionalBox.Mu, LivingEntity> supportTargetMemory,
                                           MemoryAccessor<OptionalBox.Mu, NearestVisibleLivingEntities> livingEntitiesMemory) {
         return (level, mob, gameTime) -> {
-            LivingEntity attackTarget = maidInstance.tryGet(attackTargetMemory).orElse(null);
-            LivingEntity supportTarget = maidInstance.tryGet(supportTargetMemory).orElse(null);
-            LivingEntity target = attackTarget == null ? supportTarget : attackTarget;
+            // 攻击目标与支援目标可能并存，按当前法术类别取
+            LivingEntity target = MaidSpellTargets.current(mob.getBrain());
             if (target == null) {
                 return false;
             }
