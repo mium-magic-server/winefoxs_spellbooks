@@ -89,6 +89,8 @@ public class Config {
 
     private static ModConfigSpec.BooleanValue CREEPER_AVOID_SUMMONED_MAID;
 
+    private static ModConfigSpec.BooleanValue TLM_SPELL_MANA;
+
     private final static String SPELL_ID_PLACEHOLDER = "irons_spellbooks:fireball";
 
     /**
@@ -249,6 +251,17 @@ public class Config {
                 "entirely. (Default: true)")
             .translation(translateKey("summoned_maid.creeper_avoid"))
             .define("creeperAvoidSummonedMaid", true);
+
+        builder.pop();
+
+        builder.translation(translateKey("tlm_spell")).push("tlm_spell");
+
+        TLM_SPELL_MANA = builder.comment(
+                "Only takes effect when Touhou Little Maid: Spell is installed. When true, maids casting Iron's spells",
+                "spend and regenerate mana. When false, mana is neither spent nor required. In both cases cooldowns",
+                "follow Touhou Little Maid: Spell, including its cooldown multiplier and baubles. (Default: true)")
+            .translation(translateKey("tlm_spell.mana"))
+            .define("tlmSpellMana", true);
 
         builder.pop();
     }
@@ -423,6 +436,13 @@ public class Config {
      */
     public static boolean isCreeperAvoidSummonedMaid() {
         return CREEPER_AVOID_SUMMONED_MAID.getAsBoolean();
+    }
+
+    /**
+     * 装了万法皆通时，女仆施放铁魔法是否消耗法力。配置未加载时按默认值（开）
+     */
+    public static boolean isTlmSpellMana() {
+        return !SERVER_SPEC.isLoaded() || TLM_SPELL_MANA.getAsBoolean();
     }
 
     public static Map<String, String> getExtraSpellCausedEffects() {

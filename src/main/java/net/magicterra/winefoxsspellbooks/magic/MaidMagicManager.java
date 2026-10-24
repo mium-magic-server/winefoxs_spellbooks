@@ -18,6 +18,7 @@ import io.redspace.ironsspellbooks.config.ServerConfigs;
 import io.redspace.ironsspellbooks.network.SyncManaPacket;
 import java.util.Objects;
 import net.magicterra.winefoxsspellbooks.Config;
+import net.magicterra.winefoxsspellbooks.compat.tlmspell.TlmSpellCompat;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
@@ -155,12 +156,31 @@ public class MaidMagicManager {
     public static void addCooldown(LivingEntity entity, AbstractSpell spell, CastSource castSource) {
         if (castSource == CastSource.SCROLL)
             return;
+        if (TlmSpellCompat.usesTlmSpellCooldown(entity)) {
+            // 装了万法皆通：玩家女仆的冷却记在其女仆数据里，受其冷却倍率与饰品（时痕之戒、梦云水晶、春花-返）影响
+            TlmSpellCompat.addTlmSpellCooldown((EntityMaid) entity, spell);
+            return;
+        }
         if (!(entity instanceof IMagicEntity magicEntity)) {
             return;
         }
         int effectiveCooldown = getEffectiveSpellCooldown(spell, entity, castSource);
         MagicData magicData = magicEntity.getMagicData();
         magicData.getPlayerCooldowns().addCooldown(spell, effectiveCooldown);
+    }
+
+    /**
+     * 法术是否在冷却中。装了万法皆通时玩家女仆查万法皆通的冷却，否则查 Iron's 的冷却表。选术与施法前的冷却判断都经由这里
+     *
+     * @param entity 施法者，须为 {@link IMagicEntity}
+     * @param spell  法术
+     * @return 是否冷却中
+     */
+    public static boolean isOnCooldown(LivingEntity entity, AbstractSpell spell) {
+        if (TlmSpellCompat.usesTlmSpellCooldown(entity)) {
+            return TlmSpellCompat.isOnTlmSpellCooldown((EntityMaid) entity, spell);
+        }
+        return entity instanceof IMagicEntity magicEntity && magicEntity.getMagicData().getPlayerCooldowns().isOnCooldown(spell);
     }
 
     public static void clearCooldowns(LivingEntity entity) {
@@ -229,7 +249,7 @@ public class MaidMagicManager {
      * @return 法术是否就绪（不考虑魔力）
      */
     public static boolean isSpellReady(Mob mob, SpellData spellData) {
-        if (!(mob instanceof IMagicEntity spellCastingMob)) {
+        if (!(mob instanceof IMagicEntity)) {
             return false;
         }
         if (!(mob instanceof MaidMagicEntity)) {
@@ -242,7 +262,7 @@ public class MaidMagicManager {
             // 而召唤术二段咏唱会收回召唤物
             return false;
         }
-        return !spellCastingMob.getMagicData().getPlayerCooldowns().isOnCooldown(spellData.getSpell());
+        return !isOnCooldown(mob, spellData.getSpell());
     }
 
     public static boolean isSpellUsable(Mob mob, SpellData spellData) {
@@ -311,9 +331,14 @@ public class MaidMagicManager {
             || hasRecast(mob, spellData) && !MaidSpellCatalog.maidMayRepeatCast(spellData.getSpell())) {
             return 0;
         }
-        var cooldown = magicEntity.getMagicData().getPlayerCooldowns().getSpellCooldowns()
-            .get(spellData.getSpell().getSpellId());
-        int ticks = cooldown != null ? cooldown.getCooldownRemaining() : 0;
+        int ticks;
+        if (TlmSpellCompat.usesTlmSpellCooldown(mob)) {
+            ticks = TlmSpellCompat.getTlmSpellCooldownRemaining((EntityMaid) mob, spellData.getSpell());
+        } else {
+            var cooldown = magicEntity.getMagicData().getPlayerCooldowns().getSpellCooldowns()
+                .get(spellData.getSpell().getSpellId());
+            ticks = cooldown != null ? cooldown.getCooldownRemaining() : 0;
+        }
         return ticks > 0 && ticks <= MANA_REGEN_TICKS * 2 ? ticks : 0;
     }
 

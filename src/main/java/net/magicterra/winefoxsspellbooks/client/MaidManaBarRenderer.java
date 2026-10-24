@@ -12,9 +12,9 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import net.magicterra.winefoxsspellbooks.ClientConfig;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.compat.tlmspell.TlmSpellCompat;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
-import net.magicterra.winefoxsspellbooks.task.MaidCastingTask;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -159,8 +159,8 @@ public final class MaidManaBarRenderer {
         if (!maid.isOwnedBy(player)) {
             return false;
         }
-        // 法术支援任务继承自 MaidCastingTask，一并涵盖
-        return maid.getTask() instanceof MaidCastingTask;
+        // 法术支援任务继承自 MaidCastingTask，一并涵盖；装了万法皆通时还包括其战斗任务
+        return TlmSpellCompat.usesMana(maid);
     }
 
     private static void renderBar(PoseStack poseStack, VertexConsumer consumer, EntityMaid maid, Vec3 camera,

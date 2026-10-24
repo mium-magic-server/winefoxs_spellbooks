@@ -18,6 +18,7 @@ import io.redspace.ironsspellbooks.spells.fire.BurningDashSpell;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
+import net.magicterra.winefoxsspellbooks.compat.tlmspell.TlmSpellCompat;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidSpellTargets;
@@ -106,6 +107,18 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
      */
     private boolean spellCombatFlag = false;
 
+    /**
+     * 装了万法皆通时，铁魔法的优先期截止 tick：本模组刚放完一个法术、下一轮多半还会出手，期间其他模组的法术让出施法
+     */
+    private long tlmSpellPriorityUntil;
+
+    /**
+     * 最近一次起手时前置检查未通过的法术及其游戏刻，供选术方避开反复起手失败的法术
+     */
+    private AbstractSpell precastFailedSpell;
+
+    private long precastFailedTime = Long.MIN_VALUE;
+
     public MagicMaidAdapter(LivingEntity delegatedEntity) {
         this.delegatedEntity = delegatedEntity;
         this.maidMagicData = new MaidMagicData(delegatedEntity);
@@ -115,6 +128,25 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
     @Override
     public MagicData getMagicData() {
         return maidMagicData;
+    }
+
+    public long getTlmSpellPriorityUntil() {
+        return tlmSpellPriorityUntil;
+    }
+
+    public void setTlmSpellPriorityUntil(long gameTime) {
+        this.tlmSpellPriorityUntil = gameTime;
+    }
+
+    /**
+     * 该法术自 {@code since} 起是否有过一次起手失败（可用性、蓝量或法术自身的前置检查未通过）
+     *
+     * @param spell 法术
+     * @param since 起始游戏刻（含）
+     * @return 是否失败过
+     */
+    public boolean precastFailedSince(AbstractSpell spell, long since) {
+        return spell == precastFailedSpell && precastFailedTime >= since;
     }
 
     @Override
@@ -194,6 +226,8 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
                 WinefoxsSpellbooks.LOGGER.debug("MagicMaidAdapter.precastfailed: spellType:{} spellLevel:{}, isClient:{}", spell.getSpellId(), spellLevel, delegatedEntity.level().isClientSide);
             }
 
+            precastFailedSpell = spell;
+            precastFailedTime = delegatedEntity.level().getGameTime();
             castingSpell = SpellData.EMPTY;
             return;
         }
@@ -583,6 +617,10 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
                 }
             }
             spell.onCast(delegatedEntity.level(), spellLevel, delegatedEntity, CastSource.MOB, maidMagicData);
+            if (!delegatedEntity.level().isClientSide && delegatedEntity instanceof EntityMaid maid) {
+                // 万法皆通的「春花-返」等饰品按每次 onCast 计层，与其 provider 的调用时机一致（持续施法每次结算都算）
+                TlmSpellCompat.onSpellCast(maid, spell, getTargetFromBrain());
+            }
         } catch (Throwable t) {
             if (observedCast != null && firstCast) {
                 // 法术没真正打出去，不该记成一次零伤害的样本
@@ -658,7 +696,7 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         var manaCost = getManaCost(spell, spellLevel);
 
         boolean hasEnoughMana = maidMana - manaCost >= 0;
-        boolean isSpellOnCooldown = maidMagicData.getPlayerCooldowns().isOnCooldown(spell);
+        boolean isSpellOnCooldown = MaidMagicManager.isOnCooldown(delegatedEntity, spell);
         boolean hasRecastForSpell = maidMagicData.getPlayerRecasts().hasRecastForSpell(spell.getSpellId());
         if (isSpellOnCooldown) {
             // 冷却中
@@ -677,7 +715,13 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         return true;
     }
 
+    /**
+     * 万法皆通下关闭了法力时恒为 0：施法既不扣魔，也不以魔力为门槛（选术、规划、持续引导的余额检查都读这里）
+     */
     private int getManaCost(AbstractSpell spell, int level) {
+        if (TlmSpellCompat.isManaFree(delegatedEntity)) {
+            return 0;
+        }
         return spell.getManaCost(level);
     }
 

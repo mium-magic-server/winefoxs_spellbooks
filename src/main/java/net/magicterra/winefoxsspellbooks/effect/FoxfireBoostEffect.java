@@ -1,10 +1,12 @@
 package net.magicterra.winefoxsspellbooks.effect;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
 import io.redspace.ironsspellbooks.capabilities.magic.CooldownInstance;
 import io.redspace.ironsspellbooks.capabilities.magic.PlayerCooldowns;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.compat.tlmspell.TlmSpellCompat;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -47,6 +49,11 @@ public class FoxfireBoostEffect extends MobEffect {
     }
 
     private void shrinkExistingCooldowns(LivingEntity entity) {
+        if (TlmSpellCompat.usesTlmSpellCooldown(entity)) {
+            // 装了万法皆通时女仆的冷却记在其女仆数据里，Iron's 的冷却表是空的
+            TlmSpellCompat.refundCooldowns((EntityMaid) entity, 0.9);
+            return;
+        }
         PlayerCooldowns cooldowns = null;
         if (entity instanceof MaidMagicEntity maidMagicEntity) {
             cooldowns = maidMagicEntity.winefoxsSpellbooks$getMagicMaidAdapter().getMagicData().getPlayerCooldowns();

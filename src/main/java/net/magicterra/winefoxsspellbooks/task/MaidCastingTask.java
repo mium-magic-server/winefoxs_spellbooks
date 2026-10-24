@@ -176,9 +176,14 @@ public class MaidCastingTask implements IRangedAttackTask {
      * 本任务用得上的行为类别。既喂给 {@link SpellChooseTask} 选术，也用来判定女仆「有没有法术」—— 两处必须同口径，否则会出现「判定说有、选术选不出」的空转，或者反过来索敌永不触发。
      */
     protected Set<MaidSpellAction> allowedActions() {
-        return Set.of(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE, MaidSpellAction.MOVEMENT,
-            MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE);
+        return COMBAT_ACTIONS;
     }
+
+    /**
+     * 战斗用的行为类别；装了万法皆通时，塞进其战斗任务的选术行为也用这一套
+     */
+    public static final Set<MaidSpellAction> COMBAT_ACTIONS = Set.of(MaidSpellAction.ATTACK, MaidSpellAction.DEFENSE,
+        MaidSpellAction.MOVEMENT, MaidSpellAction.SUPPORT, MaidSpellAction.NEGATIVE);
 
     protected boolean hasSpells(EntityMaid maid) {
         MaidMagicEntity magicEntity = (MaidMagicEntity) maid;

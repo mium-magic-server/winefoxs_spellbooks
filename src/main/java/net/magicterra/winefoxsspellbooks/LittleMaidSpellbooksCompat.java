@@ -3,7 +3,6 @@ package net.magicterra.winefoxsspellbooks;
 import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.LittleMaidExtension;
 import com.github.tartaricacid.touhoulittlemaid.api.event.AddJadeInfoEvent;
-import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ExtraMaidBrainManager;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
@@ -16,6 +15,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.magicterra.winefoxsspellbooks.bauble.SpellBookBauble;
+import net.magicterra.winefoxsspellbooks.compat.tlmspell.TlmSpellCompat;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.brain.MaidMagicBrain;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
@@ -54,6 +54,10 @@ public class LittleMaidSpellbooksCompat implements ILittleMaid {
 
     @Override
     public void bindMaidBauble(BaubleManager manager) {
+        if (TlmSpellCompat.isLoaded()) {
+            // 装了万法皆通时法术书一律由其识别（手持、背包、Curios），不再占用 TLM 饰品栏
+            return;
+        }
         // Curios 模式下也绑定：TLM 饰品栏与 Curios 法术书栏同时可用，「只能装一本」由 SpellBookBauble 与 MaidEventHandler 双向拦截
         SpellBookBauble bauble = new SpellBookBauble();
         for (Item book : REGISTERED_SPELL_BOOKS) {
@@ -63,7 +67,10 @@ public class LittleMaidSpellbooksCompat implements ILittleMaid {
 
     @Override
     public void addMaidTask(TaskManager manager) {
-        manager.add(new MaidCastingTask());
+        if (!TlmSpellCompat.isLoaded()) {
+            // 装了万法皆通时法术攻击改用其近战 / 远程战斗任务，本模组的选术与施法经 mixin 塞入其中
+            manager.add(new MaidCastingTask());
+        }
         manager.add(new MaidMagicSupportTask());
         if (WinefoxsSpellbooks.DEBUG) {
             manager.add(new MaidDrinkPotionTask());
@@ -79,8 +86,7 @@ public class LittleMaidSpellbooksCompat implements ILittleMaid {
     public void addJadeInfoEvent(AddJadeInfoEvent event) {
         ITooltip iTooltip = event.getTooltip();
         EntityMaid maid = event.getMaid();
-        IMaidTask task = maid.getTask();
-        if (!(task instanceof MaidCastingTask || task instanceof MaidMagicSupportTask)) {
+        if (!TlmSpellCompat.usesMana(maid)) {
             return;
         }
         MaidMagicEntity magicEntity = (MaidMagicEntity) maid;

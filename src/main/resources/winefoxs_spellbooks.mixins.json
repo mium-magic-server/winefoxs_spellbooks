@@ -17,7 +17,8 @@
     "RecastInstanceAccessor",
     "SummonManagerAccessor",
     "TargetGoalMixin",
-    "ali.ConfigUtilsMixin"
+    "ali.ConfigUtilsMixin",
+    "touhou_little_maid_spell.SpellBookManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

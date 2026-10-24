@@ -17,6 +17,7 @@ import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.event.MaidSpellBookEvent;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.bauble.SpellBookBauble;
+import net.magicterra.winefoxsspellbooks.compat.tlmspell.TlmSpellCompat;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
@@ -85,7 +86,7 @@ public class MaidEventHandler {
      */
     @SubscribeEvent
     public static void onCurioCanEquip(CurioCanEquipEvent event) {
-        if (event.getEntity() instanceof EntityMaid maid && SpellBookBauble.isSpellBook(event.getStack())
+        if (!TlmSpellCompat.isLoaded() && event.getEntity() instanceof EntityMaid maid && SpellBookBauble.isSpellBook(event.getStack())
             && SpellBookBauble.containsSpellBook(maid.getMaidBauble(), -1)) {
             event.setEquipResult(TriState.FALSE);
         }
@@ -148,9 +149,17 @@ public class MaidEventHandler {
         for (MaidSpellAction action : MaidSpellAction.ALL) {
             sorted.put(action, new ArrayList<>());
         }
+        IItemHandler invWrapper = MaidMagicManager.getSpellGearView(maid);
+        if (TlmSpellCompat.isLoaded()) {
+            // 装了万法皆通时法术来源以其识别为准（手持、背包、Curios，可多本叠加），亲和加成仍按施法装备视图计算
+            for (SpellSlot spellSlot : TlmSpellCompat.collectSpells(maid)) {
+                addSpell(sorted, maid, invWrapper, spellSlot);
+            }
+            commitSpellData(maid, sorted);
+            return;
+        }
         // 检查主手、盔甲栏、饰品栏法术
         boolean spellBookLoaded = false;
-        IItemHandler invWrapper = MaidMagicManager.getSpellGearView(maid);
         for (int i = 0; i < invWrapper.getSlots(); i++) {
             ItemStack stack = invWrapper.getStackInSlot(i);
             Item item = stack.getItem();
@@ -166,17 +175,27 @@ public class MaidEventHandler {
                 ISpellContainer spellContainer = ISpellContainer.get(stack);
                 List<SpellSlot> activeSpells = spellContainer.getActiveSpells();
                 for (SpellSlot spellSlot : activeSpells) {
-                    AbstractSpell spell = spellSlot.getSpell();
-                    int level = MaidMagicManager.getLevelFor(maid, invWrapper, spell, spellSlot.getLevel());
-                    SpellData spellData = new SpellData(spell, level);
-                    // 行为类别互斥，首个命中即归属；不属于任何类别的法术女仆用不了，丢弃
-                    MaidSpellAction action = MaidSpellCatalog.actionOf(spell);
-                    if (action != null) {
-                        sorted.get(action).add(spellData);
-                    }
+                    addSpell(sorted, maid, invWrapper, spellSlot);
                 }
             }
         }
+        commitSpellData(maid, sorted);
+    }
+
+    /**
+     * 计入亲和加成后按行为类别归桶。行为类别互斥，首个命中即归属；不属于任何类别的法术女仆用不了，丢弃
+     */
+    private static void addSpell(Map<MaidSpellAction, List<SpellData>> sorted, EntityMaid maid, IItemHandler gearView,
+                                 SpellSlot spellSlot) {
+        AbstractSpell spell = spellSlot.getSpell();
+        MaidSpellAction action = MaidSpellCatalog.actionOf(spell);
+        if (action != null) {
+            int level = MaidMagicManager.getLevelFor(maid, gearView, spell, spellSlot.getLevel());
+            sorted.get(action).add(new SpellData(spell, level));
+        }
+    }
+
+    private static void commitSpellData(EntityMaid maid, Map<MaidSpellAction, List<SpellData>> sorted) {
         MaidMagicEntity magicEntity = (MaidMagicEntity) maid;
         MaidSpellDataHolder spellDataHolder = magicEntity.winefoxsSpellbooks$getSpellDataHolder();
         sorted.forEach(spellDataHolder::update);
