@@ -40,6 +40,10 @@ import net.minecraft.world.phys.AABB;
  */
 public class MaidMagicSupportTask extends MaidCastingTask {
     private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "magic_support_task");
+    /**
+     * 主人攻击目标的有效期，与原版 lastHurtByMob 的过期时长一致
+     */
+    private static final int OWNER_TARGET_MEMORY_TICKS = 100;
 
     @Override
     public ResourceLocation getUid() {
@@ -76,6 +80,13 @@ public class MaidMagicSupportTask extends MaidCastingTask {
         if (lastAttacker != null && maid.canAttack(lastAttacker) && maid.canSee(lastAttacker)
             && canEngage.test(lastAttacker)) {
             return Optional.of(lastAttacker);
+        }
+        // 检查主人正在攻击的对象，与 TLM DefaultMonsterType 同样读 getLastHurtMob
+        // 原版 lastHurtMob 只在目标死亡时清空，不像 lastHurtByMob 有 100 tick 过期，这里补上同样的时效，免得追打主人很久以前碰过的目标
+        LivingEntity ownerTarget = owner != null ? owner.getLastHurtMob() : null;
+        if (ownerTarget != null && owner.tickCount - owner.getLastHurtMobTimestamp() <= OWNER_TARGET_MEMORY_TICKS
+            && maid.canAttack(ownerTarget) && maid.canSee(ownerTarget) && canEngage.test(ownerTarget)) {
+            return Optional.of(ownerTarget);
         }
         // 检查附近女仆正在攻击的对象
         AABB aabb = maid.searchDimension();
