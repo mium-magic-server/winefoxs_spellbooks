@@ -41,6 +41,9 @@ public final class SomakeSpellsData {
         // 增益队友：CUSTODIA_CAELI 的旗印给范围内友军上生命 / 护甲加成
         ctx.effect().add(ModSpells.CUSTODIA_CAELI.get().getSpellResource(),
             ModMobEffects.CUSTODIA_CAELI_BLESSING.getId());
+        // 增益队友：GUARDIAN_CONNECTION 建立守护连接，效果只挂在被保护的一方（施法目标）身上
+        ctx.effect().add(ModSpells.GUARDIAN_CONNECTION.get().getSpellResource(),
+            ModMobEffects.GUARDIAN_CONNECTION.getId());
 
         // 攻击 / 负面
         ctx.effect().add(ModSpells.LIGHTNING_CUT.get().getSpellResource(), ModMobEffects.ELECTROCUTED.getId());

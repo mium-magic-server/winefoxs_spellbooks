@@ -541,6 +541,10 @@
       "spell": "somakespells:custodia_caeli"
     },
     {
+      "effect": "somakespells:guardian_connection",
+      "spell": "somakespells:guardian_connection"
+    },
+    {
       "effect": "somakespells:electrocuted",
       "spell": "somakespells:lightning_cut"
     },
