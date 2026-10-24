@@ -18,7 +18,12 @@
     "SummonManagerAccessor",
     "TargetGoalMixin",
     "ali.ConfigUtilsMixin",
+    "touhou_little_maid_spell.EnderPocketMaidInfoMixin",
+    "touhou_little_maid_spell.EnderPocketServiceMixin",
     "touhou_little_maid_spell.SpellBookManagerMixin"
+  ],
+  "client": [
+    "touhou_little_maid_spell.EnderPocketHudOverlayMixin"
   ],
   "injectors": {
     "defaultRequire": 1
