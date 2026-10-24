@@ -3,6 +3,7 @@ package net.magicterra.winefoxsspellbooks.entity.ai.behavior.common;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
+import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.spells.holy.CleanseSpell;
 import io.redspace.ironsspellbooks.util.ModTags;
@@ -577,31 +578,35 @@ public class SpellChooseTask extends Behavior<Mob> {
         return false;
     }
 
+    /**
+     * 队友对增益类法术的需求度：取所有可用增益法术里最高的一项，0 表示该队友眼下不需要增益。
+     * <p>
+     * 只有能判断出「确实需要」时才计分。召唤女仆的第一阶段只要这里大于 0 就跳过战斗类，
+     * 原先给未知效果的法术兜底 10 分，结果附近站着任何一个满血队友都会让她放下攻击目标去空放净化。
+     * 未在法术数据中配置施加效果、又没有专门判定的法术无从判断需求，不计分。
+     */
     private int getPositiveWeightForSpecifiedEntity(LivingEntity supportTarget) {
+        int weight = 0;
         for (SpellData spellData : usable(MaidSpellAction.POSITIVE)) {
-            Holder<MobEffect> causedEffect = MaidSpellCatalog.getSpellCausedEffect(spellData.getSpell());
-            if (causedEffect != null && !supportTarget.hasEffect(causedEffect)) {
-                // 队友还没上 buff
-                return 500;
-            }
-            if (spellData.getSpell() instanceof CleanseSpell) {
+            AbstractSpell spell = spellData.getSpell();
+            if (spell instanceof CleanseSpell) {
                 // 队友有负面 buff，我们有净化
                 if (hasCleansableEffect(supportTarget)) {
-                    return 1000;
+                    weight = Math.max(weight, 1000);
                 }
-            } else if (spellData.getSpell() instanceof ManaTransferSpell spell) {
-                if (spell.isTargetNeedsSupport(supportTarget)) {
-                    return 1000;
-                } else {
-                    return 0;
+            } else if (spell instanceof ManaTransferSpell manaTransferSpell) {
+                if (manaTransferSpell.isTargetNeedsSupport(supportTarget)) {
+                    weight = Math.max(weight, 1000);
                 }
-            }
-            if (causedEffect == null) {
-                // 未知效果的法术，暂且计 10 分
-                return 10;
+            } else {
+                Holder<MobEffect> causedEffect = MaidSpellCatalog.getSpellCausedEffect(spell);
+                if (causedEffect != null && !supportTarget.hasEffect(causedEffect)) {
+                    // 队友还没上 buff
+                    weight = Math.max(weight, 500);
+                }
             }
         }
-        return 0;
+        return weight;
     }
 
     protected int getNegativeWeight(LivingEntity target, double distanceSquared, boolean hasLineOfSight) {

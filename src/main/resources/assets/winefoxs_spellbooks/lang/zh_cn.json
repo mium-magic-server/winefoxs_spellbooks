@@ -251,7 +251,7 @@
   "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.task.pages.2.text": "女仆的法术表被分为$(thing)七种行为类别$()：攻击、防御、移动、自我治疗、负面效果、增益队友、治疗队友。法术攻击使用前五种；法术支援使用防御、自我治疗、负面效果、增益队友与治疗队友。$(br)另有两个$(thing)标记$()不参与分类：召唤与多次咏唱。",
   "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.task.pages.3.text": "两种任务的解锁条件相同：注魔武器或护甲，或饰品栏中铭刻了法术的法术书。",
   "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.task.pages.4.text": "她每隔一小段时间做一次决策（上限为$(thing)最大连招延迟$()，默认 10 tick）：先剔除当前放不出的法术——魔力不足或仍在冷却，若有未打完的连续施法则优先打完；随后为当前任务允许的类别计算权重，按权重随机选中一类，再在类内选出具体法术。",
-  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.task.pages.5.text": "濒死的队友优先于一切。身边有队友时，支援类别会主导这一轮，战斗类别则退居其次；她自己血量越低，防御与移动的权重越高；对目标没有视线时她极少选攻击法术，转而走位。队友缺少某个增益，或身上带着她能净化的负面效果时，对应法术的权重会大幅上升。",
+  "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.task.pages.5.text": "濒死的队友优先于一切。身边有队友需要支援时，支援类别优先，战斗类别退居其次；队友无需支援时照常战斗；她自己血量越低，防御与移动的权重越高；对目标没有视线时她极少选攻击法术，转而走位。队友缺少某个增益，或身上带着她能净化的负面效果时，对应法术的权重会大幅上升。",
   "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.task.pages.6.text": "防御与负面效果若上一轮刚被选过，本轮权重会下降，避免她反复刷同一类别。$(br)战斗中目标进入她半个射程之内时她会后撤，处在射程内且有视线时原地绕圈，咏唱期间走得更慢；一旦让她坐下，就完全不再走位。",
   "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.task.pages.7.text": "搜索半径取自$(thing)最大法术攻击搜索范围$()（默认 64 格），带有残月烙印的敌人会被优先选中；她需要靠近到$(thing)开始施法距离$()（默认 15 格）才会起手。",
   "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.animation.name": "咏唱动画",

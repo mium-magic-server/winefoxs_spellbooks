@@ -105,7 +105,7 @@ She makes a decision every short interval (upper bound set by *Max combo delay t
 Rules of thumb for the weights:
 
 - The lower an ally's health, the higher the Ally Heal weight; **a dying ally outranks everything else**;
-- With allies nearby, support categories dominate the round and combat categories sit it out;
+- When a nearby ally **needs help** (missing health, lacking a buff, carrying a cleansable debuff or low on mana) and she has a usable spell for it, support takes priority and combat categories sit the round out; when no ally needs help she fights as usual. Only summoned maids carry both kinds; each of a tamed maid's two tasks uses only one of them;
 - The lower her own health, the higher the Defense and Movement weights;
 - With no line of sight to the target she rarely picks attack spells, and repositions instead;
 - If an ally lacks a buff, or carries a debuff that can be cleansed, the matching spell's weight rises sharply;
