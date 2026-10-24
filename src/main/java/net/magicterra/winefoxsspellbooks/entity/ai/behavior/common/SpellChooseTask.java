@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -22,6 +24,7 @@ import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.api.event.MaidSpellActionChooseEvent;
 import net.magicterra.winefoxsspellbooks.api.event.MaidSpellChooseEvent;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
+import net.magicterra.winefoxsspellbooks.compat.tlmspell.TlmSpellCompat;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
@@ -45,6 +48,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.common.NeoForge;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * 选择法术任务
@@ -74,6 +78,42 @@ public class SpellChooseTask extends Behavior<Mob> {
     protected final List<SpellData> pendingAttackSpells = new ArrayList<>();
 
     protected final List<SpellData> coolingAttackSpells = new ArrayList<>();
+
+    /**
+     * 本轮因万法皆通法术白名单而改作「对主人施放的增益」的法术（原属其他类别）。这些法术只对主人施放
+     */
+    protected final Set<AbstractSpell> ownerCastSpells = new HashSet<>();
+
+    /**
+     * 对主人起手失败后暂停改作增益的时长（tick）
+     */
+    private static final long OWNER_CAST_BACKOFF_TICKS = 200;
+
+    /**
+     * 白名单法术对主人起手失败后，暂停改作增益的截止游戏刻。期间按原类别对待。
+     * <p>
+     * 白名单只放开「可以以玩家为目标」，法术自己的目标过滤仍会排除友方（例如缓慢术不对盟友施放），这类法术对主人永远起不了手。
+     * 不暂停的话，主人缺这个效果时增益权重一直最高，女仆会每轮都选它、每轮都失败，挤掉其余法术。
+     */
+    private final Map<AbstractSpell, Long> ownerCastBackoffUntil = new HashMap<>();
+
+    /**
+     * 本轮选中的、对主人施放的白名单法术及选中时的游戏刻，回合结束时据此判断是否起手失败
+     */
+    @Nullable
+    private AbstractSpell ownerCastChosen;
+
+    private long ownerCastChosenTime;
+
+    /**
+     * 攻击、负面法术的最小射程，短于它的不选。万法皆通远程法术任务用其距离带下限，免得选中够不着又不会靠近的法术；默认不限
+     */
+    private double minAttackRange;
+
+    /**
+     * 本轮是否真的选中了法术，回合结束时据此给铁魔法续上施法优先期
+     */
+    private boolean chosenThisRound;
 
     /**
      * 攻击法术的攒蓝/出手规划器，每个女仆一份，随本任务实例的生存期存在。
@@ -131,6 +171,14 @@ public class SpellChooseTask extends Behavior<Mob> {
         this.maxDelayTicks = maxDelayTicks;
     }
 
+    /**
+     * 设置攻击、负面法术的最小射程，见 {@link #minAttackRange}
+     */
+    public SpellChooseTask withMinAttackRange(double minAttackRange) {
+        this.minAttackRange = minAttackRange;
+        return this;
+    }
+
     @Override
     protected boolean checkExtraStartConditions(ServerLevel level, Mob owner) {
         if (this.nextSpellTickCount > 0) {
@@ -149,6 +197,10 @@ public class SpellChooseTask extends Behavior<Mob> {
             // 正在喝药
             return false;
         }
+        if (owner instanceof EntityMaid maid && TlmSpellCompat.isOtherProviderCasting(maid)) {
+            // 万法皆通里其他模组的法术正在施放，同一时刻只施一个
+            return false;
+        }
 
         // 初始化所有可用法术 （先清空）
         MaidMagicEntity maidMagicEntity = (MaidMagicEntity) owner;
@@ -158,13 +210,30 @@ public class SpellChooseTask extends Behavior<Mob> {
             owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null), level.getGameTime());
         pendingAttackSpells.clear();
         coolingAttackSpells.clear();
-        for (MaidSpellAction action : MaidSpellAction.ALL) {
-            List<SpellData> bucket = usableSpells.get(action);
-            bucket.clear();
-            if (!allowedActions.contains(action)) {
-                continue;
-            }
-            for (SpellData spellData : spellDataHolder.get(action)) {
+        ownerCastSpells.clear();
+        usableSpells.values().forEach(List::clear);
+        // 万法皆通法术白名单额外放行的法术：不论原属哪类，本轮都改作对主人施放的增益
+        Set<String> ownerCastable = owner instanceof EntityMaid maid ? TlmSpellCompat.getOwnerCastableSpellIds(maid) : Set.of();
+        long gameTime = level.getGameTime();
+        ownerCastBackoffUntil.values().removeIf(until -> until <= gameTime);
+        for (MaidSpellAction storedAction : MaidSpellAction.ALL) {
+            for (SpellData spellData : spellDataHolder.get(storedAction)) {
+                MaidSpellAction action = storedAction;
+                boolean ownerCast = !ownerCastable.isEmpty() && storedAction != MaidSpellAction.POSITIVE
+                    && storedAction != MaidSpellAction.SUPPORT_OTHER
+                    && ownerCastable.contains(spellData.getSpell().getSpellId())
+                    && !ownerCastBackoffUntil.containsKey(spellData.getSpell());
+                if (ownerCast) {
+                    action = MaidSpellAction.POSITIVE;
+                }
+                if (!allowedActions.contains(action)) {
+                    continue;
+                }
+                if (minAttackRange > 0 && (action == MaidSpellAction.ATTACK || action == MaidSpellAction.NEGATIVE)
+                    && MaidSpellCatalog.getSpellRange(spellData.getSpell()) < minAttackRange) {
+                    continue;
+                }
+                List<SpellData> bucket = usableSpells.get(action);
                 if (!MaidMagicManager.isSpellReady(owner, spellData)) {
                     if (action == MaidSpellAction.ATTACK && MaidMagicManager.getSoonReadyTicks(owner, spellData) > 0) {
                         coolingAttackSpells.add(spellData);
@@ -174,6 +243,9 @@ public class SpellChooseTask extends Behavior<Mob> {
                 if (MaidMagicManager.hasManaFor(owner, spellData)) {
                     if (!SpellCastPlanner.wouldSpendReservedMana(owner, spellData, action, reservation)) {
                         bucket.add(spellData);
+                        if (ownerCast) {
+                            ownerCastSpells.add(spellData.getSpell());
+                        }
                     }
                 } else if (action == MaidSpellAction.ATTACK) {
                     // 冷却好了但魔力还不够的攻击法术，喂给规划器判断值不值得等
@@ -248,9 +320,20 @@ public class SpellChooseTask extends Behavior<Mob> {
 
         // 法术名气泡改在真正起手时由 SpellCastingTask 显示，选中后可能还要走位、等冷却
         entity.getBrain().setMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get(), spellData);
+        chosenThisRound = true;
 
         if (nextSpellAction == MaidSpellAction.SUPPORT_OTHER || nextSpellAction == MaidSpellAction.POSITIVE) {
+            boolean ownerOnly = ownerCastSpells.contains(spellData.getSpell());
+            if (ownerOnly) {
+                ownerCastChosen = spellData.getSpell();
+                ownerCastChosenTime = gameTime;
+            }
+            LivingEntity owner = getOwner();
             for (LivingEntity nearbyAlliedEntity : nearbyAlliedEntities) {
+                if (ownerOnly && nearbyAlliedEntity != owner) {
+                    // 白名单放行的法术只对主人施放
+                    continue;
+                }
                 int weight = nextSpellAction == MaidSpellAction.SUPPORT_OTHER ?
                              getSupportOtherWeightForSpecifiedEntity(nearbyAlliedEntity) :
                              getPositiveWeightForSpecifiedEntity(nearbyAlliedEntity);
@@ -278,12 +361,24 @@ public class SpellChooseTask extends Behavior<Mob> {
 
     @Override
     protected void stop(ServerLevel level, Mob entity, long gameTime) {
+        if (chosenThisRound && entity instanceof MaidMagicEntity maidMagicEntity) {
+            // 刚放完一个铁魔法，下一轮多半还会出手：在最长选术间隔内让万法皆通的其他模组法术让出施法
+            maidMagicEntity.winefoxsSpellbooks$getMagicMaidAdapter().setTlmSpellPriorityUntil(gameTime + maxDelayTicks);
+        }
+        if (ownerCastChosen != null && entity instanceof MaidMagicEntity maidMagicEntity
+            && maidMagicEntity.winefoxsSpellbooks$getMagicMaidAdapter().precastFailedSince(ownerCastChosen, ownerCastChosenTime)) {
+            // 对主人起手失败：一段时间内按原类别对待，不再每轮选它
+            ownerCastBackoffUntil.put(ownerCastChosen, gameTime + OWNER_CAST_BACKOFF_TICKS);
+        }
+        ownerCastChosen = null;
+        chosenThisRound = false;
         // 清理记忆
         entity.getBrain().eraseMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get());
         entity.getBrain().eraseMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL_ACTION.get());
         entity.getBrain().eraseMemory(MaidCastingMemoryModuleTypes.SUPPORT_TARGET.get());
         // 清理可用法术避免泄露
         usableSpells.values().forEach(List::clear);
+        ownerCastSpells.clear();
         pendingAttackSpells.clear();
         coolingAttackSpells.clear();
         // 清理队友列表
@@ -589,7 +684,9 @@ public class SpellChooseTask extends Behavior<Mob> {
         int weight = 0;
         for (SpellData spellData : usable(MaidSpellAction.POSITIVE)) {
             AbstractSpell spell = spellData.getSpell();
-            if (spell instanceof CleanseSpell) {
+            if (ownerCastSpells.contains(spell)) {
+                weight = Math.max(weight, getOwnerCastWeight(spell, supportTarget));
+            } else if (spell instanceof CleanseSpell) {
                 // 队友有负面 buff，我们有净化
                 if (hasCleansableEffect(supportTarget)) {
                     weight = Math.max(weight, 1000);
@@ -607,6 +704,28 @@ public class SpellChooseTask extends Behavior<Mob> {
             }
         }
         return weight;
+    }
+
+    /**
+     * 白名单放行法术对主人的需求度：有施加效果数据时按主人身上有无该效果判断；没有数据时无从判断需求，
+     * 只在战斗中（女仆有攻击目标或主人刚受过伤）给一个低于其余增益的固定分，靠冷却控制频率
+     */
+    private int getOwnerCastWeight(AbstractSpell spell, LivingEntity supportTarget) {
+        if (supportTarget != getOwner()) {
+            return 0;
+        }
+        Holder<MobEffect> causedEffect = MaidSpellCatalog.getSpellCausedEffect(spell);
+        if (causedEffect != null) {
+            return supportTarget.hasEffect(causedEffect) ? 0 : 500;
+        }
+        boolean inCombat = mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
+            || supportTarget.getLastHurtByMob() != null;
+        return inCombat ? 200 : 0;
+    }
+
+    @Nullable
+    private LivingEntity getOwner() {
+        return mob instanceof TamableAnimal tamableAnimal ? tamableAnimal.getOwner() : null;
     }
 
     protected int getNegativeWeight(LivingEntity target, double distanceSquared, boolean hasLineOfSight) {

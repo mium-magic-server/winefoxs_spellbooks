@@ -20,7 +20,8 @@
     "ali.ConfigUtilsMixin",
     "touhou_little_maid_spell.EnderPocketMaidInfoMixin",
     "touhou_little_maid_spell.EnderPocketServiceMixin",
-    "touhou_little_maid_spell.SpellBookManagerMixin"
+    "touhou_little_maid_spell.SpellBookManagerMixin",
+    "touhou_little_maid_spell.SpellCombatTaskMixin"
   ],
   "client": [
     "touhou_little_maid_spell.EnderPocketHudOverlayMixin"

@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +13,8 @@ import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
+import net.magicterra.winefoxsspellbooks.compat.tlmspell.TlmSpellCompat;
+import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.GatedBehavior;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.MaidLeash;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellAttackWalkToTarget;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellCastingTask;
@@ -56,6 +59,26 @@ public class MaidMagicSupportTask extends MaidCastingTask {
     }
 
     /**
+     * 装了万法皆通时法术书由其识别（副手、主手、背包），描述改用与其战斗任务一致的说法
+     */
+    @Override
+    public List<String> getDescription(EntityMaid maid) {
+        if (TlmSpellCompat.isLoaded()) {
+            return Lists.newArrayList("task.winefoxs_spellbooks.magic_support_task.tlm_spell.desc");
+        }
+        return super.getDescription(maid);
+    }
+
+    @Override
+    public List<Pair<String, Predicate<EntityMaid>>> getConditionDescription(EntityMaid maid) {
+        if (TlmSpellCompat.isLoaded()) {
+            // 条件键为 task.<ns>.<path>.condition.<名称>
+            return Collections.singletonList(Pair.of("tlm_spell.spell_book", this::hasSpells));
+        }
+        return super.getConditionDescription(maid);
+    }
+
+    /**
      * 支援任务能用的法术集与施法任务不同：多 POSITIVE / SUPPORT_OTHER，无 ATTACK / MOVEMENT。 沿用父类那套会让只带治疗与强化的女仆被判成「没法术」，索敌永不触发、任务整个空转。
      */
     @Override
@@ -72,8 +95,8 @@ public class MaidMagicSupportTask extends MaidCastingTask {
     }
 
     static Optional<? extends LivingEntity> findNearbyFriendsAttackTarget(EntityMaid maid) {
-        // 跟随模式下站在活动范围边缘也够不着的目标不锁定，口径见 MaidLeash
-        Predicate<LivingEntity> canEngage = MaidLeash.canEngage(maid);
+        // 跟随模式下站在活动范围边缘也够不着的目标不锁定，口径见 MaidLeash；装了万法皆通时其敌我判定为友好的也不打
+        Predicate<LivingEntity> canEngage = MaidLeash.canEngage(maid).and(target -> !TlmSpellCompat.isFriendly(maid, target));
         // 检查攻击主人的对象
         LivingEntity owner = maid.getOwner();
         LivingEntity lastAttacker = owner != null ? owner.getLastHurtByMob() : null;
@@ -130,7 +153,9 @@ public class MaidMagicSupportTask extends MaidCastingTask {
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
         BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasSpells, MaidMagicSupportTask::findNearbyFriendsAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasSpells(maid) || farAway(target, maid));
-        BehaviorControl<Mob> spellChooseTask = new SpellChooseTask(Config.getStartSpellRange(), Config.getMaxComboDelayTick(), maid, allowedActions());
+        // 坐下或骑乘时施法的条件与万法皆通一致：须佩戴法术射表（未安装时不限制）
+        BehaviorControl<EntityMaid> spellChooseTask = new GatedBehavior<>(new SpellChooseTask(Config.getStartSpellRange(),
+            Config.getMaxComboDelayTick(), maid, allowedActions()), TlmSpellCompat::canCastInRidePose);
         BehaviorControl<Mob> shootTargetTask = new SpellCastingTask(((IMagicEntity) maid));
 
         return Lists.newArrayList(

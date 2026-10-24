@@ -50,7 +50,16 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
 
     private int strafingTime = -1;
 
+    /**
+     * 对敌走位的距离带，见 {@link EngageBand}；对队友施放支援法术时不受其约束
+     */
+    private final EngageBand band;
+
     public SpellStrafingTask(float projectileRange, float strafeSpeed) {
+        this(projectileRange, strafeSpeed, EngageBand.NONE);
+    }
+
+    public SpellStrafingTask(float projectileRange, float strafeSpeed, EngageBand band) {
         super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
                 MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED,
                 MaidCastingMemoryModuleTypes.CURRENT_SPELL.get(), MemoryStatus.REGISTERED,
@@ -59,6 +68,7 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
             1200);
         this.projectileRange = projectileRange;
         this.strafeSpeed = strafeSpeed;
+        this.band = band;
     }
 
     @Override
@@ -100,11 +110,17 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
 
         double distanceSquared = owner.distanceToSqr(target);
         double spellRange = spellData == null ? projectileRange : MaidSpellCatalog.getSpellRange(spellData.getSpell());
+        // 保持距离, 拉近距离, 或者四处走位
+        float fleeDist = 0.5f;
+        double fleeRange = spellRange * fleeDist;
+        if (!MaidSpellTargets.isSupportAction(owner.getBrain())) {
+            // 对敌时站位落在任务的距离带内：射程再远也只站到上限，近于下限就后撤
+            spellRange = band.clampRange(spellRange);
+            fleeRange = band.fleeRange(spellRange, fleeDist);
+        }
         double spellRangeSqr = spellRange * spellRange;
 
         float speed = (magicEntity.isCasting() ? .75f : 1f) * movementSpeed;
-        // 保持距离, 拉近距离, 或者四处走位
-        float fleeDist = 0.5f;
         float ss = 1.2f;
         if (++strafingTime > 50) {
             if (owner.getRandom().nextDouble() < .1) {
@@ -117,7 +133,7 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
         LivingEntity leashOwner = MaidLeash.leashOwner(owner);
         double leashRadius = leashOwner != null ? MaidLeash.radius((EntityMaid) owner) : 0;
         --fleeCooldown;
-        if (!magicEntity.isCasting() && distanceSquared < spellRangeSqr * (fleeDist * fleeDist)) {
+        if (!magicEntity.isCasting() && distanceSquared < fleeRange * fleeRange) {
             if (owner.horizontalCollision) {
                 blockedRetreatTicks++;
             } else {
