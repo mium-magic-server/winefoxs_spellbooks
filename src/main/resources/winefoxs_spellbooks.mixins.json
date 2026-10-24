@@ -24,7 +24,8 @@
     "touhou_little_maid_spell.SpellCombatTaskMixin"
   ],
   "client": [
-    "touhou_little_maid_spell.EnderPocketHudOverlayMixin"
+    "touhou_little_maid_spell.EnderPocketHudOverlayMixin",
+    "touhou_little_maid_spell.IssCastingAnimationProviderMixin"
   ],
   "injectors": {
     "defaultRequire": 1
