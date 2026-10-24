@@ -16,6 +16,7 @@ import java.util.Map;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.event.MaidSpellBookEvent;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
+import net.magicterra.winefoxsspellbooks.bauble.SpellBookBauble;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
@@ -30,9 +31,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import top.theillusivec4.curios.api.event.CurioCanEquipEvent;
 import top.theillusivec4.curios.api.event.CurioChangeEvent;
 
 /**
@@ -75,6 +78,17 @@ public class MaidEventHandler {
             return;
         }
         onMaidSpellDataChanged(event.getMaid());
+    }
+
+    /**
+     * TLM 饰品栏已有法术书时，禁止再往 Curios 栏装法术书，两边合计只能装一本。反向由 {@link SpellBookBauble#canPlace} 拦截。
+     */
+    @SubscribeEvent
+    public static void onCurioCanEquip(CurioCanEquipEvent event) {
+        if (event.getEntity() instanceof EntityMaid maid && SpellBookBauble.isSpellBook(event.getStack())
+            && SpellBookBauble.containsSpellBook(maid.getMaidBauble(), -1)) {
+            event.setEquipResult(TriState.FALSE);
+        }
     }
 
     @SubscribeEvent

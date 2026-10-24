@@ -1,9 +1,10 @@
 package net.magicterra.winefoxsspellbooks.bauble;
 
+import com.github.tartaricacid.touhoulittlemaid.compat.curios.CuriosCompat;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.Multimap;
+import io.redspace.ironsspellbooks.api.item.ISpellbook;
 import io.redspace.ironsspellbooks.compat.Curios;
-import io.redspace.ironsspellbooks.item.SpellBook;
 import io.redspace.ironsspellbooks.item.curios.CurioBaseItem;
 import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.api.bauble.ISlotPlaceableBauble;
@@ -16,6 +17,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.items.IItemHandler;
+import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
 
 /**
@@ -25,18 +27,48 @@ import top.theillusivec4.curios.api.SlotContext;
  * @since 2025-07-19 00:29
  */
 public class SpellBookBauble implements ISlotPlaceableBauble {
+    private static final Predicate<Holder<Item>> IS_SPELL_BOOK = itemHolder -> itemHolder.value() instanceof ISpellbook;
+
     @Override
     public boolean canPlace(IItemHandler itemHandler, int index, ItemStack stack) {
-        Predicate<Holder<Item>> predicate = itemHolder -> itemHolder.value() instanceof SpellBook;
-        int slots = itemHandler.getSlots();
-        for (int i = 0; i < slots; i++) {
-            // 只允许女仆装备一个法术书
-            var exist = itemHandler.getStackInSlot(i);
-            if (exist.is(predicate) && stack.is(predicate)) {
-                return false;
+        if (!isSpellBook(stack)) {
+            return true;
+        }
+        // 只允许女仆装备一个法术书；目标栏位自身不算，原地换书照常放行
+        return !containsSpellBook(itemHandler, index);
+    }
+
+    @Override
+    public boolean canPlace(EntityMaid maid, IItemHandler itemHandler, int index, ItemStack stack) {
+        if (!canPlace(itemHandler, index, stack)) {
+            return false;
+        }
+        // Curios 模式下 TLM 饰品栏和 Curios 法术书栏同时可用，两边合计也只能装一本，反向由 onCurioCanEquip 拦截
+        return !isSpellBook(stack) || !CuriosCompat.isLoadedOrEnable()
+            || !CuriosApi.getCuriosInventory(maid).map(curios -> containsSpellBook(curios.getEquippedCurios(), -1)).orElse(false);
+    }
+
+    /**
+     * 物品栏中除 {@code skipIndex} 外是否已有法术书
+     *
+     * @param itemHandler 物品栏
+     * @param skipIndex   跳过的栏位，-1 表示不跳过
+     * @return 是否已有法术书
+     */
+    public static boolean containsSpellBook(IItemHandler itemHandler, int skipIndex) {
+        for (int i = 0; i < itemHandler.getSlots(); i++) {
+            if (i != skipIndex && isSpellBook(itemHandler.getStackInSlot(i))) {
+                return true;
             }
         }
-        return true;
+        return false;
+    }
+
+    /**
+     * 物品是否为法术书
+     */
+    public static boolean isSpellBook(ItemStack stack) {
+        return stack.is(IS_SPELL_BOOK);
     }
 
     @Override

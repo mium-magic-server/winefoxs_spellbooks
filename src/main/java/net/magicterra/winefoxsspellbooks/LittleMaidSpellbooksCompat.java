@@ -4,7 +4,6 @@ import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.LittleMaidExtension;
 import com.github.tartaricacid.touhoulittlemaid.api.event.AddJadeInfoEvent;
 import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
-import com.github.tartaricacid.touhoulittlemaid.config.subconfig.MaidConfig;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ExtraMaidBrainManager;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
@@ -55,9 +54,7 @@ public class LittleMaidSpellbooksCompat implements ILittleMaid {
 
     @Override
     public void bindMaidBauble(BaubleManager manager) {
-        if (MaidConfig.ENABLE_MAID_CURIOS.get()) {
-            return;
-        }
+        // Curios 模式下也绑定：TLM 饰品栏与 Curios 法术书栏同时可用，「只能装一本」由 SpellBookBauble 与 MaidEventHandler 双向拦截
         SpellBookBauble bauble = new SpellBookBauble();
         for (Item book : REGISTERED_SPELL_BOOKS) {
             manager.bind(book, bauble);

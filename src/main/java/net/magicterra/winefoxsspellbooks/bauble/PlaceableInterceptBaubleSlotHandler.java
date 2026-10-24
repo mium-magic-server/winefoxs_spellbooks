@@ -15,9 +15,11 @@ import net.minecraft.world.item.ItemStack;
  * @since 2025-07-27 23:25
  */
 public class PlaceableInterceptBaubleSlotHandler extends BaubleContainer.BaubleSlot {
+    private final EntityMaid maid;
 
     public PlaceableInterceptBaubleSlotHandler(EntityMaid maid, int index, int xPosition, int yPosition) {
         super(maid, index, xPosition, yPosition);
+        this.maid = maid;
     }
 
     @Override
@@ -25,7 +27,7 @@ public class PlaceableInterceptBaubleSlotHandler extends BaubleContainer.BaubleS
         if (getItemHandler() instanceof BaubleItemHandler baubleItemHandler) {
             IMaidBauble baubleInSlot = BaubleManager.getBauble(stack);
             if (baubleInSlot instanceof ISlotPlaceableBauble slotAwareBauble) {
-                if (!slotAwareBauble.canPlace(baubleItemHandler, index, stack)) {
+                if (!slotAwareBauble.canPlace(maid, baubleItemHandler, index, stack)) {
                     return false;
                 }
             }
