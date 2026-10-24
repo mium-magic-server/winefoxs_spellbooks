@@ -196,6 +196,8 @@ dependencies {
     implementation("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
     // Touhou little maid
     implementation("curse.maven:touhou-little-maid-355044:${tlm_curse_version}")
+    // 车万女仆：万法皆通（可选联动：法术书识别、冷却、战斗任务与末影腰包 HUD）
+    implementation("maven.modrinth:touhou-little-maid-spell:${tlm_spell_version}")
     // 铁魔法
     implementation("io.redspace:irons_spellbooks:${minecraft_version}-${irons_spells_version}") {
         exclude group: "top.theillusivec4.curios", module: "curios-neoforge"
