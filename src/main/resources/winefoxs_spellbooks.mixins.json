@@ -6,6 +6,7 @@
   "plugin": "net.magicterra.winefoxsspellbooks.mixin.WsbMixinPlugin",
   "mixins": [
     "BaubleContainerMixin",
+    "CurioBaseItemAccessor",
     "DamageSourcesMixin",
     "EntityAllyMixin",
     "IMagicSummonMixin",
