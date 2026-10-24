@@ -204,11 +204,21 @@ public class SummonedMaidBrain {
             behaviors.add(MagicMeleeAttack.create(20));
         }
 
-        brain.addActivityAndRemoveMemoryWhenStopped(
+        // 不设进入条件：何时进 FIGHT 由 SummonedEntityMaid#customServerAiStep 按 hasCombatTarget() 决定。
+        // addActivityAndRemoveMemoryWhenStopped 会把「ATTACK_TARGET 存在」顺带设为进入条件，
+        // 只有 SUPPORT_TARGET 的女仆（IDLE 里 StartSupporting 发起的紧急支援）因此进不了 FIGHT，
+        // 停在没有施法任务的 IDLE 里，支援法术永远放不出来
+        ImmutableList<BehaviorControl<? super SummonedEntityMaid>> fightBehaviors = behaviors.build();
+        ImmutableList.Builder<Pair<Integer, ? extends BehaviorControl<? super SummonedEntityMaid>>> prioritized =
+            ImmutableList.builder();
+        for (int i = 0; i < fightBehaviors.size(); i++) {
+            prioritized.add(Pair.of(10 + i, fightBehaviors.get(i)));
+        }
+        brain.addActivityAndRemoveMemoriesWhenStopped(
             Activity.FIGHT,
-            10,
-            behaviors.build(),
-            MemoryModuleType.ATTACK_TARGET
+            prioritized.build(),
+            ImmutableSet.of(),
+            ImmutableSet.of(MemoryModuleType.ATTACK_TARGET)
         );
     }
 
