@@ -71,6 +71,7 @@ public class WinefoxsSpellbooks {
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
         warnAboutOrphanedCommonConfig();
         if (dist == Dist.CLIENT) {
+            modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
             modContainer.registerExtensionPoint(IConfigScreenFactory.class, WsbConfigScreens::create);
         }
     }
