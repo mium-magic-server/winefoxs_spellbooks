@@ -294,6 +294,14 @@ Used to add **spells from addons or datapacks** to the behaviour categories. Eac
 
 > ⚠️ This section can only **add**, never remove, and changes need a game restart. To stop a maid casting a spell, see the next section.
 
+### Touhou Little Maid: Spell Integration
+
+Only takes effect when [Touhou Little Maid: Spell](#touhou-little-maid-spell) is installed.
+
+| Screen name | Key | Default | Notes |
+|---|---|---|---|
+| Mana with Touhou Little Maid: Spell | `tlmSpellMana` | on | When off, maids casting Iron's spells neither spend nor need mana. Cooldowns always follow Touhou Little Maid: Spell |
+
 ---
 
 ## 📦 Datapack Customisation
@@ -411,7 +419,20 @@ Both require permission level 2:
 - **Jade** — point at a maid to see her mana; point at a summoned maid to also see her spell count, and hold Shift for the full list.
 - **JEI** — every item from this mod has an info page (the "i" in the top right).
 - **Advanced Loot Info** — the loot this mod injects into chests, and the maid morning gift, both show their odds in JEI / EMI / REI. The tailored chest entries need ALI 2.2.0 or newer; on older ALI they fall back to ALI's own auto-detected entry.
+- **Touhou Little Maid: Spell** — see [below](#touhou-little-maid-spell).
 - **Patchouli** — 12 guide entries under the "Winefox's Spellbooks" category of Touhou Little Maid's *Memorizable Gensokyo*, covering mana, casting media, tasks, animations, mod integration, troubleshooting, the school with its items and spells (summoned maids included), datapacks, commands and config.
+
+### Touhou Little Maid: Spell
+
+When Touhou Little Maid: Spell is installed, its tasks, spellbook slots and baubles take over, and this mod supplies the Iron's spellcasting behind them:
+
+- **Tasks** — the *Magic Attack* task is not registered; use its *Spell Combat* (close range) or *Ranged Spell* task instead. In both, maids choose and cast Iron's spells with this mod's logic, and also heal and buff their master and allies during combat. *Magic Support* remains for maids that should only support.
+- **Spellbooks** — read wherever Touhou Little Maid: Spell looks for them: off hand, main hand, backpack and Curios, several at once. Spellbooks left in the Touhou Little Maid bauble slot no longer take effect; move them yourself.
+- **Positioning** — *Spell Combat* keeps the maid close to the target, *Ranged Spell* keeps her at a distance; attack spells whose range falls short of that distance are not chosen in *Ranged Spell*.
+- **Cooldowns** — stored by Touhou Little Maid: Spell, so its cooldown multiplier and its cooldown baubles apply. Mana is still spent unless `tlmSpellMana` is turned off.
+- **Baubles** — Spell Whitelist: spells this mod would not cast on allies are cast on the master instead. Casting while sitting or riding requires the Spell Range Table, as in Touhou Little Maid: Spell.
+- **Other magic mods** — only one spell is cast at a time. Iron's spells go first; spells from other mods fill in while Iron's spells are on cooldown or short of mana.
+- **Ender Pocket** — the maid list shows a mana bar under the health bar.
 
 ---
 
