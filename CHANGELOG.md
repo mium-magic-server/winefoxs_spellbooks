@@ -2,68 +2,44 @@
 
 ## 1.0.2
 
-1. **车万女仆：万法皆通联动 (Touhou Little Maid: Spell Integration)** — 可选联动。安装后改用万法皆通的「法术战斗」「远程法术」任务，女仆在其中按本模组的逻辑选择并施放铁魔法法术、为主人和队友治疗增益，并按任务保持站位；法术书识别、冷却与饰品以万法皆通为准，法力照常消耗（`tlmSpellMana` 可关闭）；末影腰包的女仆列表显示法力条。万法皆通自带的法术亦已归类。  
-   Optional integration. With it installed, maids use its Spell Combat and Ranged Spell tasks, in which they choose and cast Iron's spells by this mod's logic, heal and buff their owner and allies, and hold the spacing each task calls for. Spellbook detection, cooldowns and baubles follow Touhou Little Maid: Spell; mana is still spent (switch off with `tlmSpellMana`), and the Ender Pocket maid list shows a mana bar. Touhou Little Maid: Spell's own spells are classified as well.
+1. **车万女仆：万法皆通联动 (Touhou Little Maid: Spell Integration)** — 可选联动。安装后女仆在万法皆通的「法术战斗」「远程法术」任务中按本模组的逻辑施放铁魔法法术、治疗增益队友，并按任务保持站位；法术书识别、冷却与饰品以万法皆通为准，法力照常消耗（`tlmSpellMana` 可关闭）。万法皆通自带的法术亦已归类。  
+   Optional integration. Maids on its Spell Combat and Ranged Spell tasks cast Iron's spells by this mod's logic, heal and buff allies, and keep each task's spacing. Spellbook detection, cooldowns and baubles follow Touhou Little Maid: Spell; mana is still spent (switch off with `tlmSpellMana`). Its own spells are classified as well.
 
-2. **品酒排 (Vixen's Flight)** — 新物品，四支酒签各装一瓶药水或铁魔法（及附属）的药剂：在物品栏中与药水、药剂或玻璃瓶互相右键装入、倒出，也可从炼药锅取水、从铁魔法炼金锅取药；玩家可直接饮用。女仆把它带在背包里，会在战斗中选择此刻用得上的增益饮用；生命低于 60% 时优先饮用治疗类，不论其位于哪一支。四个玻璃瓶加任意木台阶无序合成。  
-   A new item holding four vials, each filled with one potion or one of Iron's (and its addons') elixirs: right-click it with a potion, elixir or glass bottle in your inventory to fill or pour, or draw water from a cauldron and potions from an Alchemist Cauldron; players can drink from it directly. A maid carrying it drinks the buffs she needs in combat, and below 60% health drinks healing-type vials first, wherever they sit on the rack. Crafted from four glass bottles and any wooden slab.
+2. **品酒排 (Vixen's Flight)** — 新物品，四支酒签各装一瓶药水或铁魔法药剂，与药水、玻璃瓶互相右键即可装入、倒出，四个玻璃瓶加任意木台阶合成。女仆战斗中只饮用品酒排里的药水，不再凭空饮用治疗药水；生命低于 60% 时优先治疗类。手持品酒排或药剂潜行右键自家女仆可直接喂其饮用。⚠️ `drinkPotionInSpellBattle` 默认值改为开，已有配置文件不受影响。  
+   A new item holding four vials of potions or Iron's elixirs; right-click it with a potion or glass bottle to fill or pour. Crafted from four glass bottles and any wooden slab. In combat maids now drink only from it instead of conjuring free healing potions, healing first below 60% health. Sneak-right-click your maid with it or an elixir to feed her. ⚠️ `drinkPotionInSpellBattle` now defaults to on; existing config files keep their value.
 
-3. **潜行右键喂女仆饮用 (Sneak-Right-Click to Feed Your Maid)** — 手持品酒排或铁魔法的药剂潜行右键自家女仆，即可喂其饮下（品酒排为最右一支）；指向女仆时显示车万女仆的喂药提示。  
-   Sneak-right-click your own maid while holding a Vixen's Flight or one of Iron's elixirs to have her drink it (the rightmost vial of a Vixen's Flight); pointing at her shows Touhou Little Maid's feeding tip.
+3. **攻击法术击杀规划 (Kill-Time Attack Spell Planning)** — 女仆按最快击倒目标选择攻击法术，伤害由实战记录修正，必要时积攒法力以施放更强的法术（`spellPlanningEnabled` 可关闭）。起手失败的法术会暂缓选用，不再反复挤占其他法术。  
+   Maids pick attack spells by time-to-kill, learning damage from their own casts and saving mana for stronger spells when worthwhile (switch off with `spellPlanningEnabled`). Spells that fail their pre-cast check are set aside for a while.
 
-4. **战斗饮药改为消耗品酒排 (Battle Drinking Now Uses Vixen's Flight)** — 女仆不再凭空饮用治疗药水，只饮用品酒排中装填的药水，每支仅可饮用一次；`drinkPotionInSpellBattle` 的默认值随之改为开。⚠️ 已有配置文件中的值不会被改动。  
-   Maids no longer conjure free healing potions; they drink only what is loaded into a Vixen's Flight, each vial once, and `drinkPotionInSpellBattle` now defaults to on. ⚠️ Values already present in existing config files are left unchanged.
+4. **战斗与支援 AI 调整 (Combat & Support AI)** — 跟随模式下接战与走位不再超出跟随范围、绕着主人转圈；战斗中保持待机姿势、不再讨食，持续施法结束后不再卡在施法姿势。支援法术仅在队友确实需要时优先，支援时不丢失攻击目标；「法术支援」任务会攻击主人的目标。女仆不再把自己的坐骑当作目标。  
+   In follow mode maids fight within the follow range instead of circling their owner, hold a combat idle pose, no longer beg, and no longer stay stuck in the casting pose after a continuous spell. Support spells take priority only when an ally needs them, without dropping the attack target; the Magic Support task attacks the owner's target. Maids no longer target their own mount.
 
-5. **攻击法术击杀规划 (Kill-Time Attack Spell Planning)** — 女仆按「最快击倒当前目标」选择攻击法术，法术伤害由其在实战中记录并持续修正；必要时会积攒法力以施放更强的法术，而非始终施放最廉价的一个。`spellPlanningEnabled` 可关闭，关闭后恢复原先的均匀随机选择。  
-   Maids pick attack spells by how fast they would bring down the current target, using damage each maid records from her own casts and keeps refining; when worthwhile she saves mana for a stronger spell instead of always casting the cheapest one. Switch off with `spellPlanningEnabled` to restore the old uniform random choice.
+5. **同一主人名下互为友军 (Allies Under the Same Owner)** — 主人、女仆、宠物与召唤物互为友军，主人的横扫攻击与其他模组的范围法术不再伤及己方；万法皆通的「破法回响」、传奇法师的死亡爆炸与感电连锁闪电同样不再波及己方。  
+   An owner, their maids, pets and summons are allies of one another, so sweeping attacks and other mods' area spells spare their own side, as do Touhou Little Maid: Spell's Spellbreaking Echo and Legendary Mage's death explosions and electrocuted chain lightning.
 
-6. **起手失败的法术暂缓选用 (Failing Spells Are Set Aside)** — 女仆选中前置条件不满足的法术而起手失败后，暂停选用该法术 3 秒，连续失败时逐次加倍至 60 秒，成功施放后复原，不再反复选中它而挤占其余法术。  
-   When a maid's chosen spell fails its pre-cast check, she sets it aside for 3 seconds, doubling on each further failure up to 60 seconds and resetting once it casts, so it no longer crowds out her other spells.
+6. **法术分类编辑器 (Spell Category Editor)** — 配置界面的「法术兼容」小节改为可视化编辑器，可逐个法术调整行为类别、标记、施法距离等，支持拼音搜索（需 Just Enough Characters）；每个类别新增「移除的法术 ID」配置。  
+   The Spell Compatibles config section is now an editor for each spell's categories, markers, casting range and more, with pinyin search via Just Enough Characters. Each category also gains a removed-spell-ID list.
 
-7. **法术战斗走位 (Spell Combat Movement)** — 跟随模式下，女仆的接战、走位与索敌均以不触发跟随的范围为界，并在走位时始终面向目标，不再被拉回主人身边绕圈；法术战斗中保持战斗待机姿势，主人手持诱惑物品时不再讨食。  
-   In follow mode a maid engages, strafes and picks targets within the range that does not trigger following, facing her target as she moves, so she no longer gets pulled back to circle her owner; during spell combat she holds a combat idle pose and no longer begs when her owner holds a tempting item.
+7. **女仆浮动法力条 (Floating Maid Mana Bar)** — 施法任务中的自家女仆身旁显示法力条，回满后淡出（客户端配置 `showMaidManaBar`）。  
+   Your spellcasting maids show a mana bar that fades once full (client config `showMaidManaBar`).
 
-8. **法术支援调整 (Magic Support Changes)** — 仅当附近队友确实需要支援时，支援类法术才优先于战斗法术；女仆支援队友时不再丢失攻击目标；「法术支援」任务下的女仆会攻击主人最近攻击的目标；仅有支援对象的召唤女仆亦会进入战斗状态。女仆不再把自己的坐骑选作敌人或队友。  
-   Support spells take priority over combat spells only when a nearby ally actually needs them; a maid keeps her attack target while supporting allies; maids on the Magic Support task attack whatever their owner last attacked; summoned maids with only a support target now enter combat. Maids no longer pick their own mount as an enemy or ally.
+8. **学派更名为「灵狐」 (School Renamed to Vulpine)** — 「酒狐巫法」更名为「灵狐」（内部 ID 不变），法术图标重绘，灵狐精魂换新贴图与掉落光效。  
+   The Winefox Hex school is renamed Vulpine (internal ID unchanged), with redrawn spell icons and a new Vulpine Anima texture and drop glow.
 
-9. **同一主人名下互为友军 (Allies Under the Same Owner)** — 主人、女仆、宠物与召唤物之间，凡最终归属同一主人者互为友军，且双向成立：主人的横扫攻击、各模组按友军判定的范围法术，不再伤及己方。万法皆通的「破法回响」不再清除主人一方的召唤物。  
-   An owner, their maids, pets and summons are now allies of one another in both directions, so the owner's sweeping attacks and other mods' ally-aware area spells no longer hit their own side. Touhou Little Maid: Spell's Spellbreaking Echo no longer clears the owner's side's summons.
+9. **学派法术调整 (School Spell Changes)** — 狐影伏击每级多咬一口、停留更久，等级改为卓越至传说；酒杯狐影伤害系数 ×2 → ×3；醒酒之礼的减益缩短比例随等级提升，5 级直接清除。  
+   Foxshade Ambush bites once more per level, lingers longer and now runs Uncommon to Legendary; Foxshade Wisps' damage multiplier rises from ×2 to ×3; Decant the Bind cuts debuffs more with each level and purges them at level 5.
 
-10. **传奇法师死亡爆炸不再误伤己方 (Legendary Mage Death Explosions Spare Your Side)** — 带「火焰异常」或「烈焰」效果的生物死亡时的爆炸，不再伤及击杀者、标记施法者及其主人、女仆与宠物；敌方照常受伤。  
-    The explosion when a creature with Fire Mark or Pyro Flame dies no longer hurts the killer, the mark's caster, or their owner, maids and pets; enemies are still hit.
+10. **饰品栏调整 (Bauble Slots)** — 铁魔法饰品在女仆的任意 Curios 栏位都生效；全部饰品栏合计只能装一本法术书。  
+    Iron's curios work in any of a maid's Curios slots; only one spellbook can be equipped across all bauble slots.
 
-11. **法术分类编辑器 (Spell Category Editor)** — 配置界面中的「法术兼容」小节改为法术分类编辑器：可按模组、行为类别与状态筛选，逐个法术增删行为类别与「召唤」「多次咏唱」标记，覆盖开始施法距离、施加的药水效果与伤害先验；安装 Just Enough Characters 时搜索支持拼音。另为每个行为类别新增「移除的法术 ID」配置，数据包内置的法术同样可以移除。  
-    The Spell Compatibles section of the config screen is now a spell category editor: filter by mod, behaviour category and status, add or remove each spell's behaviour categories and its Summon and Recast markers, and override its start casting range, applied mob effect and damage prior; searches match pinyin when Just Enough Characters is installed. Each behaviour category also gains a removed-spell-ID list that can remove datapack-tagged spells.
+11. **附属法术支持 (Addon Spell Support)** — 新增 24 个附属：Chronomancy、Farmer's Spell、Spellbooks of Twilight、Deeper & Darker Spellbooks、Echoing Magic、Legendary Mage、Apex Arcana、Wind's Spellbooks、Paladin Spells、Aether Spellbooks、Unstable Magic、Asterism Arcanum、Ozymandias' Sundries、Alshanex's Familiars、Eldritch Expansions、[ES] Esoteric Spells、Cursed School、CS Curse Spells、ISS: Elden Ring、Leylines、Frieren Spells、Frozen Dominion Spells、Hyper 'N Hiei's Shenanigans、Wizards Help!。已支持附属按新版本更新归类，仅限玩家或对女仆有害的法术不再选用。  
+    Added the 24 addons listed above. Existing addons are reclassified for their new versions, and player-only or self-harming spells are no longer used.
 
-12. **女仆浮动法力条 (Floating Maid Mana Bar)** — 处于「法术攻击」或「法术支援」任务的自家女仆身旁显示弧形法力条，法力回满后淡出；客户端配置 `showMaidManaBar` 可关闭，召唤女仆不显示。  
-    An arc-shaped mana bar appears beside your own maids on the Magic Attack or Magic Support task and fades out once their mana is full; switch off with the client config `showMaidManaBar`. Summoned maids are not shown.
+12. **兼容性 (Compatibility)** — 修复与 Iron's Spells JS 同装时女仆无法施法。战利品查询插件改为对接 Advanced Loot Info 2.5。⚠️ 安装 ALI 时须为 2.5.0 及以上（前置 Advanced Core Info 1.5.0 及以上），旧版将在启动时被拒绝。  
+    Fixed maids being unable to cast alongside Iron's Spells JS. The loot lookup plugin now targets Advanced Loot Info 2.5. ⚠️ ALI, if installed, must be 2.5.0 or newer (with Advanced Core Info 1.5.0 or newer); older versions are rejected at startup.
 
-13. **学派更名为「灵狐」 (School Renamed to Vulpine)** — 「酒狐巫法」学派在游戏内文本中更名为「灵狐」，内部 ID 不变；学派法术图标统一重绘为 16×16 精绘风格；「灵狐精魂」更换贴图，掉落时自发光并在地面泛起呼吸光晕。  
-    The Winefox Hex school is renamed Vulpine in player-facing text, with its internal ID unchanged; the school's spell icons are redrawn at 16×16 in one unified style; Vulpine Anima gets a new texture and, when dropped, glows and casts a breathing glow on the ground.
-
-14. **狐影伏击与酒杯狐影加强 (Foxshade Ambush and Foxshade Wisps Buffed)** — 狐影伏击每级多咬一口（1～4 口），狐影停留更久，四个等级改为卓越至传说；酒杯狐影每发伤害系数由 ×2 提高到 ×3。两者的法术说明新增伤害与扑咬次数 / 弹射物数量。  
-    Foxshade Ambush bites once more per level (1–4 bites), its fox lingers longer, and its four levels now run Uncommon to Legendary; Foxshade Wisps' per-projectile damage multiplier rises from ×2 to ×3. Both spell tooltips now show damage and bite or projectile count.
-
-15. **醒酒之礼随等级成长 (Decant the Bind Scales with Level)** — 负面效果时长不再固定减半：2～4 级依次缩短 50% / 67% / 83%，5 级尽数清除。  
-    Debuffs are no longer simply halved: levels 2–4 cut their duration by 50% / 67% / 83%, and level 5 purges them outright.
-
-16. **女仆饰品栏调整 (Maid Bauble Slot Changes)** — 铁魔法的饰品（如戒指）装在女仆的任意 Curios 栏位中均提供属性加成；车万女仆饰品栏与 Curios 栏位合计只能装备一本法术书。  
-    Iron's curios such as rings now grant their attributes in any of a maid's Curios slots; a maid can equip only one spellbook across the Touhou Little Maid bauble and Curios slots combined.
-
-17. **新增 24 个铁魔法附属的法术支持 (Spell Support for 24 More Iron's Addons)** — 女仆可识别并施放以下附属的法术：Chronomancy、Farmer's Spell、Spellbooks of Twilight、Deeper & Darker Spellbooks、Echoing Magic、Legendary Mage、Apex Arcana、Wind's Spellbooks、Paladin Spells、Aether Spellbooks、Unstable Magic、Asterism Arcanum、Ozymandias' Sundries、Alshanex's Familiars、Eldritch Expansions、[ES] Esoteric Spells、Cursed School、CS Curse Spells、ISS: Elden Ring、Leylines、Frieren Spells、Frozen Dominion Spells、Hyper 'N Hiei's Shenanigans、Wizards Help!。  
-    Maids now recognise and cast the spells of the addons listed above.
-
-18. **已支持附属的法术归类更新 (Existing Addon Spells Reclassified)** — 按各附属的新版本补充新增法术；Monsters & Spellbooks 新版不再注册的风系法术随之移除；铁魔法的奥术镣铐与引力分裂改归「负面效果」。仅限玩家施放的法术（如 Apprentice's Codex 的 Bound Bow、Bound Sword，Somake 的 Crimson Reflection）以及对女仆无效或有害的法术，女仆不再选用。  
-    Spells added in the addons' new versions are classified, the Aero spells Monsters & Spellbooks no longer registers are dropped, and Iron's Arcane Shackle and Gravity Fissure move to Negative Effect. Maids no longer pick player-only spells (such as Apprentice's Codex's Bound Bow and Bound Sword, or Somake's Crimson Reflection), nor spells that are useless or harmful in their hands.
-
-19. **Iron's Spells JS 兼容修复 (Iron's Spells JS Compatibility Fix)** — 与 Iron's Spells JS 等为所有生物注入施法接口的模组同时安装时，女仆与召唤女仆的施法不再失效。  
-    Maids and summoned maids can cast again when installed alongside Iron's Spells JS or other mods that inject a spellcasting interface into every mob.
-
-20. **Advanced Loot Info 2.5 支持 (Advanced Loot Info 2.5 Support)** — 战利品查询插件改为对接 ALI 2.5.0 的新接口。⚠️ 安装 ALI 时须为 2.5.0 及以上（及其前置 Advanced Core Info 1.5.0 及以上），更早的版本将在启动时被拒绝加载；未安装 ALI 不受影响。  
-    The loot lookup plugin now targets ALI 2.5.0's new API. ⚠️ If ALI is installed it must be 2.5.0 or newer (with Advanced Core Info 1.5.0 or newer); older versions are rejected at startup. Without ALI nothing changes.
-
-21. **依赖更新 (Dependency Updates)** — NeoForge、Iron's Spells (3.16.3)、Iron's Lib (2.2.0)、GeckoLib、JEI 等更新到最新兼容版本。  
-    Updated NeoForge, Iron's Spells (3.16.3), Iron's Lib (2.2.0), GeckoLib, JEI and others to their latest compatible versions.
+13. **依赖更新 (Dependency Updates)** — NeoForge、Iron's Spells (3.16.3)、Iron's Lib (2.2.0)、GeckoLib、JEI 等更新到最新兼容版本。  
+    Updated NeoForge, Iron's Spells (3.16.3), Iron's Lib (2.2.0), GeckoLib, JEI and others.
 
 ---
 
