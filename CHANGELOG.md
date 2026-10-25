@@ -23,8 +23,8 @@
 7. **起手失败的法术暂缓选用 (Failing Spells Are Set Aside)** — 女仆选中前置条件不满足的法术而起手失败后，暂停选用该法术 3 秒，连续失败时逐次加倍至 60 秒，成功施放后复原，不再反复选中它而挤占其余法术。  
    When a maid's chosen spell fails its pre-cast check, she sets it aside for 3 seconds, doubling on each further failure up to 60 seconds and resetting once it casts, so it no longer crowds out her other spells.
 
-8. **Advanced Loot Info 2.5 支持 (Advanced Loot Info 2.5 Support)** — 战利品查询插件改为对接 ALI 2.5.0 的新接口。⚠️ 需要 ALI 2.5.0 及以上（及其前置 Advanced Core Info 1.5.0 及以上）。  
-   The loot lookup plugin now targets ALI 2.5.0's new API. ⚠️ It needs ALI 2.5.0 or newer (with Advanced Core Info 1.5.0 or newer).
+8. **Advanced Loot Info 2.5 支持 (Advanced Loot Info 2.5 Support)** — 战利品查询插件改为对接 ALI 2.5.0 的新接口。⚠️ 安装 ALI 时须为 2.5.0 及以上（及其前置 Advanced Core Info 1.5.0 及以上），更早的版本将在启动时被拒绝加载；未安装 ALI 不受影响。  
+   The loot lookup plugin now targets ALI 2.5.0's new API. ⚠️ If ALI is installed it must be 2.5.0 or newer (with Advanced Core Info 1.5.0 or newer); older versions are rejected at startup. Without ALI nothing changes.
 
 ---
 
