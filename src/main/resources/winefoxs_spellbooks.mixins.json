@@ -28,6 +28,8 @@
     "touhou_little_maid_spell.SpellbreakingEchoEntityMixin"
   ],
   "client": [
+    "MagicCastingAnimationHoldMixin",
+    "TlmAnimationControllerAccessor",
     "touhou_little_maid_spell.EnderPocketHudOverlayMixin",
     "touhou_little_maid_spell.IssCastingAnimationProviderMixin"
   ],
