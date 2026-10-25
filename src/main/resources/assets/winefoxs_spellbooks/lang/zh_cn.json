@@ -7,6 +7,8 @@
   "task.winefoxs_spellbooks.magic_support_task.condition.has_spells": "主手或盔甲栏有注魔武器或饰品栏有注魔魔法书",
   "task.winefoxs_spellbooks.magic_support_task.tlm_spell.desc": "女仆使用装备的法术书施放支援法术。支持副手、主手或背包中的法术书。",
   "task.winefoxs_spellbooks.magic_support_task.condition.tlm_spell.spell_book": "需要装备法术书（副手、主手或背包）",
+  "task.winefoxs_spellbooks.drink_potion_task": "调试：饮用药水",
+  "task.winefoxs_spellbooks.spell_test_task": "调试：法术测试",
   "top.winefoxs_spellbooks.entity_maid.mana": "魔力: %d/%d",
   "top.winefoxs_spellbooks.summoned_maid.spells_short": "法术: %d 种",
   "top.winefoxs_spellbooks.summoned_maid.spells": "法术: %s",

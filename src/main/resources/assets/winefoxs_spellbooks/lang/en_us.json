@@ -7,6 +7,8 @@
   "task.winefoxs_spellbooks.magic_support_task.condition.has_spells": "Spell book in main hand or bauble inventory",
   "task.winefoxs_spellbooks.magic_support_task.tlm_spell.desc": "Maid uses equipped spell books to cast support spells. Supports spell books in offhand, mainhand or backpack.",
   "task.winefoxs_spellbooks.magic_support_task.condition.tlm_spell.spell_book": "Requires equipped spell book (offhand, mainhand or backpack)",
+  "task.winefoxs_spellbooks.drink_potion_task": "Debug: Drink Potion",
+  "task.winefoxs_spellbooks.spell_test_task": "Debug: Spell Test",
   "top.winefoxs_spellbooks.entity_maid.mana": "Mana: %d/%d",
   "top.winefoxs_spellbooks.summoned_maid.spells_short": "Spells: %d types",
   "top.winefoxs_spellbooks.summoned_maid.spells": "Spells: %s",
