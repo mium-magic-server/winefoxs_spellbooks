@@ -18,6 +18,8 @@
     "SummonManagerAccessor",
     "TargetGoalMixin",
     "ali.ConfigUtilsMixin",
+    "legendarymage.FireMarkDeathExplosionMixin",
+    "legendarymage.PyroFlameDeathExplosionMixin",
     "touhou_little_maid_spell.EnderPocketMaidInfoMixin",
     "touhou_little_maid_spell.EnderPocketServiceMixin",
     "touhou_little_maid_spell.SpellBookManagerMixin",
