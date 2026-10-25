@@ -89,7 +89,7 @@ license = "${mod_license}"
 [[dependencies.${ mod_id }]]
     modId = "ali"
     type = "optional"
-    versionRange = "*"
+    versionRange = "[2.5.0,)"
     ordering = "AFTER"
     side = "BOTH"
 
