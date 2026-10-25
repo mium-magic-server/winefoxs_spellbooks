@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.magicterra.winefoxsspellbooks.dev.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "CataclysmDataRunMixin",
+    "MoonlightSanityCheckMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  }
+}

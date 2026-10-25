@@ -1,0 +1,15 @@
+# 仅开发环境使用的补丁模组：用于绕过各附属模组之间的相互冲突，使开发环境（runData、runClient）能够加载全部附属。
+# 该模组位于独立的 dev 源集，不属于 main 源集，因此不会进入发布用的 jar。
+modLoader = "lowcodefml"
+loaderVersion = "[1,)"
+license = "MIT"
+
+[[mods]]
+    modId = "winefoxs_spellbooks_devfixes"
+    version = "1.0.0"
+    displayName = "Winefox's Spellbooks Dev Fixes"
+    authors = "Gardel"
+    description = '''仅限开发环境：修复附属模组之间的冲突，不随发布版本分发。'''
+
+[[mixins]]
+    config = "winefoxs_spellbooks_devfixes.mixins.json"
