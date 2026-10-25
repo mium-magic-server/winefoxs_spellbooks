@@ -17,6 +17,8 @@ import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.magic.particle.DecantCleanseOption;
 import net.magicterra.winefoxsspellbooks.registry.WsbParticles;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -27,7 +29,9 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 /**
- * 醒酒之礼:低酒龄减半自身或视线所指女仆的负面效果剩余时长,高酒龄整列净除。
+ * 醒酒之礼:按酒龄缩短自身或视线所指女仆的负面效果剩余时长,满级整列净除。
+ * <p>
+ * 起始等级（2 级）缩短一半，此后每级多缩一截，满级（5 级）缩到零即整列净除：2～5 级依次缩短 50% / 67% / 83% / 100%。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-07-05
@@ -38,6 +42,16 @@ public class DecantTheBindSpell extends AbstractSpell {
      * 高酒龄门槛:达到该等级(即满级)改为整列净除;满级即毕业,不设无成长的溢出等级。
      */
     private static final int PURGE_LEVEL = 5;
+
+    /**
+     * 起始等级：1 级不存在，DefaultConfig 无 setMinLevel，须覆写 {@link #getMinLevel()}。
+     */
+    private static final int START_LEVEL = 2;
+
+    /**
+     * 起始等级保留的时长比例（即缩短一半）
+     */
+    private static final double START_KEEP_FRACTION = 0.5;
 
     /**
      * 视线选取女仆的距离(格);数据生成的女仆 AI 施法距离引用同一常量。
@@ -85,7 +99,32 @@ public class DecantTheBindSpell extends AbstractSpell {
 
     @Override
     public int getMinLevel() {
-        return 2;
+        return START_LEVEL;
+    }
+
+    @Override
+    public List<MutableComponent> getUniqueInfo(int spellLevel, LivingEntity caster) {
+        if (spellLevel >= PURGE_LEVEL) {
+            return List.of(Component.translatable("ui.winefoxs_spellbooks.decant_purge"));
+        }
+        // Utils.stringTruncation 向下取整且带小数位，67% 会显示成 66.0，这里直接四舍五入
+        long cut = Math.round((1.0 - keepFraction(spellLevel)) * 100.0);
+        return List.of(Component.translatable("ui.winefoxs_spellbooks.decant_reduction", cut));
+    }
+
+    /**
+     * 负面效果剩余时长的保留比例：起始等级 {@link #START_KEEP_FRACTION}，线性降到满级的 0。
+     *
+     * @param spellLevel 法术等级
+     * @return 保留比例，0～{@link #START_KEEP_FRACTION}
+     */
+    static double keepFraction(int spellLevel) {
+        if (spellLevel >= PURGE_LEVEL) {
+            return 0.0;
+        }
+        int steps = PURGE_LEVEL - START_LEVEL;
+        int done = Math.max(0, spellLevel - START_LEVEL);
+        return START_KEEP_FRACTION * (steps - done) / steps;
     }
 
     @Override
@@ -106,7 +145,7 @@ public class DecantTheBindSpell extends AbstractSpell {
             target = maid;
         }
 
-        // 与 Iron's CleanseSpell 同口径：净化免疫 tag 里的负面效果不碰，减半也不行
+        // 与 Iron's CleanseSpell 同口径：净化免疫 tag 里的负面效果不碰，缩短也不行
         List<MobEffectInstance> harmful = target.getActiveEffects().stream()
             .filter(inst -> inst.getEffect().value().getCategory() == MobEffectCategory.HARMFUL
                 && !inst.getEffect().is(ModTags.CLEANSE_IMMUNE))
@@ -118,18 +157,19 @@ public class DecantTheBindSpell extends AbstractSpell {
                 cleansed++;
             }
         } else {
-            // 低酒龄:减半 = 移除后按剩余时长一半重挂(MobEffectInstance 无公开时长 setter);无限时长跳过,防止 -1 被除成负数
+            // 未满级:缩短 = 移除后按保留比例重挂(MobEffectInstance 无公开时长 setter);无限时长跳过,防止 -1 被乘成负数
+            double keep = keepFraction(spellLevel);
             for (MobEffectInstance inst : harmful) {
                 if (inst.isInfiniteDuration()) {
                     continue;
                 }
                 // 整条链一起搬:removeEffect 连被压住的低等级实例一并删掉,只补回可见层等于在低酒龄
                 // 白送满级才有的整列净除
-                MobEffectInstance halved = halveChain(inst);
+                MobEffectInstance shortened = shortenChain(inst, keep);
                 target.removeEffect(inst.getEffect());
                 cleansed++;
-                if (halved != null) {
-                    target.addEffect(halved);
+                if (shortened != null) {
+                    target.addEffect(shortened);
                 }
             }
         }
@@ -143,18 +183,19 @@ public class DecantTheBindSpell extends AbstractSpell {
     }
 
     /**
-     * 把一条效果链逐层减半后原样重建。
+     * 把一条效果链逐层按比例缩短后原样重建。
      * <p>
-     * 同一效果被更高等级覆盖时,原版会把旧实例压进 {@code hiddenEffect} 排队(字段由 AT 放开),可见层走完它就浮上来。 减半必须连这些下层一起算:只处理可见层的话,下层浮上来时仍是原时长,玩家看到的是「减半没生效」;
+     * 同一效果被更高等级覆盖时,原版会把旧实例压进 {@code hiddenEffect} 排队(字段由 AT 放开),可见层走完它就浮上来。 缩短必须连这些下层一起算:只处理可见层的话,下层浮上来时仍是原时长,玩家看到的是「缩短没生效」;
      * 而只补回可见层则等于把整条链清掉。原版七参构造器可以直接把下层挂回去,重挂后链形不变。
      *
-     * @return 减半后的可见层;整条链都不足 1 tick 时为 {@code null}
+     * @param keep 保留比例
+     * @return 缩短后的可见层;整条链都不足 1 tick 时为 {@code null}
      */
     @Nullable
-    private static MobEffectInstance halveChain(MobEffectInstance instance) {
-        MobEffectInstance hidden = instance.hiddenEffect == null ? null : halveChain(instance.hiddenEffect);
-        // 下层可能是无限时长(被更高等级的有限实例压住),照原样搬,不参与减半
-        int duration = instance.isInfiniteDuration() ? instance.getDuration() : instance.getDuration() / 2;
+    private static MobEffectInstance shortenChain(MobEffectInstance instance, double keep) {
+        MobEffectInstance hidden = instance.hiddenEffect == null ? null : shortenChain(instance.hiddenEffect, keep);
+        // 下层可能是无限时长(被更高等级的有限实例压住),照原样搬,不参与缩短
+        int duration = instance.isInfiniteDuration() ? instance.getDuration() : (int) (instance.getDuration() * keep);
         if (duration == 0) {
             // 本层已耗尽,让下层顶上,别把整条链跟着丢了
             return hidden;
