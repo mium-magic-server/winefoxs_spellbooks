@@ -282,8 +282,10 @@ public final class WinefoxHexHelper {
      * <ul>
      *   <li>同一召唤链顶层——主人、姐妹女仆、各自的召唤物之间没有记分板队伍关系，只能靠召唤链认亲；</li>
      *   <li>两个方向的 {@code isAlliedTo}——原版实现是 {@code getTeam().isAlliedTo(other.getTeam())}，
-     *       无队伍的一侧恒返回 {@code false}，只问一个方向会漏判女仆的主人。</li>
+     *       无队伍的一侧恒返回 {@code false}，只问一个方向会漏判队伍关系。</li>
      * </ul>
+     * 注：{@code EntityAllyMixin} 修复后，同一召唤链内的 {@code isAlliedTo} 已双向成立，上面两个方向的查询对召唤链而言属冗余，
+     * 只为其他模组可能存在的非对称队伍逻辑兜底；开销仅两次虚调用，保留不动。
      * 召唤链只比对缓存的顶层 UUID，是三者里最便宜的，放最前面短路。
      */
     private static boolean isSameFaction(LivingEntity candidate, Entity attacker) {
