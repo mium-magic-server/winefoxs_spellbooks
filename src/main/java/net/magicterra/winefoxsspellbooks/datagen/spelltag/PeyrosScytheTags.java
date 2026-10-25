@@ -11,10 +11,11 @@ public final class PeyrosScytheTags {
         // MADE_IN_HEAVEN 系列只加速方块实体与随机刻，YOUNG_FOR_YOU 只把怪物变成幼体，
         // 三者都不参与战斗。
         // audit:ignore MADE_IN_HEAVEN, MADE_IN_HEAVEN_REAL, YOUNG_FOR_YOU
+        // 原因：CHAOS_CRADLE 的 onCast 只在 caster instanceof Player 时才生成深渊泥潭，除此之外没有任何结算，女仆施放为空操作。
+        // audit:ignore CHAOS_CRADLE
 
         // ========== 攻击 ==========
         ctx.attack().addOptional(NewSpellRegistry.BLACK_FIREBALL.get().getSpellResource());
-        ctx.attack().addOptional(NewSpellRegistry.CHAOS_CRADLE.get().getSpellResource());
         ctx.attack().addOptional(NewSpellRegistry.DEATH_SMOKE_SPELL.get().getSpellResource());
         ctx.attack().addOptional(NewSpellRegistry.FROST_HELL_SPELL.get().getSpellResource());
         ctx.attack().addOptional(NewSpellRegistry.FROZEN_WORLD_SPELL.get().getSpellResource());

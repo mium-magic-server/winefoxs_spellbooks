@@ -13,13 +13,15 @@ public final class MonstersSpellbooksTags {
         // audit:ignore WITHER_BOMB
 
         // ========== Aero ==========
-        ctx.positiveEffect().addOptional(ModSpellRegistry.AIR_BUBBLE.get().getSpellResource());
-        ctx.movement().addOptional(ModSpellRegistry.AIR_PROPULSION.get().getSpellResource());
-        ctx.attack().addOptional(ModSpellRegistry.FORCEFUL_WIND.get().getSpellResource());
-        ctx.attack().addOptional(ModSpellRegistry.STEAM_STREAM.get().getSpellResource());
-        ctx.attack().addOptional(ModSpellRegistry.SUFFOCATE.get().getSpellResource());
-        ctx.attack().addOptional(ModSpellRegistry.WIND_CHARGE.get().getSpellResource());
-        ctx.attack().addOptional(ModSpellRegistry.WIND_WAVE.get().getSpellResource());
+        // Monsters & Spellbooks 0.0.16.3 起不再注册下列 Aero 法术（类仍在 jar 内，但 ModSpellRegistry 中无对应字段），
+        // 以及 OBSIDIAN_ARSENAL、CLOUD_DASH，故暂时注释掉，待上游恢复注册后再启用。
+        // ctx.positiveEffect().addOptional(ModSpellRegistry.AIR_BUBBLE.get().getSpellResource());
+        // ctx.movement().addOptional(ModSpellRegistry.AIR_PROPULSION.get().getSpellResource());
+        // ctx.attack().addOptional(ModSpellRegistry.FORCEFUL_WIND.get().getSpellResource());
+        // ctx.attack().addOptional(ModSpellRegistry.STEAM_STREAM.get().getSpellResource());
+        // ctx.attack().addOptional(ModSpellRegistry.SUFFOCATE.get().getSpellResource());
+        // ctx.attack().addOptional(ModSpellRegistry.WIND_CHARGE.get().getSpellResource());
+        // ctx.attack().addOptional(ModSpellRegistry.WIND_WAVE.get().getSpellResource());
 
         // ========== Blood ==========
         ctx.negativeEffect().addOptional(ModSpellRegistry.ANTICOAGULATION.get().getSpellResource());
@@ -34,7 +36,7 @@ public final class MonstersSpellbooksTags {
         ctx.defense().addOptional(ModSpellRegistry.ENDERSENT_FORM.get().getSpellResource());
         ctx.attack().addOptional(ModSpellRegistry.ENDERSENT_SMASH.get().getSpellResource());
         ctx.attack().addOptional(ModSpellRegistry.GRAVITY_WELL.get().getSpellResource());
-        ctx.attack().addOptional(ModSpellRegistry.OBSIDIAN_ARSENAL.get().getSpellResource());
+        // ctx.attack().addOptional(ModSpellRegistry.OBSIDIAN_ARSENAL.get().getSpellResource());
         ctx.attack().addOptional(ModSpellRegistry.SPACE_BREAKER.get().getSpellResource());
         ctx.attack().addOptional(ModSpellRegistry.SPACE_RUPTURE.get().getSpellResource());
         // UNSTABLE_TELEPORT: 先在原地引爆再传送，位移只是副产物
@@ -159,13 +161,13 @@ public final class MonstersSpellbooksTags {
         ctx.attack().addOptional(ModSpellRegistry.SPINBLADE.get().getSpellResource());
         ctx.attack().addOptional(ModSpellRegistry.BANSHEE_SCREAM.get().getSpellResource());
         ctx.attack().addOptional(ModSpellRegistry.BONE_DAGGER.get().getSpellResource());
-        ctx.movement().addOptional(ModSpellRegistry.CLOUD_DASH.get().getSpellResource());
+        // ctx.movement().addOptional(ModSpellRegistry.CLOUD_DASH.get().getSpellResource());
 
         // 需要多次施放（recast）的法术
         ctx.maidShouldRecast().addOptional(ModSpellRegistry.BRIMSTONE_RAIN.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(ModSpellRegistry.BRIMSTONE_WRATH.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(ModSpellRegistry.BUBBLE_SPRAY.get().getSpellResource());
-        ctx.maidShouldRecast().addOptional(ModSpellRegistry.CLOUD_DASH.get().getSpellResource());
+        // ctx.maidShouldRecast().addOptional(ModSpellRegistry.CLOUD_DASH.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(ModSpellRegistry.CORRUPTED_BEACON_RAY.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(ModSpellRegistry.DISCHARGE.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(ModSpellRegistry.FRENZIED_STORM.get().getSpellResource());
@@ -175,7 +177,7 @@ public final class MonstersSpellbooksTags {
         ctx.maidShouldRecast().addOptional(ModSpellRegistry.PRIMORDIAL_FLASH.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(ModSpellRegistry.RANCORCALL.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(ModSpellRegistry.REDSTONE_LASERS.get().getSpellResource());
-        ctx.maidShouldRecast().addOptional(ModSpellRegistry.STEAM_STREAM.get().getSpellResource());
+        // ctx.maidShouldRecast().addOptional(ModSpellRegistry.STEAM_STREAM.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(ModSpellRegistry.THUNDER_STEP.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(ModSpellRegistry.VOID_ARROWS.get().getSpellResource());
         ctx.maidShouldRecast().addOptional(ModSpellRegistry.WITHER_NOVA.get().getSpellResource());

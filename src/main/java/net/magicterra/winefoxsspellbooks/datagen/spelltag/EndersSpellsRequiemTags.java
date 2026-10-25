@@ -67,6 +67,16 @@ public final class EndersSpellsRequiemTags {
         ctx.summon().addOptional(GGSpellRegistry.ARM_OF_DECAY_WEAK_PASSIVE.get().getSpellResource());
         ctx.summon().addOptional(GGSpellRegistry.FIELD_OF_MOURNING.get().getSpellResource());
         ctx.summon().addOptional(GGSpellRegistry.MAGGOT_BURST.get().getSpellResource());
+        // DEATH_KNIGHT / VESSEL_SKELETON: 标准 SummonManager 召唤，实体 setSummoner 且目标选择只跟随主人的敌人。
+        // 两者都带 getRecastCount，但属于纯召唤，女仆再次施放只会召回召唤物，故不加 maidShouldRecast。
+        ctx.attack().addOptional(GGSpellRegistry.DEATH_KNIGHT.get().getSpellResource());
+        ctx.summon().addOptional(GGSpellRegistry.DEATH_KNIGHT.get().getSpellResource());
+        ctx.attack().addOptional(GGSpellRegistry.VESSEL_SKELETON.get().getSpellResource());
+        ctx.summon().addOptional(GGSpellRegistry.VESSEL_SKELETON.get().getSpellResource());
+        // BLOOD_DOMAIN: 领域每秒对半径 30 格内除自己和驯服生物外的所有生物（含主人）直接 hurt 4 点凋零伤害并附加虚弱，
+        // 没有友军判定，女仆施放会持续伤害主人。
+        // HOMUNCULUS: onCast 先对施法者自己造成 2.5 点魔法伤害，且仅召唤 5 点生命的弱小仆从，女仆低血量时可能自杀。
+        // audit:ignore BLOOD_DOMAIN, HOMUNCULUS
         // CORPSE_EXPLOSION / GLACIAL_SCULPTING: 引爆己方召唤物造成 AOE 伤害
         ctx.attack().addOptional(GGSpellRegistry.CORPSE_EXPLOSION.get().getSpellResource());
         ctx.attack().addOptional(GGSpellRegistry.GLACIAL_SCULPTING.get().getSpellResource());

@@ -8,11 +8,11 @@ public final class DreamlessSpellsTags {
     }
 
     public static void contribute(SpellTagContext ctx) {
+        // 原因：DRAINED / DULLARD / MUTE 的 checkPreCastConditions 要求施法者自身带有 EMPTIED 效果，
+        // 且 onCast 中向目标施加 DRAINED / DULLARD / MUTE 效果的全部代码都包在 entity instanceof ServerPlayer 分支内，
+        // 女仆施放只会白耗冷却，对目标没有任何影响。
+        // audit:ignore DRAINED, DULLARD, MUTE
+
         ctx.defense().addOptional(SpellRegistries.JADESKIN.get().getSpellResource());
-        // MUTE: 单体目标施加 MUTE 沉默 debuff，不直接造成伤害（onCast 只调 addEffect，没有 hurt()）
-        ctx.negativeEffect().addOptional(SpellRegistries.MUTE.get().getSpellResource());
-        // DRAINED / DULLARD: AOE 攻击 + 给敌人施加削弱 debuff（需要施法者先有 EMPTIED 效果）
-        ctx.attack().addOptional(SpellRegistries.DRAINED.get().getSpellResource());
-        ctx.attack().addOptional(SpellRegistries.DULLARD.get().getSpellResource());
     }
 }

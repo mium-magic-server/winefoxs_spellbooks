@@ -34,8 +34,8 @@ public final class MonstersSpellbooksData {
             ModMobEffects.EFFECT_OF_UNDYING.getId());
 
         // 增益队友：效果挂在被支援的目标身上
-        ctx.effect().add(ModSpellRegistry.AIR_BUBBLE.get().getSpellResource(),
-            MobEffects.WATER_BREATHING.getKey().location());
+        // ctx.effect().add(ModSpellRegistry.AIR_BUBBLE.get().getSpellResource(),
+            // MobEffects.WATER_BREATHING.getKey().location());
         ctx.effect().add(ModSpellRegistry.ENCHANTERS_BOOST.get().getSpellResource(),
             MobEffects.DAMAGE_BOOST.getKey().location());
         ctx.effect().add(ModSpellRegistry.ENCHANTERS_PROTECTION.get().getSpellResource(),
@@ -73,8 +73,8 @@ public final class MonstersSpellbooksData {
         ctx.effect().add(ModSpellRegistry.SPACE_BREAKER.get().getSpellResource(), ModMobEffects.PARALYSIS.getId());
         ctx.effect().add(ModSpellRegistry.SPECTRAL_BLAST.get().getSpellResource(), ModMobEffects.LETHARGY.getId());
         ctx.effect().add(ModSpellRegistry.SPIRIT_STRIKE.get().getSpellResource(), ModMobEffects.SOUL_REND.getId());
-        ctx.effect().add(ModSpellRegistry.SUFFOCATE.get().getSpellResource(), ModMobEffects.SUFFOCATION.getId());
-        ctx.effect().add(ModSpellRegistry.WIND_WAVE.get().getSpellResource(), MobEffectRegistry.AIRBORNE.getId());
+        // ctx.effect().add(ModSpellRegistry.SUFFOCATE.get().getSpellResource(), ModMobEffects.SUFFOCATION.getId());
+        // ctx.effect().add(ModSpellRegistry.WIND_WAVE.get().getSpellResource(), MobEffectRegistry.AIRBORNE.getId());
         ctx.effect().add(ModSpellRegistry.WITHER_NOVA.get().getSpellResource(), ModMobEffects.SOUL_REND.getId());
     }
 }

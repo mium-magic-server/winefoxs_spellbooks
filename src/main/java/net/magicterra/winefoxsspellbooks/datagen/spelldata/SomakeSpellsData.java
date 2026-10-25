@@ -2,6 +2,8 @@ package net.magicterra.winefoxsspellbooks.datagen.spelldata;
 
 import com.somake.somakespells.registries.ModMobEffects;
 import com.somake.somakespells.registries.ModSpells;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffects;
 
 public final class SomakeSpellsData {
 
@@ -15,6 +17,10 @@ public final class SomakeSpellsData {
         ctx.range().add(ModSpells.LIGHTNING_CUT.get().getSpellResource(), 2F);
         ctx.range().add(ModSpells.MIRROR_STRIKE.get().getSpellResource(), 2F);
         ctx.range().add(ModSpells.RAM_TCHUM.get().getSpellResource(), 2F);
+        // 以下两个法术仅当 Legendary Monsters 已加载时才注册，按注册名构造资源位置。
+        // SOULFALL_JUDGMENT 的砸地冲击只判定施法者 3 格内，SPECTRAL_RONDO 的横扫只判定身周 3.5 格内。
+        ctx.range().add(ResourceLocation.fromNamespaceAndPath("somakespells", "soulfall_judgment"), 2F);
+        ctx.range().add(ResourceLocation.fromNamespaceAndPath("somakespells", "spectral_rondo"), 2F);
 
         // 自我强化
         ctx.effect().add(ModSpells.BLESSING.get().getSpellResource(), ModMobEffects.BLESSED.getId());
@@ -32,8 +38,10 @@ public final class SomakeSpellsData {
         ctx.effect().add(ModSpells.PERMAFROST.get().getSpellResource(), ModMobEffects.PERMAFROST.getId());
         ctx.effect().add(ModSpells.REVERBERATION.get().getSpellResource(), ModMobEffects.REVERBERATION.getId());
         ctx.effect().add(ModSpells.ROSE_SECRET.get().getSpellResource(), ModMobEffects.ROSE_SECRET.getId());
-        ctx.effect().add(ModSpells.SPIRIT_EMPOWERMENT.get().getSpellResource(),
-            ModMobEffects.SPIRIT_EMPOWERMENT.getId());
+        // SPIRIT_EMPOWERMENT 的法术与效果在 Somake Spells 8952876 起均仅当 Legendary Monsters 已加载时才注册，
+        // 字段在其缺席时为 null，故按注册名构造资源位置而不取 holder。
+        ctx.effect().add(ResourceLocation.fromNamespaceAndPath("somakespells", "spirit_empowerment"),
+            ResourceLocation.fromNamespaceAndPath("somakespells", "spirit_empowerment"));
         ctx.effect().add(ModSpells.SUBMERGE.get().getSpellResource(), ModMobEffects.SUBMERGED.getId());
         ctx.effect().add(ModSpells.SYMMETRY_EMPOWERMENT.get().getSpellResource(),
             ModMobEffects.SYMMETRY_EMPOWERMENT.getId());
@@ -46,10 +54,17 @@ public final class SomakeSpellsData {
             ModMobEffects.GUARDIAN_CONNECTION.getId());
 
         // 攻击 / 负面
+        ctx.effect().add(ModSpells.BLOODBOUND_BLADE.get().getSpellResource(), ModMobEffects.CRIMSON_ROOT.getId());
+        ctx.effect().add(ModSpells.FUNERAL_BLOOM.get().getSpellResource(), MobEffects.WITHER.getKey().location());
         ctx.effect().add(ModSpells.LIGHTNING_CUT.get().getSpellResource(), ModMobEffects.ELECTROCUTED.getId());
         ctx.effect().add(ModSpells.LIGHTNING_LASH.get().getSpellResource(), ModMobEffects.ELECTROCUTED.getId());
         ctx.effect().add(ModSpells.LIGHTNING_STRIKE.get().getSpellResource(), ModMobEffects.ELECTROCUTED.getId());
         ctx.effect().add(ModSpells.STORM_AURA.get().getSpellResource(), ModMobEffects.WET.getId());
         ctx.effect().add(ModSpells.THUNDER_CLOUD.get().getSpellResource(), ModMobEffects.WET.getId());
+        ctx.effect().add(ModSpells.WITHERED_ROSE_VORTEX.get().getSpellResource(),
+            MobEffects.WITHER.getKey().location());
+        // SOUL_LATCH 仅当 Legendary Monsters 已加载时才注册，按注册名构造资源位置；锁链期间持续刷新高等级缓慢
+        ctx.effect().add(ResourceLocation.fromNamespaceAndPath("somakespells", "soul_latch"),
+            MobEffects.MOVEMENT_SLOWDOWN.getKey().location());
     }
 }
