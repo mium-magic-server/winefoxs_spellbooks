@@ -48,8 +48,11 @@ public class FoxshadeAmbushSpell extends AbstractSpell {
 
     private final ResourceLocation spellId = ResourceLocation.fromNamespaceAndPath(WinefoxsSpellbooks.MODID, "foxshade_ambush");
 
+    /**
+     * 4 级从卓越起：铁魔法按「等级 / 最高级」落入稀有度区间，从普通起时 4 级会是普通 / 卓越 / 稀有 / 传说，跳过史诗
+     */
     private final DefaultConfig defaultConfig = new DefaultConfig()
-        .setMinRarity(SpellRarity.COMMON)
+        .setMinRarity(SpellRarity.UNCOMMON)
         .setSchoolResource(WsbSchools.WINEFOX_HEX_RESOURCE)
         .setMaxLevel(4)
         .setCooldownSeconds(8.0)
