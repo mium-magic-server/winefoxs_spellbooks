@@ -18,7 +18,8 @@ import net.neoforged.neoforge.items.IItemHandler;
 /**
  * 女仆战斗中从背包里的品酒排挑一支此刻该喝的酒签
  * <p>
- * 每排从右到左找，跳过此刻不该喝的；只喝不含有害效果、且至少有一种效果此刻用得上的酒签。药水与铁魔法的药剂同样按效果判断。
+ * 生命低于 {@link #HEAL_HEALTH_RATIO} 时，先在所有品酒排的所有酒签中找此刻该喝的治疗类（治疗、再生、伤害吸收），不论其位置；没有则回到常规顺序：
+ * 逐排从右到左找，跳过此刻不该喝的。只喝不含有害效果、且至少有一种效果此刻用得上的酒签。药水与铁魔法的药剂同样按效果判断。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-10-25
@@ -59,6 +60,22 @@ public final class MaidVialPicker {
     }
 
     public static Optional<Pick> find(EntityMaid maid) {
+        // 低血时治疗类优先：遍历所有品酒排的所有酒签，不受从右到左的顺序限制
+        if (maid.getHealth() < maid.getMaxHealth() * HEAL_HEALTH_RATIO) {
+            Optional<Pick> healing = scan(maid, true);
+            if (healing.isPresent()) {
+                return healing;
+            }
+        }
+        return scan(maid, false);
+    }
+
+    /**
+     * 逐排从右到左找第一支此刻该喝的酒签
+     *
+     * @param healingOnly 只考虑治疗类
+     */
+    private static Optional<Pick> scan(EntityMaid maid, boolean healingOnly) {
         IItemHandler backpack = maid.getAvailableBackpackInv();
         for (int slot = 0; slot < backpack.getSlots(); slot++) {
             ItemStack stack = backpack.getStackInSlot(slot);
@@ -71,8 +88,9 @@ public final class MaidVialPicker {
                     continue;
                 }
                 List<MobEffectInstance> effects = VialsContents.effects(vials.get(i));
-                if (wanted(maid, effects)) {
-                    return Optional.of(new Pick(slot, i, isHealing(effects)));
+                boolean healing = isHealing(effects);
+                if ((healing || !healingOnly) && wanted(maid, effects)) {
+                    return Optional.of(new Pick(slot, i, healing));
                 }
             }
         }
