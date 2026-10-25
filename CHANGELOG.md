@@ -1,5 +1,27 @@
 # Changelog / 变更日志
 
+## 1.0.2-alpha.3
+
+1. **车万女仆：万法皆通联动 (Touhou Little Maid: Spell Integration)** — 可选联动。安装后改用万法皆通的「法术战斗」「远程法术」任务，女仆在其中按本模组的逻辑选择并施放铁魔法法术、为主人和队友治疗增益，并按任务保持站位；法术书识别、冷却与饰品以万法皆通为准，法力照常消耗（`tlmSpellMana` 可关闭）；末影腰包的女仆列表显示法力条。  
+   Optional integration. With it installed, maids use its Spell Combat and Ranged Spell tasks, in which they choose and cast Iron's spells by this mod's logic, heal and buff their owner and allies, and hold the spacing each task calls for. Spellbook detection, cooldowns and baubles follow Touhou Little Maid: Spell; mana is still spent (switch off with `tlmSpellMana`), and the Ender Pocket maid list shows a mana bar.
+
+2. **品酒排 (Vixen's Flight)** — 新物品，四支酒签各装一瓶药水：在物品栏中与药水或玻璃瓶互相右键装入、倒出，也可从炼药锅取水、从铁魔法炼金锅取药；玩家可直接饮用。女仆把它带在背包里，会在战斗中挑此刻用得上的增益饮用，低血时饮用治疗类。四个玻璃瓶加任意木台阶无序合成。  
+   A new item holding four vials of one potion each: right-click it with a potion or glass bottle in your inventory to fill or pour, or draw water from a cauldron and potions from an Alchemist Cauldron; players can drink from it directly. A maid carrying it drinks the buffs she needs in combat, and healing when low on health. Crafted from four glass bottles and any wooden slab.
+
+3. **战斗饮药改为消耗品酒排 (Battle Drinking Now Uses Vixen's Flight)** — 女仆不再凭空饮用治疗药水，只饮用品酒排中装填的药水；`drinkPotionInSpellBattle` 的默认值随之改为开。⚠️ 已有配置文件中的值不会被改动。  
+   Maids no longer conjure free healing potions; they drink only what is loaded into a Vixen's Flight, and `drinkPotionInSpellBattle` now defaults to on. ⚠️ Values already present in existing config files are left unchanged.
+
+4. **狐影伏击与酒杯狐影加强 (Foxshade Ambush and Foxshade Wisps Buffed)** — 狐影伏击每级多咬一口（1～4 口），狐影停留更久，四个等级改为卓越至传说；酒杯狐影每发伤害系数由 ×2 提高到 ×3。两者的法术说明新增伤害与扑咬次数 / 弹射物数量。  
+   Foxshade Ambush bites once more per level (1–4 bites), its fox lingers longer, and its four levels now run Uncommon to Legendary; Foxshade Wisps' per-projectile damage multiplier rises from ×2 to ×3. Both spell tooltips now show damage and bite or projectile count.
+
+5. **醒酒之礼随等级成长 (Decant the Bind Scales with Level)** — 负面效果时长不再固定减半：2～4 级依次缩短 50% / 67% / 83%，5 级尽数清除。  
+   Debuffs are no longer simply halved: levels 2–4 cut their duration by 50% / 67% / 83%, and level 5 purges them outright.
+
+6. **法术图标重绘 (Spell Icons Redrawn)** — 学派法术图标统一重绘为 16×16 精绘风格。  
+   The school's spell icons are redrawn at 16×16 in one unified style.
+
+---
+
 ## 1.0.2-alpha.1
 
 1. **Advanced Loot Info 2.2 支持 (Advanced Loot Info 2.2 Support)** — 战利品查询插件改为对接 ALI 2.2.0 的新接口。宝箱条目的精细展示需要 ALI 2.2.0 及以上（ALI 自 2.1 起另需前置 Advanced Core Info），更早的版本会退回 ALI 自带的自动识别条目；「女仆的晨间礼物」分类页不受影响。  
