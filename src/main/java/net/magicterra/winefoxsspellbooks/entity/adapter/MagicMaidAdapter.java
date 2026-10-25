@@ -30,6 +30,7 @@ import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellMemory;
 import net.magicterra.winefoxsspellbooks.magic.SpellAimPredictor;
+import net.magicterra.winefoxsspellbooks.magic.SpellCastBackoff;
 import net.magicterra.winefoxsspellbooks.magic.animation.MagicCastingAnimateStateHolder;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
@@ -126,6 +127,11 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
     private long precastFailedTime = Long.MIN_VALUE;
 
+    /**
+     * 起手失败后的递增退避，选术方据此跳过反复失败的法术；起手成功时在此清零
+     */
+    private final SpellCastBackoff castBackoff = new SpellCastBackoff();
+
     public MagicMaidAdapter(LivingEntity delegatedEntity) {
         this.delegatedEntity = delegatedEntity;
         this.maidMagicData = new MaidMagicData(delegatedEntity);
@@ -143,6 +149,10 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
 
     public void setTlmSpellPriorityUntil(long gameTime) {
         this.tlmSpellPriorityUntil = gameTime;
+    }
+
+    public SpellCastBackoff getCastBackoff() {
+        return castBackoff;
     }
 
     /**
@@ -237,6 +247,9 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
             precastFailedTime = delegatedEntity.level().getGameTime();
             castingSpell = SpellData.EMPTY;
             return;
+        } else if (!delegatedEntity.level().isClientSide) {
+            // 前置检查通过：该法术的连续失败计数清零（放行模式没有真正检查，不算）
+            castBackoff.reset(spell);
         }
 
         if (spell == SpellRegistry.TELEPORT_SPELL.get() || spell == SpellRegistry.FROST_STEP_SPELL.get() || spell.getSpellId().equals("discerning_the_eldritch:otherworldly_presence")) {

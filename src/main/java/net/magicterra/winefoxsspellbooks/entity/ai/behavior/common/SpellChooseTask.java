@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,14 +20,17 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.Config;
+import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.event.MaidSpellActionChooseEvent;
 import net.magicterra.winefoxsspellbooks.api.event.MaidSpellChooseEvent;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.compat.tlmspell.TlmSpellCompat;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
+import net.magicterra.winefoxsspellbooks.magic.SpellCastBackoff;
 import net.magicterra.winefoxsspellbooks.magic.SpellCastPlanner;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
@@ -85,25 +87,22 @@ public class SpellChooseTask extends Behavior<Mob> {
     protected final Set<AbstractSpell> ownerCastSpells = new HashSet<>();
 
     /**
-     * 对主人起手失败后暂停改作增益的时长（tick）
-     */
-    private static final long OWNER_CAST_BACKOFF_TICKS = 200;
-
-    /**
-     * 白名单法术对主人起手失败后，暂停改作增益的截止游戏刻。期间按原类别对待。
+     * 本轮选中的法术及选中时的游戏刻，回合结束时据此判断是否起手失败，失败则按 {@link SpellCastBackoff} 递增退避。
      * <p>
-     * 白名单只放开「可以以玩家为目标」，法术自己的目标过滤仍会排除友方（例如缓慢术不对盟友施放），这类法术对主人永远起不了手。
-     * 不暂停的话，主人缺这个效果时增益权重一直最高，女仆会每轮都选它、每轮都失败，挤掉其余法术。
-     */
-    private final Map<AbstractSpell, Long> ownerCastBackoffUntil = new HashMap<>();
-
-    /**
-     * 本轮选中的、对主人施放的白名单法术及选中时的游戏刻，回合结束时据此判断是否起手失败
+     * 退避适用于所有类别：前置检查每次都不通过的法术若每轮照选，会挤掉其余法术并刷屏。
      */
     @Nullable
-    private AbstractSpell ownerCastChosen;
+    private AbstractSpell chosenSpell;
 
-    private long ownerCastChosenTime;
+    private long chosenSpellTime;
+
+    /**
+     * 本轮选中的法术是否作为「对主人施放的白名单增益」选中。
+     * <p>
+     * 白名单只放开「可以以玩家为目标」，法术自己的目标过滤仍会排除友方（例如缓慢术不对盟友施放），这类法术对主人永远起不了手。
+     * 此时退避只暂停这种改作、按原类别对待，不暂停整个法术（见 {@link SpellCastBackoff}）。
+     */
+    private boolean chosenAsOwnerCast;
 
     /**
      * 攻击、负面法术的最小射程，短于它的不选。万法皆通远程法术任务用其距离带下限，免得选中够不着又不会靠近的法术；默认不限
@@ -215,14 +214,19 @@ public class SpellChooseTask extends Behavior<Mob> {
         // 万法皆通法术白名单额外放行的法术：不论原属哪类，本轮都改作对主人施放的增益
         Set<String> ownerCastable = owner instanceof EntityMaid maid ? TlmSpellCompat.getOwnerCastableSpellIds(maid) : Set.of();
         long gameTime = level.getGameTime();
-        ownerCastBackoffUntil.values().removeIf(until -> until <= gameTime);
+        SpellCastBackoff backoff = ((MaidMagicEntity) owner).winefoxsSpellbooks$getMagicMaidAdapter().getCastBackoff();
+        backoff.purgeStale(gameTime);
         for (MaidSpellAction storedAction : MaidSpellAction.ALL) {
             for (SpellData spellData : spellDataHolder.get(storedAction)) {
+                if (backoff.isExcluded(spellData.getSpell(), gameTime)) {
+                    // 刚起手失败过：退避期内不选
+                    continue;
+                }
                 MaidSpellAction action = storedAction;
                 boolean ownerCast = !ownerCastable.isEmpty() && storedAction != MaidSpellAction.POSITIVE
                     && storedAction != MaidSpellAction.SUPPORT_OTHER
                     && ownerCastable.contains(spellData.getSpell().getSpellId())
-                    && !ownerCastBackoffUntil.containsKey(spellData.getSpell());
+                    && !backoff.isOwnerCastSuspended(spellData.getSpell(), gameTime);
                 if (ownerCast) {
                     action = MaidSpellAction.POSITIVE;
                 }
@@ -321,13 +325,13 @@ public class SpellChooseTask extends Behavior<Mob> {
         // 法术名气泡改在真正起手时由 SpellCastingTask 显示，选中后可能还要走位、等冷却
         entity.getBrain().setMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get(), spellData);
         chosenThisRound = true;
+        chosenSpell = spellData.getSpell();
+        chosenSpellTime = gameTime;
+        chosenAsOwnerCast = false;
 
         if (nextSpellAction == MaidSpellAction.SUPPORT_OTHER || nextSpellAction == MaidSpellAction.POSITIVE) {
             boolean ownerOnly = ownerCastSpells.contains(spellData.getSpell());
-            if (ownerOnly) {
-                ownerCastChosen = spellData.getSpell();
-                ownerCastChosenTime = gameTime;
-            }
+            chosenAsOwnerCast = ownerOnly;
             LivingEntity owner = getOwner();
             for (LivingEntity nearbyAlliedEntity : nearbyAlliedEntities) {
                 if (ownerOnly && nearbyAlliedEntity != owner) {
@@ -365,12 +369,20 @@ public class SpellChooseTask extends Behavior<Mob> {
             // 刚放完一个铁魔法，下一轮多半还会出手：在最长选术间隔内让万法皆通的其他模组法术让出施法
             maidMagicEntity.winefoxsSpellbooks$getMagicMaidAdapter().setTlmSpellPriorityUntil(gameTime + maxDelayTicks);
         }
-        if (ownerCastChosen != null && entity instanceof MaidMagicEntity maidMagicEntity
-            && maidMagicEntity.winefoxsSpellbooks$getMagicMaidAdapter().precastFailedSince(ownerCastChosen, ownerCastChosenTime)) {
-            // 对主人起手失败：一段时间内按原类别对待，不再每轮选它
-            ownerCastBackoffUntil.put(ownerCastChosen, gameTime + OWNER_CAST_BACKOFF_TICKS);
+        if (chosenSpell != null && entity instanceof MaidMagicEntity maidMagicEntity) {
+            MagicMaidAdapter adapter = maidMagicEntity.winefoxsSpellbooks$getMagicMaidAdapter();
+            if (adapter.precastFailedSince(chosenSpell, chosenSpellTime)) {
+                // 起手失败：递增退避，期间不再选它（对主人施放失败时只暂停改作增益）
+                long ticks = adapter.getCastBackoff().recordFailure(chosenSpell, gameTime, chosenAsOwnerCast);
+                if (WinefoxsSpellbooks.DEBUG) {
+                    WinefoxsSpellbooks.LOGGER.debug("法术起手前置检查未通过，已暂停选用：女仆 {}，法术 {}，对主人施放 {}，连续失败 {} 次，暂停 {} 秒",
+                        entity.getName().getString(), chosenSpell.getSpellId(), chosenAsOwnerCast,
+                        adapter.getCastBackoff().failures(chosenSpell), ticks / 20);
+                }
+            }
         }
-        ownerCastChosen = null;
+        chosenSpell = null;
+        chosenAsOwnerCast = false;
         chosenThisRound = false;
         // 清理记忆
         entity.getBrain().eraseMemory(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get());
