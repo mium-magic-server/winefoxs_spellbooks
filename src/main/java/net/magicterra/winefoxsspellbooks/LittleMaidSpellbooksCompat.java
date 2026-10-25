@@ -3,6 +3,7 @@ package net.magicterra.winefoxsspellbooks;
 import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.LittleMaidExtension;
 import com.github.tartaricacid.touhoulittlemaid.api.event.AddJadeInfoEvent;
+import com.github.tartaricacid.touhoulittlemaid.client.overlay.MaidTipsOverlay;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ExtraMaidBrainManager;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
@@ -15,6 +16,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.magicterra.winefoxsspellbooks.bauble.SpellBookBauble;
+import net.magicterra.winefoxsspellbooks.client.MaidFeedTips;
 import net.magicterra.winefoxsspellbooks.compat.tlmspell.TlmSpellCompat;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.brain.MaidMagicBrain;
@@ -81,6 +83,11 @@ public class LittleMaidSpellbooksCompat implements ILittleMaid {
     @Override
     public void addExtraMaidBrain(ExtraMaidBrainManager manager) {
         manager.addExtraMaidBrain(new MaidMagicBrain());
+    }
+
+    @Override
+    public void addMaidTips(MaidTipsOverlay overlay) {
+        MaidFeedTips.register(overlay);
     }
 
     public void addJadeInfoEvent(AddJadeInfoEvent event) {
