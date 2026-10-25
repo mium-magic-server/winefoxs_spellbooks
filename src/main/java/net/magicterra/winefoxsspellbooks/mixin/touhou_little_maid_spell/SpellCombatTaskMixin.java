@@ -18,6 +18,7 @@ import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.compat.tlmspell.TlmSpellCompat;
+import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.DrinkPotionsTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.EngageBand;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.GatedBehavior;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.MaidLeash;
@@ -44,6 +45,7 @@ import org.spongepowered.asm.mixin.injection.At;
  *       万法皆通的接近行为只在本模组没有选中法术时运行，供只带其他模组法术书的女仆使用</li>
  *   <li>跟随模式下索敌只锁定站在主人身边活动范围边缘也够得着的目标，口径同 {@link MaidLeash}</li>
  *   <li>坐下或骑乘时须佩戴法术射表才施法，同万法皆通</li>
+ *   <li>战斗中饮用背包里品酒排装着的药水，同本模组的法术攻击任务，见 {@link DrinkPotionsTask}</li>
  * </ul>
  * 远程任务只覆写了 {@code createBrainTasks}，骑乘、索敌与目标失效判定沿用近战任务的版本。
  *
@@ -67,6 +69,12 @@ public abstract class SpellCombatTaskMixin {
      */
     @Unique
     private static final Set<MaidSpellAction> WINEFOXS_SPELLBOOKS$ALL_ACTIONS = Collections.unmodifiableSet(EnumSet.allOf(MaidSpellAction.class));
+
+    /**
+     * 两次饮用的最短间隔(tick)，同本模组的法术攻击任务
+     */
+    @Unique
+    private static final int WINEFOXS_SPELLBOOKS$DRINK_COOLDOWN = 100;
 
     @Unique
     private static final String WINEFOXS_SPELLBOOKS$FAR_TASK_PATH = "spell_combat_far";
@@ -101,6 +109,7 @@ public abstract class SpellCombatTaskMixin {
         result.add(Pair.of(WINEFOXS_SPELLBOOKS$PRIORITY, SpellAttackWalkToTarget.create(walkSpeed)));
         result.add(Pair.of(WINEFOXS_SPELLBOOKS$PRIORITY, new SpellStrafingTask((float) band.max(), walkSpeed, band)));
         result.add(Pair.of(WINEFOXS_SPELLBOOKS$PRIORITY, new SpellCastingTask((IMagicEntity) maid)));
+        result.add(Pair.of(WINEFOXS_SPELLBOOKS$PRIORITY, new DrinkPotionsTask(walkSpeed, WINEFOXS_SPELLBOOKS$DRINK_COOLDOWN)));
         return result;
     }
 
@@ -111,6 +120,7 @@ public abstract class SpellCombatTaskMixin {
         result.add(Pair.of(WINEFOXS_SPELLBOOKS$PRIORITY, new GatedBehavior<>(new SpellChooseTask(Config.getStartSpellRange(),
             Config.getMaxComboDelayTick(), maid, WINEFOXS_SPELLBOOKS$ALL_ACTIONS), TlmSpellCompat::canCastInRidePose)));
         result.add(Pair.of(WINEFOXS_SPELLBOOKS$PRIORITY, new SpellCastingTask((IMagicEntity) maid)));
+        result.add(Pair.of(WINEFOXS_SPELLBOOKS$PRIORITY, new DrinkPotionsTask((float) Config.getBattleWalkSpeed(), WINEFOXS_SPELLBOOKS$DRINK_COOLDOWN)));
         return result;
     }
 

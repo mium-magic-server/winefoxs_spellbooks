@@ -1,9 +1,11 @@
 package net.magicterra.winefoxsspellbooks.datagen;
 
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
+import net.magicterra.winefoxsspellbooks.item.VialsContents;
 import net.magicterra.winefoxsspellbooks.registry.WsbItems;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.minecraft.data.PackOutput;
+import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.client.model.generators.loaders.ItemLayerModelBuilder;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
@@ -24,6 +26,11 @@ public class ItemModelGenerator extends ItemModelProvider {
         basicItem(WsbItems.CASTING_TASK_ICON.get());
         basicItem(WsbItems.MAGIC_SUPPORT_TASK_ICON.get());
         basicItem(WsbItems.CRESCENT_BLOOD_VINTAGE.get());
+        // 品酒排：layer0 托板与玻璃，layer1～4 依次是四支酒签的液体遮罩，按各自药水颜色着色（VixensFlightItem.getTintColor）
+        ItemModelBuilder flight = basicItem(WsbItems.VIXENS_FLIGHT.get());
+        for (int i = 0; i < VialsContents.SIZE; i++) {
+            flight.texture("layer" + (i + 1), modLoc("item/vixens_flight_vial_" + i));
+        }
         // 灵狐精魂全亮显示，掉落、手持、展示框里都不受环境光影响；地面光斑见 VulpineAnimaGroundGlow
         basicItem(WsbItems.VULPINE_ANIMA.get())
             .customLoader(ItemLayerModelBuilder::begin)

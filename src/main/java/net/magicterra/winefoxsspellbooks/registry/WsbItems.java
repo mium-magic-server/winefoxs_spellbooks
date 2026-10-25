@@ -3,6 +3,7 @@ package net.magicterra.winefoxsspellbooks.registry;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.item.CrescentBloodVintage;
 import net.magicterra.winefoxsspellbooks.item.ItemIcon;
+import net.magicterra.winefoxsspellbooks.item.VixensFlightItem;
 import net.magicterra.winefoxsspellbooks.item.VulpineAnima;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
@@ -25,6 +26,8 @@ public class WsbItems {
     public static DeferredItem<Item> CRESCENT_BLOOD_VINTAGE = ITEMS.register("crescent_blood_vintage", CrescentBloodVintage::new);
 
     public static DeferredItem<Item> VULPINE_ANIMA = ITEMS.register("vulpine_anima", VulpineAnima::new);
+
+    public static DeferredItem<Item> VIXENS_FLIGHT = ITEMS.register("vixens_flight", VixensFlightItem::new);
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

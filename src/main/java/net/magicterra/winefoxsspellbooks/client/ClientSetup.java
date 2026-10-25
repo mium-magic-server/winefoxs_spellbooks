@@ -18,16 +18,19 @@ import net.magicterra.winefoxsspellbooks.entity.projectile.WineBombProjectile;
 import net.magicterra.winefoxsspellbooks.entity.summon.FoxshadeBiterEntity;
 import net.magicterra.winefoxsspellbooks.entity.summon.SummonedEntityMaid;
 import net.magicterra.winefoxsspellbooks.entity.summon.SummonedMaidBroom;
+import net.magicterra.winefoxsspellbooks.item.VixensFlightItem;
+import net.magicterra.winefoxsspellbooks.registry.WsbItems;
 import net.magicterra.winefoxsspellbooks.registry.WsbParticles;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 
 /**
- * 客户端设置：注册本模组各实体的渲染器。
+ * 客户端设置：注册本模组各实体的渲染器、粒子与物品着色。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-12-29
@@ -56,6 +59,14 @@ public class ClientSetup {
         evt.registerEntityRenderer(WineBombProjectile.TYPE, WineBombRenderer::new);
 
         evt.registerEntityRenderer(WinePoolCloud.TYPE, NoopRenderer::new);
+    }
+
+    /**
+     * 品酒排四支酒签按各自药水颜色着色
+     */
+    @SubscribeEvent
+    public static void onRegisterItemColors(RegisterColorHandlersEvent.Item evt) {
+        evt.register(VixensFlightItem::getTintColor, WsbItems.VIXENS_FLIGHT.get());
     }
 
     /**

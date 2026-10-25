@@ -20,9 +20,11 @@ import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.compat.tlmspell.TlmSpellCompat;
 import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
+import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.MaidVialPicker;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidSpellTargets;
 import net.magicterra.winefoxsspellbooks.event.SpellDamageLearningHandler;
+import net.magicterra.winefoxsspellbooks.item.VixensFlightItem;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicData;
 import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
 import net.magicterra.winefoxsspellbooks.magic.MaidSpellDataHolder;
@@ -31,6 +33,7 @@ import net.magicterra.winefoxsspellbooks.magic.SpellAimPredictor;
 import net.magicterra.winefoxsspellbooks.magic.animation.MagicCastingAnimateStateHolder;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
+import net.magicterra.winefoxsspellbooks.registry.WsbDataComponents;
 import net.magicterra.winefoxsspellbooks.task.MaidCastingTask;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.sounds.SoundEvents;
@@ -52,7 +55,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.items.wrapper.EntityHandsInvWrapper;
 
 /**
  * 魔法女仆适配器 <br /> 使用细节: <br /> 使用方需要在 Entity 对应的 Override 方法调用此类的: <br /> {@link net.magicterra.winefoxsspellbooks.entity.adapter.MagicMaidAdapter#completeUsingItem()} <br />
@@ -81,6 +83,11 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
     private boolean cancelCastAnimation = false;
 
     private boolean isDrinking = false;
+
+    /**
+     * 正在喝的品酒排原本所在的背包格，喝完放回原格；-1 表示没有记录（例如读档后），交给车万女仆随便塞回背包
+     */
+    private int drinkSourceSlot = -1;
 
     private boolean hasUsedSingleAttack;
 
@@ -336,37 +343,57 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
         this.hasUsedSingleAttack = hasUsedSingleAttack;
     }
 
+    /**
+     * 铁魔法接口：女仆从背包里的品酒排挑一支此刻该喝的喝；没有可喝的就不喝
+     * <p>
+     * 非女仆的实体没有背包，仍按铁魔法的默认做法凭空喝一瓶治疗药水。
+     */
     @Override
     public void startDrinkingPotion() {
-        if (!delegatedEntity.level().isClientSide) {
-            isDrinking = true;
-            if (delegatedEntity instanceof EntityMaid maid) {
-                // 对手部进行处理：如果没有空的手部，那就取副手
-                InteractionHand eatHand = InteractionHand.OFF_HAND;
-                for (InteractionHand hand : InteractionHand.values()) {
-                    if (maid.getItemInHand(hand).isEmpty()) {
-                        eatHand = hand;
-                        break;
-                    }
-                }
-                ItemStack itemInHand = maid.getItemInHand(eatHand);
-                ItemStack handStack = itemInHand.copy();
-                ItemStack potionStack = PotionContents.createItemStack(Items.POTION, Potions.HEALING);
-                maid.setItemInHand(eatHand, potionStack);
-                if (!handStack.isEmpty()) {
-                    maid.memoryHandItemStack(handStack);
-                }
-                maid.startUsingItem(eatHand);
-            } else {
-                ItemStack potionStack = PotionContents.createItemStack(Items.POTION, Potions.HEALING);
-                delegatedEntity.setItemInHand(InteractionHand.OFF_HAND, potionStack);
-                delegatedEntity.startUsingItem(InteractionHand.OFF_HAND);
-            }
-            AttributeInstance attributeinstance = delegatedEntity.getAttribute(Attributes.MOVEMENT_SPEED);
-            if (attributeinstance != null) {
-                attributeinstance.removeModifier(SPEED_MODIFIER_DRINKING);
-                attributeinstance.addTransientModifier(SPEED_MODIFIER_DRINKING);
-            }
+        if (delegatedEntity.level().isClientSide) {
+            return;
+        }
+        if (delegatedEntity instanceof EntityMaid maid) {
+            MaidVialPicker.find(maid).ifPresent(pick -> startDrinkingVial(maid, pick));
+            return;
+        }
+        isDrinking = true;
+        ItemStack potionStack = PotionContents.createItemStack(Items.POTION, Potions.HEALING);
+        delegatedEntity.setItemInHand(InteractionHand.OFF_HAND, potionStack);
+        delegatedEntity.startUsingItem(InteractionHand.OFF_HAND);
+        addDrinkingSlowdown();
+    }
+
+    /**
+     * 把品酒排从背包挪到副手喝选中的那支
+     * <p>
+     * 只能用副手：车万女仆喝完后只把副手物品塞回背包、再还原副手原有物品（{@code EntityMaid.backCurrentHandItemStack}）。
+     *
+     * @param maid 女仆
+     * @param pick {@link MaidVialPicker#find} 的结果
+     */
+    public void startDrinkingVial(EntityMaid maid, MaidVialPicker.Pick pick) {
+        ItemStack flight = maid.getAvailableBackpackInv().extractItem(pick.slot(), 1, false);
+        if (!(flight.getItem() instanceof VixensFlightItem)) {
+            return;
+        }
+        flight.set(WsbDataComponents.VIAL_CHOICE.get(), pick.vial());
+        isDrinking = true;
+        drinkSourceSlot = pick.slot();
+        ItemStack offhand = maid.getItemInHand(InteractionHand.OFF_HAND).copy();
+        maid.setItemInHand(InteractionHand.OFF_HAND, flight);
+        if (!offhand.isEmpty()) {
+            maid.memoryHandItemStack(offhand);
+        }
+        maid.startUsingItem(InteractionHand.OFF_HAND);
+        addDrinkingSlowdown();
+    }
+
+    private void addDrinkingSlowdown() {
+        AttributeInstance attributeinstance = delegatedEntity.getAttribute(Attributes.MOVEMENT_SPEED);
+        if (attributeinstance != null) {
+            attributeinstance.removeModifier(SPEED_MODIFIER_DRINKING);
+            attributeinstance.addTransientModifier(SPEED_MODIFIER_DRINKING);
         }
     }
 
@@ -374,18 +401,17 @@ public class MagicMaidAdapter implements MaidMagicEntity, IMagicEntity {
      * 需要使用方调用此事件，注意要在恢复女仆隐藏物品栏之前
      */
     public void completeUsingItem() {
-        if (delegatedEntity instanceof EntityMaid maid) {
-            EntityHandsInvWrapper handsInvWrapper = maid.getHandsInvWrapper();
-            for (int i = 0; i < handsInvWrapper.getSlots(); i++) {
-                ItemStack itemStack = handsInvWrapper.getStackInSlot(i);
-                if (isDrinkingPotion()) {
-                    if (itemStack.is(Items.GLASS_BOTTLE)) {
-                        handsInvWrapper.setStackInSlot(i, ItemStack.EMPTY);
-                        break;
-                    }
+        if (isDrinkingPotion() && delegatedEntity instanceof EntityMaid maid) {
+            ItemStack offhand = maid.getItemInHand(InteractionHand.OFF_HAND);
+            if (offhand.getItem() instanceof VixensFlightItem && drinkSourceSlot >= 0) {
+                // 放回原格；原格已被占用时留在副手，由车万女仆塞进背包任意空位
+                ItemStack rest = maid.getAvailableBackpackInv().insertItem(drinkSourceSlot, offhand, false);
+                if (rest.isEmpty()) {
+                    maid.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
                 }
             }
         }
+        drinkSourceSlot = -1;
         finishDrinkingPotion();
     }
 

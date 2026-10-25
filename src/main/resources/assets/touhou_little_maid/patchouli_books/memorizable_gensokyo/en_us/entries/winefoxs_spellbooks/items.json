@@ -42,6 +42,25 @@
     {
       "type": "patchouli:text",
       "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.items.pages.8.text"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "winefoxs_spellbooks:vixens_flight",
+      "title": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.items.pages.9.title",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.items.pages.9.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.items.pages.10.text"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.items.pages.11.text"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "winefoxs_spellbooks:vixens_flight",
+      "text": "patchouli.touhou_little_maid.book.entries.winefoxs_spellbooks.items.pages.12.text"
     }
   ],
   "sortnum": 9

@@ -14,6 +14,7 @@ import net.magicterra.winefoxsspellbooks.registry.WsbAttachments;
 import net.magicterra.winefoxsspellbooks.registry.WsbAttributes;
 import net.magicterra.winefoxsspellbooks.registry.WsbCommands;
 import net.magicterra.winefoxsspellbooks.registry.WsbCreativeTabs;
+import net.magicterra.winefoxsspellbooks.registry.WsbDataComponents;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
 import net.magicterra.winefoxsspellbooks.registry.WsbEntities;
 import net.magicterra.winefoxsspellbooks.registry.WsbItems;
@@ -47,6 +48,7 @@ public class WinefoxsSpellbooks {
     public WinefoxsSpellbooks(ModContainer modContainer, IEventBus modBus, Dist dist) {
         MaidCastingMemoryModuleTypes.MAID_CASTING_MEMORY_MODULE_TYPES.register(modBus);
         WsbSpells.register(modBus);
+        WsbDataComponents.register(modBus);
         WsbItems.register(modBus);
         WsbAttachments.register(modBus);
         WsbEntities.register(modBus);

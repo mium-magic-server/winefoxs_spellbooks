@@ -77,6 +77,9 @@ public class DataGenerateMod {
         // Global loot modifiers
         generator.addProvider(event.includeServer(), new WsbGlobalLootModifierProvider(output, lookupProvider));
 
+        // 合成配方
+        generator.addProvider(event.includeServer(), new WsbRecipeProvider(output, lookupProvider));
+
         // Client providers
         generator.addProvider(event.includeClient(), new ItemModelGenerator(output, existingFileHelper));
     }

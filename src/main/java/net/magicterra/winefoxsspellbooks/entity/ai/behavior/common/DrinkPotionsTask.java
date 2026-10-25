@@ -1,8 +1,11 @@
 package net.magicterra.winefoxsspellbooks.entity.ai.behavior.common;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
+import java.util.Optional;
 import net.magicterra.winefoxsspellbooks.Config;
+import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -15,7 +18,7 @@ import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * 女仆战斗中使用药水
+ * 女仆战斗中使用药水：从背包里的品酒排挑一支此刻该喝的酒签，见 {@link MaidVialPicker}
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2025-11-02 19:43
@@ -26,6 +29,11 @@ public class DrinkPotionsTask extends Behavior<Mob> {
     private final int drinkCooldown;
 
     private int lastDrinkTick = 0;
+
+    /**
+     * 本次喝的是否治疗类：只有治疗类后撤再喝，其余增益原地喝，不打断走位
+     */
+    private boolean flee;
 
     public DrinkPotionsTask(float fleeSpeed, int drinkCooldown) {
         super(ImmutableMap.of(
@@ -62,11 +70,12 @@ public class DrinkPotionsTask extends Behavior<Mob> {
             // 冷却中
             return false;
         }
-        float maxHealth = owner.getMaxHealth();
-        float health = owner.getHealth();
-        float healthThreshold = (float) (maxHealth * 0.6);
-        // 小于 60% 血量启动喝药行为
-        return health < healthThreshold;
+        if (owner instanceof EntityMaid maid) {
+            // 女仆只喝背包里品酒排装着的、此刻用得上的酒签
+            return MaidVialPicker.find(maid).isPresent();
+        }
+        // 其余实体凭空喝治疗药水：生命低于 60% 时喝
+        return owner.getHealth() < owner.getMaxHealth() * MaidVialPicker.HEAL_HEALTH_RATIO;
     }
 
     @Override
@@ -81,10 +90,20 @@ public class DrinkPotionsTask extends Behavior<Mob> {
         if (target == null) {
             return;
         }
-        IMagicEntity magicEntity = (IMagicEntity) entity;
-        magicEntity.startDrinkingPotion();
-
-        setFleeWalkTarget(entity, target);
+        if (entity instanceof EntityMaid maid && maid instanceof MaidMagicEntity magicMaid) {
+            Optional<MaidVialPicker.Pick> pick = MaidVialPicker.find(maid);
+            if (pick.isEmpty()) {
+                return;
+            }
+            flee = pick.get().healing();
+            magicMaid.winefoxsSpellbooks$getMagicMaidAdapter().startDrinkingVial(maid, pick.get());
+        } else {
+            flee = true;
+            ((IMagicEntity) entity).startDrinkingPotion();
+        }
+        if (flee) {
+            setFleeWalkTarget(entity, target);
+        }
     }
 
     /**
@@ -104,7 +123,7 @@ public class DrinkPotionsTask extends Behavior<Mob> {
     @Override
     protected void tick(ServerLevel level, Mob owner, long gameTime) {
         LivingEntity target = owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
-        if (target == null) {
+        if (target == null || !flee) {
             return;
         }
         setFleeWalkTarget(owner, target);

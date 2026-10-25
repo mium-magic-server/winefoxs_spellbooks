@@ -1,0 +1,10 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "winefoxs_spellbooks:item/vixens_flight",
+    "layer1": "winefoxs_spellbooks:item/vixens_flight_vial_0",
+    "layer2": "winefoxs_spellbooks:item/vixens_flight_vial_1",
+    "layer3": "winefoxs_spellbooks:item/vixens_flight_vial_2",
+    "layer4": "winefoxs_spellbooks:item/vixens_flight_vial_3"
+  }
+}

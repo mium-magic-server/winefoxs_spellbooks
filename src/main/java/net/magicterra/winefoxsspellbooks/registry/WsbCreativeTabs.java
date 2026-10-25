@@ -38,6 +38,7 @@ public class WsbCreativeTabs {
                 // 任务图标物品仅作 GUI 图标用，不进创造栏
                 entries.accept(WsbItems.VULPINE_ANIMA.get());
                 entries.accept(WsbItems.CRESCENT_BLOOD_VINTAGE.get());
+                entries.accept(WsbItems.VIXENS_FLIGHT.get());
             })
             .withTabsBefore(CreativeTabRegistry.EQUIPMENT_TAB.getId())
             .build());
