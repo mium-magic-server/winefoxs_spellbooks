@@ -45,8 +45,9 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
 /**
- * 品酒排：一排四支酒签，每支装一瓶普通药水（250 mB）
+ * 品酒排：一排四支酒签，每支装一瓶普通药水（250 mB）或一瓶铁魔法（及附属）的药剂
  * <p>
+ * 药剂只能在物品栏中装入、倒出，不与两种锅交互。
  * 装填从左到右，取用从右到左，喝空的酒签留在托板上。装填方式：
  * <ul>
  *   <li>物品栏中与药水瓶互相右键，收纳袋式：药水装进来留下空玻璃瓶，空玻璃瓶点上来倒出最右一支</li>
@@ -98,7 +99,7 @@ public class VixensFlightItem extends Item {
         }
         VialsContents vials = vials(stack);
         int index = tintIndex - 1;
-        return vials.isEmpty(index) ? EMPTY_VIAL_COLOR : FastColor.ARGB32.opaque(vials.get(index).getColor());
+        return vials.isEmpty(index) ? EMPTY_VIAL_COLOR : FastColor.ARGB32.opaque(VialsContents.color(vials.get(index)));
     }
 
     // ==================== 饮用 ====================
@@ -130,12 +131,30 @@ public class VixensFlightItem extends Item {
         if (index < 0) {
             return stack;
         }
-        PotionContents contents = vials.get(index);
+        ItemStack vial = vials.get(index);
         Player player = entity instanceof Player p ? p : null;
-        if (player instanceof ServerPlayer serverPlayer) {
-            CriteriaTriggers.CONSUME_ITEM.trigger(serverPlayer, VialsContents.toPotion(contents));
+        if (VialsContents.isElixir(vial)) {
+            // 药剂自己的饮用逻辑：效果、消耗触发器与 DRINK 事件都在里面；扣的是副本，返还的玻璃瓶装填时已经给过，丢弃
+            vial.getItem().finishUsingItem(vial.copy(), level, entity);
+        } else {
+            drinkPotion(vial.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY), vial, level, entity, player);
         }
-        // 同 PotionItem.finishUsingItem
+        if (player != null) {
+            player.awardStat(Stats.ITEM_USED.get(this));
+        }
+        if (player == null || !player.hasInfiniteMaterials()) {
+            setVials(stack, vials.with(index, ItemStack.EMPTY));
+        }
+        return stack;
+    }
+
+    /**
+     * 同 PotionItem.finishUsingItem
+     */
+    private static void drinkPotion(PotionContents contents, ItemStack vial, Level level, LivingEntity entity, Player player) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            CriteriaTriggers.CONSUME_ITEM.trigger(serverPlayer, vial);
+        }
         if (!level.isClientSide) {
             contents.forEachEffect(effect -> {
                 if (effect.getEffect().value().isInstantenous()) {
@@ -145,14 +164,7 @@ public class VixensFlightItem extends Item {
                 }
             });
         }
-        if (player != null) {
-            player.awardStat(Stats.ITEM_USED.get(this));
-        }
-        if (player == null || !player.hasInfiniteMaterials()) {
-            setVials(stack, vials.with(index, PotionContents.EMPTY));
-        }
         entity.gameEvent(GameEvent.DRINK);
-        return stack;
     }
 
     // ==================== 炼药锅 / 炼金锅 ====================
@@ -195,7 +207,7 @@ public class VixensFlightItem extends Item {
             return false;
         }
         if (!simulate) {
-            setVials(stack, vials.with(index, new PotionContents(Potions.WATER)));
+            setVials(stack, vials.with(index, VialsContents.toPotion(new PotionContents(Potions.WATER))));
             // 一支酒签按一格水位算，同玻璃瓶
             LayeredCauldronBlock.lowerFillLevel(state, level, pos);
         }
@@ -205,7 +217,7 @@ public class VixensFlightItem extends Item {
     private static boolean pourIntoCauldron(ItemStack stack, Level level, BlockPos pos, BlockState state, boolean simulate) {
         VialsContents vials = vials(stack);
         int index = vials.lastFilled();
-        if (index < 0 || !vials.get(index).is(Potions.WATER)) {
+        if (index < 0 || !VialsContents.isWater(vials.get(index))) {
             return false;
         }
         BlockState filled;
@@ -217,7 +229,7 @@ public class VixensFlightItem extends Item {
             return false;
         }
         if (!simulate) {
-            setVials(stack, vials.with(index, PotionContents.EMPTY));
+            setVials(stack, vials.with(index, ItemStack.EMPTY));
             level.setBlockAndUpdate(pos, filled);
         }
         return true;
@@ -234,21 +246,15 @@ public class VixensFlightItem extends Item {
         if (top.getAmount() < VIAL_FLUID_AMOUNT) {
             return false;
         }
-        PotionContents contents;
-        if (top.is(Fluids.WATER)) {
-            contents = new PotionContents(Potions.WATER);
-        } else {
-            ItemStack potion = PotionFluid.from(top);
-            if (!VialsContents.canHold(potion)) {
-                // 墨水、鲜血等非药水流体，以及喷溅型、滞留型药水
-                return false;
-            }
-            contents = potion.get(DataComponents.POTION_CONTENTS);
+        ItemStack potion = top.is(Fluids.WATER) ? VialsContents.toPotion(new PotionContents(Potions.WATER)) : PotionFluid.from(top);
+        if (!VialsContents.isPotion(potion)) {
+            // 墨水、鲜血等非药水流体，以及喷溅型、滞留型药水
+            return false;
         }
         if (!simulate) {
             cauldron.fluidInventory.drain(top.copyWithAmount(VIAL_FLUID_AMOUNT), IFluidHandler.FluidAction.EXECUTE);
             cauldron.setChanged();
-            setVials(stack, vials.with(index, contents));
+            setVials(stack, vials.with(index, potion));
         }
         return true;
     }
@@ -256,20 +262,21 @@ public class VixensFlightItem extends Item {
     private static boolean pourIntoAlchemistCauldron(ItemStack stack, AlchemistCauldronTile cauldron, boolean simulate) {
         VialsContents vials = vials(stack);
         int index = vials.lastFilled();
-        if (index < 0) {
+        // 药剂不是流体，倒不进锅
+        if (index < 0 || !VialsContents.isPotion(vials.get(index))) {
             return false;
         }
-        PotionContents contents = vials.get(index);
-        FluidStack fluid = contents.is(Potions.WATER)
+        ItemStack vial = vials.get(index);
+        FluidStack fluid = VialsContents.isWater(vial)
             ? new FluidStack(Fluids.WATER, VIAL_FLUID_AMOUNT)
-            : PotionFluid.from(VialsContents.toPotion(contents)).copyWithAmount(VIAL_FLUID_AMOUNT);
+            : PotionFluid.from(vial).copyWithAmount(VIAL_FLUID_AMOUNT);
         if (fluid.isEmpty() || cauldron.fluidInventory.fill(fluid, IFluidHandler.FluidAction.SIMULATE) != VIAL_FLUID_AMOUNT) {
             return false;
         }
         if (!simulate) {
             cauldron.fluidInventory.fill(fluid, IFluidHandler.FluidAction.EXECUTE);
             cauldron.setChanged();
-            setVials(stack, vials.with(index, PotionContents.EMPTY));
+            setVials(stack, vials.with(index, ItemStack.EMPTY));
         }
         return true;
     }
@@ -322,7 +329,7 @@ public class VixensFlightItem extends Item {
     }
 
     /**
-     * 药水装进最左空槽、换回玻璃瓶；玻璃瓶倒出最右一支、换回药水
+     * 药水 / 药剂装进最左空槽、换回玻璃瓶；玻璃瓶倒出最右一支、换回原来的药水 / 药剂
      *
      * @return 换回的物品；不能交换时为 {@code null}
      */
@@ -333,8 +340,9 @@ public class VixensFlightItem extends Item {
             if (index < 0) {
                 return null;
             }
-            setVials(flight, vials.with(index, other.get(DataComponents.POTION_CONTENTS)));
+            setVials(flight, vials.with(index, other));
             playSound(player, SoundEvents.BOTTLE_EMPTY);
+            // 铁魔法的药剂喝完也返还玻璃瓶，与药水同样换回玻璃瓶
             return new ItemStack(Items.GLASS_BOTTLE);
         }
         if (other.is(Items.GLASS_BOTTLE)) {
@@ -342,9 +350,9 @@ public class VixensFlightItem extends Item {
             if (index < 0) {
                 return null;
             }
-            setVials(flight, vials.with(index, PotionContents.EMPTY));
+            setVials(flight, vials.with(index, ItemStack.EMPTY));
             playSound(player, SoundEvents.BOTTLE_FILL);
-            return VialsContents.toPotion(vials.get(index));
+            return vials.get(index).copy();
         }
         return null;
     }
@@ -365,10 +373,10 @@ public class VixensFlightItem extends Item {
                     .withStyle(ChatFormatting.DARK_GRAY));
                 continue;
             }
-            PotionContents contents = vials.get(i);
-            tooltip.add(Component.literal(VIAL_MARKS[i] + " ").withColor(contents.getColor())
-                .append(VialsContents.toPotion(contents).getHoverName().copy().withStyle(ChatFormatting.WHITE)));
-            for (MobEffectInstance effect : contents.getAllEffects()) {
+            ItemStack vial = vials.get(i);
+            tooltip.add(Component.literal(VIAL_MARKS[i] + " ").withColor(VialsContents.color(vial))
+                .append(vial.getHoverName().copy().withStyle(ChatFormatting.WHITE)));
+            for (MobEffectInstance effect : VialsContents.effects(vial)) {
                 tooltip.add(Component.literal("   ").append(describeEffect(effect, context.tickRate())));
             }
         }

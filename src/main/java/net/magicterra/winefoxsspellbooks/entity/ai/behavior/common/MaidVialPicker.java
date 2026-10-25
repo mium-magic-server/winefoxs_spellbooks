@@ -1,6 +1,7 @@
 package net.magicterra.winefoxsspellbooks.entity.ai.behavior.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import net.magicterra.winefoxsspellbooks.item.VialsContents;
@@ -12,13 +13,12 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.alchemy.PotionContents;
 import net.neoforged.neoforge.items.IItemHandler;
 
 /**
  * 女仆战斗中从背包里的品酒排挑一支此刻该喝的酒签
  * <p>
- * 每排从右到左找，跳过此刻不该喝的；只喝不含有害效果、且至少有一种效果此刻用得上的酒签。
+ * 每排从右到左找，跳过此刻不该喝的；只喝不含有害效果、且至少有一种效果此刻用得上的酒签。药水与铁魔法的药剂同样按效果判断。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-10-25
@@ -67,17 +67,21 @@ public final class MaidVialPicker {
             }
             VialsContents vials = VixensFlightItem.vials(stack);
             for (int i = VialsContents.SIZE - 1; i >= 0; i--) {
-                if (!vials.isEmpty(i) && wanted(maid, vials.get(i))) {
-                    return Optional.of(new Pick(slot, i, isHealing(vials.get(i))));
+                if (vials.isEmpty(i)) {
+                    continue;
+                }
+                List<MobEffectInstance> effects = VialsContents.effects(vials.get(i));
+                if (wanted(maid, effects)) {
+                    return Optional.of(new Pick(slot, i, isHealing(effects)));
                 }
             }
         }
         return Optional.empty();
     }
 
-    private static boolean wanted(LivingEntity entity, PotionContents contents) {
+    private static boolean wanted(LivingEntity entity, List<MobEffectInstance> effects) {
         boolean needed = false;
-        for (MobEffectInstance effect : contents.getAllEffects()) {
+        for (MobEffectInstance effect : effects) {
             if (effect.getEffect().value().getCategory() == MobEffectCategory.HARMFUL) {
                 return false;
             }
@@ -108,8 +112,8 @@ public final class MaidVialPicker {
         return current == null || current.endsWithin(REFRESH_TICKS);
     }
 
-    private static boolean isHealing(PotionContents contents) {
-        for (MobEffectInstance effect : contents.getAllEffects()) {
+    private static boolean isHealing(List<MobEffectInstance> effects) {
+        for (MobEffectInstance effect : effects) {
             if (HEALING.contains(effect.getEffect())) {
                 return true;
             }
