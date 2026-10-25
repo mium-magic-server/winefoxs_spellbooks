@@ -139,9 +139,10 @@ public class Config {
             .translation(translateKey("spell_planning_enabled"))
             .define("spellPlanningEnabled", true);
 
-        DRINK_POTION_IN_BATTLE = builder.comment("Maids below 60% health drink a healing potion without consuming an item (Default: false)")
+        DRINK_POTION_IN_BATTLE = builder.comment("Maids drink potions from a Vixen's Flight in their backpack during spell battle: ",
+                "healing below 60% health, other buffs when missing or about to expire (Default: true)")
             .translation(translateKey("drink_potion_in_battle"))
-            .define("drinkPotionInSpellBattle", false);
+            .define("drinkPotionInSpellBattle", true);
 
         SHOW_CHAT_BUBBLES = builder.comment("Show spell names in spell battle (Default: true)")
             .translation(translateKey("show_chat_bubbles"))
