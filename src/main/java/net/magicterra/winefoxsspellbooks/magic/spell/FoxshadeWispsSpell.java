@@ -8,10 +8,12 @@ import io.redspace.ironsspellbooks.api.spells.CastType;
 import io.redspace.ironsspellbooks.api.spells.ICastDataSerializable;
 import io.redspace.ironsspellbooks.api.spells.SpellRarity;
 import io.redspace.ironsspellbooks.api.util.RaycastBuilder;
+import io.redspace.ironsspellbooks.api.util.Utils;
 import io.redspace.ironsspellbooks.capabilities.magic.MultiTargetEntityCastData;
 import io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts;
 import io.redspace.ironsspellbooks.capabilities.magic.RecastInstance;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
@@ -19,6 +21,8 @@ import net.magicterra.winefoxsspellbooks.entity.projectile.FoxshadeWispProjectil
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.magicterra.winefoxsspellbooks.registry.WsbSounds;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -57,7 +61,7 @@ public class FoxshadeWispsSpell extends AbstractSpell {
     /**
      * 伤害系数：每发伤害 = getSpellPower(level, caster) * 此系数。
      */
-    private static final float DAMAGE_MULTIPLIER = 2.0f;
+    private static final float DAMAGE_MULTIPLIER = 3.0f;
 
     /**
      * 目标搜索半径（格）。
@@ -108,6 +112,13 @@ public class FoxshadeWispsSpell extends AbstractSpell {
     @Override
     public Optional<SoundEvent> getCastFinishSound() {
         return Optional.of(WsbSounds.FOXSHADE_WISPS_FIRE.get());
+    }
+
+    @Override
+    public List<MutableComponent> getUniqueInfo(int spellLevel, LivingEntity caster) {
+        return List.of(
+            Component.translatable("ui.irons_spellbooks.damage", Utils.stringTruncation(getSpellPower(spellLevel, caster) * DAMAGE_MULTIPLIER, 1)),
+            Component.translatable("ui.irons_spellbooks.projectile_count", RECAST_COUNT + 1));
     }
 
     @Override

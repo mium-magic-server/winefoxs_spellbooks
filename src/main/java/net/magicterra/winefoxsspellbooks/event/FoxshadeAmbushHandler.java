@@ -22,7 +22,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 /**
  * 狐影伏击（Foxshade Ambush）触发系统事件监听器。
  * <p>
- * 持有 {@link WsbEffects#FOXSHADE_AMBUSH} 标记的施法者首次造成任意伤害时（近战、法术、 名下 AoE 的每 tick 伤害一概算数）： 消费标记 → 在目标附近生成一只落地狐狸（{@link FoxshadeBiterEntity}），寻路跑向目标、腾身扑咬一口。 咬击打出酒狐巫法学派伤害；命中带残月烙印的敌人时经 {@link WinefoxDetonationHandler} 自动引爆。
+ * 持有 {@link WsbEffects#FOXSHADE_AMBUSH} 标记的施法者首次造成任意伤害时（近战、法术、 名下 AoE 的每 tick 伤害一概算数）： 消费标记 → 在目标附近生成一只落地狐狸（{@link FoxshadeBiterEntity}），寻路跑向目标、腾身扑咬，按法术等级连咬 1～4 口。 咬击打出酒狐巫法学派伤害；命中带残月烙印的敌人时经 {@link WinefoxDetonationHandler} 自动引爆。
  * <p>
  * 「先消费再召唤」+「跳过狐咬自身伤害」双重防重入：标记在触发时即移除，且扑咬狐的伤害 （directEntity 为狐本体）被显式跳过，绝不自我链式召唤；同 tick 命中多个目标也只有首个触发（标记单次）。
  * <p>
@@ -85,8 +85,9 @@ public class FoxshadeAmbushHandler {
         // 再消费标记：单次触发，防同 tick 多命中重复召唤
         attacker.removeEffect(WsbEffects.FOXSHADE_AMBUSH);
 
-        float biteDamage = Math.max(1.0f, ambush.getAmplifier() * FoxshadeAmbushSpell.BITE_DAMAGE_MULTIPLIER);
-        summonFoxshadeBiter(level, attacker, target, biteDamage, spawnPos);
+        int amplifier = ambush.getAmplifier();
+        float biteDamage = Math.max(1.0f, FoxshadeAmbushSpell.decodePower(amplifier) * FoxshadeAmbushSpell.BITE_DAMAGE_MULTIPLIER);
+        summonFoxshadeBiter(level, attacker, target, biteDamage, FoxshadeAmbushSpell.decodeBites(amplifier), spawnPos);
     }
 
     /**
@@ -144,14 +145,14 @@ public class FoxshadeAmbushHandler {
      * 在给定落地点生成一只扑咬狐，绑定召唤者与目标后放入世界，由其 AI 跑向目标扑咬。 owner 设为施法者，保证咬击伤害归因正确（女仆 ×1.5 / 玩家 ×1.0 引爆分支照旧）。
      */
     private static void summonFoxshadeBiter(ServerLevel level, LivingEntity caster, LivingEntity target,
-                                            float damage, Vec3 spawnPos) {
+                                            float damage, int bites, Vec3 spawnPos) {
         // 落地即朝向目标，省掉出生后第一帧的转身
         float yaw = (float) (Mth.atan2(target.getZ() - spawnPos.z, target.getX() - spawnPos.x)
             * (180.0 / Math.PI)) - 90.0f;
 
         FoxshadeBiterEntity fox = new FoxshadeBiterEntity(FoxshadeBiterEntity.TYPE, level);
         fox.moveTo(spawnPos.x, spawnPos.y, spawnPos.z, yaw, 0.0f);
-        fox.setup(caster, target, damage);
+        fox.setup(caster, target, damage, bites);
         level.addFreshEntity(fox);
     }
 }

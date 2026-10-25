@@ -6,12 +6,16 @@ import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastSource;
 import io.redspace.ironsspellbooks.api.spells.CastType;
 import io.redspace.ironsspellbooks.api.spells.SpellRarity;
+import io.redspace.ironsspellbooks.api.util.Utils;
+import java.util.List;
 import java.util.Optional;
 import net.magicterra.winefoxsspellbooks.WinefoxsSpellbooks;
 import net.magicterra.winefoxsspellbooks.magic.WinefoxHexHelper;
 import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
 import net.magicterra.winefoxsspellbooks.registry.WsbSchools;
 import net.magicterra.winefoxsspellbooks.registry.WsbSounds;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -22,7 +26,7 @@ import net.minecraft.world.level.Level;
 /**
  * 狐影伏击 Foxshade Ambush 法术。
  * <p>
- * 瞬发自增益：给施法者挂上 {@link WsbEffects#FOXSHADE_AMBUSH} 标记。持有标记期间，施法者 （玩家或女仆）首次对敌人造成任意伤害时，由 {@link net.magicterra.winefoxsspellbooks.event.FoxshadeAmbushHandler} 在目标处召出一只狐影撞咬一口（酒狐巫法学派伤害），随即标记消失；标记内未出手则自然到期。
+ * 瞬发自增益：给施法者挂上 {@link WsbEffects#FOXSHADE_AMBUSH} 标记。持有标记期间，施法者 （玩家或女仆）首次对敌人造成任意伤害时，由 {@link net.magicterra.winefoxsspellbooks.event.FoxshadeAmbushHandler} 在目标处召出一只狐影扑咬（酒狐巫法学派伤害，每级多咬一口），随即标记消失；标记内未出手则自然到期。
  * <p>
  * 咬击打的是真正的 WH 学派伤害，因此命中带「残月烙印」的敌人会触发引爆。
  *
@@ -37,9 +41,23 @@ public class FoxshadeAmbushSpell extends AbstractSpell {
     public static final int EFFECT_DURATION = 200;
 
     /**
-     * 咬击伤害系数：咬击伤害 = 挂效时法术强度 × 此系数。
+     * 咬击伤害系数：每口伤害 = 挂效时法术强度 × 此系数。
      */
     public static final float BITE_DAMAGE_MULTIPLIER = 1.0f;
+
+    /**
+     * 最多连咬几口：每级多咬一口，服务端配置把最高等级调得更高时也只到这么多口（编码只留了 2 位）。
+     */
+    public static final int MAX_BITES = 4;
+
+    /**
+     * 效果 amplifier 的低位存口数（减一），其余位存法术强度。
+     * <p>
+     * amplifier 存档时是无符号字节（0～255），所以法术强度最多存到 {@code 255 / 4 = 63}，远高于实际可达值。
+     */
+    private static final int BITE_BITS = 2;
+
+    private static final int MAX_ENCODED_POWER = 255 >> BITE_BITS;
 
     /**
      * 女仆 AI 施法距离(格)：本法术自增益不需精确瞄准，取中距，令女仆进入交战范围即预挂伏击。
@@ -81,6 +99,16 @@ public class FoxshadeAmbushSpell extends AbstractSpell {
         return this.spellId;
     }
 
+    @Override
+    public List<MutableComponent> getUniqueInfo(int spellLevel, LivingEntity caster) {
+        // 与触发时的换算同口径：法术强度先取整再乘系数，至少 1
+        float biteDamage = Math.max(1.0f, Math.round(getSpellPower(spellLevel, caster)) * BITE_DAMAGE_MULTIPLIER);
+        return List.of(
+            Component.translatable("ui.irons_spellbooks.damage", Utils.stringTruncation(biteDamage, 1)),
+            Component.translatable("ui.winefoxs_spellbooks.bite_count", Math.clamp(spellLevel, 1, MAX_BITES)),
+            Component.translatable("ui.irons_spellbooks.effect_length", Utils.timeFromTicks(EFFECT_DURATION, 1)));
+    }
+
     /**
      * 施法音：低沉的「上膛」感。
      * <p>
@@ -100,9 +128,35 @@ public class FoxshadeAmbushSpell extends AbstractSpell {
         entity.addEffect(new MobEffectInstance(
             WsbEffects.FOXSHADE_AMBUSH,
             EFFECT_DURATION,
-            Math.max(0, Math.round(getSpellPower(spellLevel, entity)))
+            encodeAmplifier(Math.round(getSpellPower(spellLevel, entity)), spellLevel)
         ));
         WinefoxHexHelper.spawnCastBurst(serverLevel, entity);
         super.onCast(level, spellLevel, entity, castSource, playerMagicData);
+    }
+
+    /**
+     * 把法术强度与口数（= 法术等级，至多 {@link #MAX_BITES}）编进效果 amplifier。
+     *
+     * @param power      挂效时的法术强度（取整）
+     * @param spellLevel 法术等级
+     * @return amplifier
+     */
+    public static int encodeAmplifier(int power, int spellLevel) {
+        int bites = Math.clamp(spellLevel, 1, MAX_BITES);
+        return (Math.clamp(power, 0, MAX_ENCODED_POWER) << BITE_BITS) | (bites - 1);
+    }
+
+    /**
+     * 从效果 amplifier 取回法术强度。
+     */
+    public static int decodePower(int amplifier) {
+        return amplifier >> BITE_BITS;
+    }
+
+    /**
+     * 从效果 amplifier 取回口数（1～{@link #MAX_BITES}）。
+     */
+    public static int decodeBites(int amplifier) {
+        return (amplifier & ((1 << BITE_BITS) - 1)) + 1;
     }
 }

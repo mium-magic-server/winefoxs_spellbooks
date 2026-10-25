@@ -31,9 +31,9 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 /**
  * 狐影伏击的落地狐狸 — 复用狐影 littlefox 模型的寻路生物。
  * <p>
- * 由 {@link net.magicterra.winefoxsspellbooks.event.FoxshadeAmbushHandler} 在目标附近生成： 用原版地面导航跑向指定目标，贴近时腾身一跃、落点撞咬一口，打出酒狐巫法学派伤害后消散。 咬击以召唤者（owner）归因 → 引爆系统据此区分女仆 ×1.5 / 玩家 ×1.0；命中带残月烙印者自动引爆。
+ * 由 {@link net.magicterra.winefoxsspellbooks.event.FoxshadeAmbushHandler} 在目标附近生成： 用原版地面导航跑向指定目标，贴近时腾身一跃、落点撞咬，打出酒狐巫法学派伤害；按法术等级连咬 1～4 口，两口之间贴着目标跟走，咬完停留片刻后消散。 咬击以召唤者（owner）归因 → 引爆系统据此区分女仆 ×1.5 / 玩家 ×1.0；命中带残月烙印者自动引爆。
  * <p>
- * 短寿命瞬时召唤物：无敌（不可被击杀打断）、咬击后或超时即消散、够不到目标（飞行/隔坑）则自然到期。
+ * 短寿命瞬时召唤物：无敌（不可被击杀打断）、咬完或追咬超时即消散、够不到目标（飞行/隔坑）则自然到期。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-07-23
@@ -41,14 +41,19 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public class FoxshadeBiterEntity extends PathfinderMob implements GeoEntity {
 
     /**
-     * 最长存活(ticks)：跑不到目标（飞行/隔坑）则到点自然消散，不无限追。
+     * 每次追咬的最长时长(ticks)：自现身或上一口起算，跑不到目标（飞行/隔坑）则到点自然消散，不无限追。
      */
     private static final int MAX_LIFETIME = 100;
 
     /**
-     * 咬中后停留(ticks)再消散：让扑咬动作有个收尾停顿，不瞬间消失。
+     * 最后一口咬中后停留(ticks)再消散：让扑咬收尾看得清，不瞬间消失。
      */
-    private static final int POOF_DELAY = 5;
+    private static final int POOF_DELAY = 15;
+
+    /**
+     * 两口之间的间隔(ticks)：长于受击无敌时间的一半（10 tick），否则后一口会被吞掉。
+     */
+    private static final int BITE_INTERVAL = 12;
 
     /**
      * 导航速度倍率：狐狸跑得比常规怪快。
@@ -74,6 +79,21 @@ public class FoxshadeBiterEntity extends PathfinderMob implements GeoEntity {
     private int lifetime = 0;
 
     private boolean hasBitten = false;
+
+    /**
+     * 还能咬几口；咬完最后一口后进入消散倒计时。
+     */
+    private int bitesRemaining = 1;
+
+    /**
+     * 距下一口还要等多少 tick；期间贴着目标跟走，不起跳也不咬。
+     */
+    private int biteCooldown = 0;
+
+    /**
+     * 已咬口数，供扑咬 AI 判断「换了一口」时重新给起跳机会。
+     */
+    private int bitesDone = 0;
 
     /**
      * 咬中后的消散倒计时；-1 表示尚未咬中。
@@ -112,16 +132,18 @@ public class FoxshadeBiterEntity extends PathfinderMob implements GeoEntity {
     }
 
     /**
-     * 装配一只扑咬狐：绑定召唤者、目标与咬击伤害，并立即朝目标转身。
+     * 装配一只扑咬狐：绑定召唤者、目标、每口伤害与口数，并立即朝目标转身。
      *
      * @param owner  召唤者（伤害归因；引爆女仆/玩家分支据此判定）
      * @param target 扑咬目标
-     * @param damage 咬击伤害
+     * @param damage 每口伤害
+     * @param bites  连咬口数（至少 1）
      */
-    public void setup(Entity owner, LivingEntity target, float damage) {
+    public void setup(Entity owner, LivingEntity target, float damage, int bites) {
         this.owner = owner;
         this.biteTarget = target;
         this.biteDamage = damage;
+        this.bitesRemaining = Math.max(1, bites);
         this.getLookControl().setLookAt(target, 30.0f, 30.0f);
         // 现身狐鸣：四变体随机，音高再抖 ±10% 与 Iron's 施法音一致，避免连续伏击听出重复
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
@@ -135,12 +157,15 @@ public class FoxshadeBiterEntity extends PathfinderMob implements GeoEntity {
         if (this.level().isClientSide) {
             return;
         }
-        // 已咬中：走消散倒计时，停留 POOF_DELAY tick 收尾后消失
+        // 最后一口已咬中：走消散倒计时，停留 POOF_DELAY tick 收尾后消失
         if (this.poofCountdown >= 0) {
             if (--this.poofCountdown < 0) {
                 poof();
             }
             return;
+        }
+        if (this.biteCooldown > 0) {
+            --this.biteCooldown;
         }
         // 目标消失 / 超时：直接消散
         if (++this.lifetime > MAX_LIFETIME || this.biteTarget == null || !this.biteTarget.isAlive()) {
@@ -149,13 +174,20 @@ public class FoxshadeBiterEntity extends PathfinderMob implements GeoEntity {
     }
 
     /**
-     * 落点撞咬：打出一发酒狐巫法学派伤害（以 owner 归因），随后进入消散倒计时（停留 {@link #POOF_DELAY} tick）。
+     * 落点撞咬：打出一发酒狐巫法学派伤害（以 owner 归因）。还有口数则隔 {@link #BITE_INTERVAL} tick 再咬，
+     * 追咬时限重新起算；咬完最后一口进入消散倒计时（停留 {@link #POOF_DELAY} tick）。
      */
     private void bite() {
-        if (this.hasBitten || this.biteTarget == null) {
+        if (this.hasBitten || this.biteCooldown > 0 || this.biteTarget == null) {
             return;
         }
-        this.hasBitten = true;
+        this.bitesDone++;
+        if (--this.bitesRemaining <= 0) {
+            this.hasBitten = true;
+        } else {
+            this.biteCooldown = BITE_INTERVAL;
+            this.lifetime = 0;
+        }
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
             WsbSounds.FOXSHADE_BITER_BITE.get(), this.getSoundSource(),
             1.0f, 0.9f + this.random.nextFloat() * 0.2f);
@@ -163,7 +195,9 @@ public class FoxshadeBiterEntity extends PathfinderMob implements GeoEntity {
         // 复用狐影弹的学派伤害源：directEntity = 本狐（供伏击处理器识别、免二次触发），causingEntity = 召唤者
         var spell = WsbSpells.FOXSHADE_WISPS_SPELL.get();
         DamageSources.applyDamage(this.biteTarget, this.biteDamage, spell.getDamageSource(this, attribution));
-        this.poofCountdown = POOF_DELAY;
+        if (this.hasBitten) {
+            this.poofCountdown = POOF_DELAY;
+        }
     }
 
     /**
@@ -227,6 +261,11 @@ public class FoxshadeBiterEntity extends PathfinderMob implements GeoEntity {
 
         private boolean leaped = false;
 
+        /**
+         * 上次给起跳机会时的已咬口数；咬过一口后复位 {@link #leaped}，下一口可以再扑一次。
+         */
+        private int leapedForBite = -1;
+
         LeapBiteGoal(FoxshadeBiterEntity fox) {
             this.fox = fox;
             this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK, Flag.JUMP));
@@ -260,6 +299,15 @@ public class FoxshadeBiterEntity extends PathfinderMob implements GeoEntity {
                 return;
             }
             this.fox.getLookControl().setLookAt(target, 30.0f, 30.0f);
+            if (this.leapedForBite != this.fox.bitesDone) {
+                this.leapedForBite = this.fox.bitesDone;
+                this.leaped = false;
+            }
+            if (this.fox.biteCooldown > 0) {
+                // 两口之间：贴着目标跟走（被击退的目标也追得上），不起跳不咬
+                this.fox.getNavigation().moveTo(target, MOVE_SPEED_MULT);
+                return;
+            }
 
             double reach = this.fox.getBbWidth() * 0.5 + target.getBbWidth() * 0.5 + 0.8;
             double dist3dSqr = this.fox.distanceToSqr(target.getX(), target.getY(), target.getZ());

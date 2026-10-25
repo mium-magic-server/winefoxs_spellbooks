@@ -11,7 +11,7 @@ import net.minecraft.world.entity.LivingEntity;
  * <p>
  * 效果本身无属性修饰、不造成伤害，仅作为伏击触发器 （{@link net.magicterra.winefoxsspellbooks.event.FoxshadeAmbushHandler}）的持有标记： 持有者首次对敌人造成伤害时，处理器召出一只狐影撞咬目标并移除本效果； 若在时长内未出手则自然到期消失。逻辑全在处理器里，效果侧只负责「待发中」的环绕粒子提示。
  * <p>
- * amplifier 携带挂效时的法术强度，处理器据此换算狐影咬击伤害（与残月烙印同套编码约定）。 颜色取学派粉，与狐影弹配色一致。
+ * amplifier 携带挂效时的法术强度与口数（编码见 {@link net.magicterra.winefoxsspellbooks.magic.spell.FoxshadeAmbushSpell#encodeAmplifier}），处理器据此换算狐影咬击伤害与连咬口数。 颜色取学派粉，与狐影弹配色一致。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-07-23
