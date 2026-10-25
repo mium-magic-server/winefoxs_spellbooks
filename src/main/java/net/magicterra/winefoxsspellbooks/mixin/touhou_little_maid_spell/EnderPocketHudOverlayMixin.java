@@ -45,7 +45,7 @@ public abstract class EnderPocketHudOverlayMixin {
     @Unique
     private static final float WINEFOXS_SPELLBOOKS$TEXT_SCALE = 0.625F;
     /**
-     * 条尾奥术铁砧图标的边长（原物品图标 16px 缩到与条、文字相称）
+     * 条尾铁箍书卷图标的边长（原物品图标 16px 缩到与条、文字相称）
      */
     @Unique
     private static final int WINEFOXS_SPELLBOOKS$ICON_SIZE = 9;
@@ -83,12 +83,12 @@ public abstract class EnderPocketHudOverlayMixin {
         graphics.drawCenteredString(mc.font, mana, 0, 0, 0xFFFFFFFF);
         graphics.pose().popPose();
 
-        // 条尾标一个奥术铁砧，表明这是铁魔法的法力；直接画其物品图标，自绘剪影缩到这个尺寸认不出来
+        // 条尾标一本铁箍书卷（铁魔法的标志性法术书），表明这是铁魔法的法力；直接画其物品图标，自绘剪影缩到这个尺寸认不出来
         float iconScale = WINEFOXS_SPELLBOOKS$ICON_SIZE / 16.0F;
         graphics.pose().pushPose();
         graphics.pose().translate(barX + WINEFOXS_SPELLBOOKS$BAR_WIDTH + 2, barY - 2, 0.0F);
         graphics.pose().scale(iconScale, iconScale, 1.0F);
-        graphics.renderItem(new ItemStack(ItemRegistry.ACANE_ANVIL_BLOCK_ITEM.get()), 0, 0);
+        graphics.renderItem(new ItemStack(ItemRegistry.IRON_SPELL_BOOK.get()), 0, 0);
         graphics.pose().popPose();
     }
 }
