@@ -9,6 +9,14 @@
       "required": false
     },
     {
+      "id": "esoteric_spell:health_aura",
+      "required": false
+    },
+    {
+      "id": "hyper_n_hieis_shenanigans:field_of_flowers",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:blessing_of_life",
       "required": false
     },
@@ -26,6 +34,10 @@
     },
     {
       "id": "somakespells:blessed_connection",
+      "required": false
+    },
+    {
+      "id": "somakespells:comforting_lullaby",
       "required": false
     }
   ]

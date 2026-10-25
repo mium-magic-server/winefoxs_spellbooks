@@ -1,7 +1,11 @@
 {
   "values": [
     {
-      "id": "apprenticecodex:archer_multiple",
+      "id": "aether_spellbooks:summon_fire_minion",
+      "required": false
+    },
+    {
+      "id": "alshanex_familiars:summon_shadows",
       "required": false
     },
     {
@@ -10,6 +14,10 @@
     },
     {
       "id": "apprenticecodex:field_overseer",
+      "required": false
+    },
+    {
+      "id": "asterismarcanum:summon_lunar_moths",
       "required": false
     },
     {
@@ -37,7 +45,59 @@
       "required": false
     },
     {
+      "id": "chronomancy:rift",
+      "required": false
+    },
+    {
+      "id": "cursespells:cursed_sabbath",
+      "required": false
+    },
+    {
+      "id": "cursespells:the_command",
+      "required": false
+    },
+    {
+      "id": "cursed_school:ash_pack",
+      "required": false
+    },
+    {
+      "id": "cursed_school:call_clerk",
+      "required": false
+    },
+    {
+      "id": "cursed_school:hatch_cysts",
+      "required": false
+    },
+    {
+      "id": "cursed_school:issue_invoice",
+      "required": false
+    },
+    {
+      "id": "darkermagic:summoned_sculk_centipede",
+      "required": false
+    },
+    {
+      "id": "darkermagic:summoned_sculk_snapper",
+      "required": false
+    },
+    {
+      "id": "darkermagic:summoned_shattered",
+      "required": false
+    },
+    {
+      "id": "darkermagic:summoned_warden",
+      "required": false
+    },
+    {
       "id": "discerning_the_eldritch:conjure_forsaken_aid",
+      "required": false
+    },
+    {
+      "id": "echoing_magic:conjure_grimoray",
+      "required": false
+    },
+    {
+      "id": "echoing_magic:summon_brave",
       "required": false
     },
     {
@@ -69,6 +129,30 @@
       "required": false
     },
     {
+      "id": "ess_requiem:summon_death_knight",
+      "required": false
+    },
+    {
+      "id": "ess_requiem:summon_vessel_skeleton",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:auto_device",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:familia_cat_summon",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:ends_rejuvenation",
+      "required": false
+    },
+    {
+      "id": "frozen_dominion_spells:ice_sentinel",
+      "required": false
+    },
+    {
       "id": "hazennstuff:call_forth_terraprisma",
       "required": false
     },
@@ -90,6 +174,10 @@
     },
     {
       "id": "irons_spellbooks:summon_polar_bear",
+      "required": false
+    },
+    {
+      "id": "leylines:summon_nightborn",
       "required": false
     },
     {
@@ -165,9 +253,69 @@
       "required": false
     },
     {
-      "id": "somakespells:summon_zombie",
+      "id": "somakespells:summon_drowned",
       "required": false
     },
-    "winefoxs_spellbooks:summon_maid"
+    {
+      "id": "twilight_spellbooks:summon_carminite_golem",
+      "required": false
+    },
+    {
+      "id": "twilight_spellbooks:summon_death_library",
+      "required": false
+    },
+    {
+      "id": "twilight_spellbooks:summon_loyal_zombie",
+      "required": false
+    },
+    {
+      "id": "twilight_spellbooks:summon_minotaurs",
+      "required": false
+    },
+    {
+      "id": "twilight_spellbooks:summon_winter_wolves",
+      "required": false
+    },
+    {
+      "id": "ironsspellsandunstablespellbooks:phantom_helpers",
+      "required": false
+    },
+    "winefoxs_spellbooks:summon_maid",
+    {
+      "id": "wizardshelp:summon_apothecarist",
+      "required": false
+    },
+    {
+      "id": "wizardshelp:summon_archevoker",
+      "required": false
+    },
+    {
+      "id": "wizardshelp:summon_cryomancer",
+      "required": false
+    },
+    {
+      "id": "wizardshelp:summon_cultist",
+      "required": false
+    },
+    {
+      "id": "wizardshelp:summon_ice_spider",
+      "required": false
+    },
+    {
+      "id": "wizardshelp:summon_keeper",
+      "required": false
+    },
+    {
+      "id": "wizardshelp:summon_necromancer",
+      "required": false
+    },
+    {
+      "id": "wizardshelp:summon_priest",
+      "required": false
+    },
+    {
+      "id": "wizardshelp:summon_pyromancer",
+      "required": false
+    }
   ]
 }

@@ -17,11 +17,15 @@
       "required": false
     },
     {
-      "id": "apprenticecodex:spectral_wing",
+      "id": "asterismarcanum:astral_echo",
       "required": false
     },
     {
       "id": "cataclysm_spellbooks:cursed_rush",
+      "required": false
+    },
+    {
+      "id": "cursed_school:blight_step",
       "required": false
     },
     {
@@ -37,15 +41,15 @@
       "required": false
     },
     {
+      "id": "esoteric_spell:esoteric_step",
+      "required": false
+    },
+    {
       "id": "firesenderexpansion:scintillating_stride",
       "required": false
     },
     {
       "id": "gtbcs_geomancy_plus:tremor_step",
-      "required": false
-    },
-    {
-      "id": "gtbcs_geomancy_plus:seismic_surf",
       "required": false
     },
     {
@@ -77,11 +81,11 @@
       "required": false
     },
     {
-      "id": "iss_magicfromtheeast:cloud_ride",
+      "id": "leylines:blink_step",
       "required": false
     },
     {
-      "id": "monsterspellbooks:air_propulsion",
+      "id": "iss_magicfromtheeast:cloud_ride",
       "required": false
     },
     {
@@ -89,11 +93,23 @@
       "required": false
     },
     {
-      "id": "monsterspellbooks:cloud_dash",
+      "id": "ozymandias_sundries:lightning_warp",
       "required": false
     },
     {
       "id": "somakespells:render_rush",
+      "required": false
+    },
+    {
+      "id": "twilight_spellbooks:exanimated_step",
+      "required": false
+    },
+    {
+      "id": "wind_spellbooks:aeropic",
+      "required": false
+    },
+    {
+      "id": "wind_spellbooks:wind_jump",
       "required": false
     }
   ]

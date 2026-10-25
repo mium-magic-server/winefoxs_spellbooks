@@ -5,6 +5,10 @@
       "required": false
     },
     {
+      "id": "asterismarcanum:silvery_barbs",
+      "required": false
+    },
+    {
       "id": "cataclysm_spellbooks:forgone_rage",
       "required": false
     },
@@ -18,6 +22,10 @@
     },
     {
       "id": "ess_requiem:adrenaline_rush",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:mana_change_barrier",
       "required": false
     },
     {
@@ -42,10 +50,6 @@
     },
     {
       "id": "irons_spellbooks:frostbite",
-      "required": false
-    },
-    {
-      "id": "monsterspellbooks:air_bubble",
       "required": false
     },
     {

@@ -9,11 +9,39 @@
       "required": false
     },
     {
-      "id": "discerning_the_eldritch:silence",
+      "id": "chronomancy:temporal_stasis_beam",
       "required": false
     },
     {
-      "id": "dreamless_spells:doorway_effect",
+      "id": "chronomancy:time_dilation_field",
+      "required": false
+    },
+    {
+      "id": "cursed_school:black_root",
+      "required": false
+    },
+    {
+      "id": "cursed_school:black_verse",
+      "required": false
+    },
+    {
+      "id": "cursed_school:chain_of_remorse",
+      "required": false
+    },
+    {
+      "id": "cursed_school:invoice",
+      "required": false
+    },
+    {
+      "id": "cursed_school:stain_brand",
+      "required": false
+    },
+    {
+      "id": "cursed_school:umbral_coffin",
+      "required": false
+    },
+    {
+      "id": "discerning_the_eldritch:silence",
       "required": false
     },
     {
@@ -25,7 +53,19 @@
       "required": false
     },
     {
+      "id": "esoteric_spell:esoteric_shackle",
+      "required": false
+    },
+    {
+      "id": "farmers_spell:preserve_circle",
+      "required": false
+    },
+    {
       "id": "firesenderexpansion:displacement_cage",
+      "required": false
+    },
+    {
+      "id": "frozen_dominion_spells:frost_shackles",
       "required": false
     },
     {
@@ -65,6 +105,26 @@
       "required": false
     },
     {
+      "id": "iss_elden_ring:collapsing_stars",
+      "required": false
+    },
+    {
+      "id": "iss_elden_ring:gravity_ball",
+      "required": false
+    },
+    {
+      "id": "leylines:chrono_tether",
+      "required": false
+    },
+    {
+      "id": "leylines:temporal_stutter",
+      "required": false
+    },
+    {
+      "id": "leylines:tether_gaze",
+      "required": false
+    },
+    {
       "id": "monsterspellbooks:anticoagulation",
       "required": false
     },
@@ -74,6 +134,10 @@
     },
     {
       "id": "monsterspellbooks:fall_curse",
+      "required": false
+    },
+    {
+      "id": "ozymandias_sundries:levitate",
       "required": false
     },
     {

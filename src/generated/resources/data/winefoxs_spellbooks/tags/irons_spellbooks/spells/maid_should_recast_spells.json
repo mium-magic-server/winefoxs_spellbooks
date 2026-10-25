@@ -9,10 +9,6 @@
       "required": false
     },
     {
-      "id": "apprenticecodex:archer_multiple",
-      "required": false
-    },
-    {
       "id": "apprenticecodex:bullet_stream",
       "required": false
     },
@@ -93,6 +89,14 @@
       "required": false
     },
     {
+      "id": "cursespells:cursed_scar",
+      "required": false
+    },
+    {
+      "id": "cursespells:silent_waltz",
+      "required": false
+    },
+    {
       "id": "discerning_the_eldritch:rift_walker",
       "required": false
     },
@@ -113,6 +117,10 @@
       "required": false
     },
     {
+      "id": "echoing_magic:collapse",
+      "required": false
+    },
+    {
       "id": "ess_requiem:rip_and_tear",
       "required": false
     },
@@ -122,6 +130,10 @@
     },
     {
       "id": "ess_requiem:twilight_assault",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:namesis_magic",
       "required": false
     },
     {
@@ -213,10 +225,6 @@
       "required": false
     },
     {
-      "id": "monsterspellbooks:cloud_dash",
-      "required": false
-    },
-    {
       "id": "monsterspellbooks:corrupted_beacon_ray",
       "required": false
     },
@@ -250,10 +258,6 @@
     },
     {
       "id": "monsterspellbooks:redstone_lasers",
-      "required": false
-    },
-    {
-      "id": "monsterspellbooks:steam_stream",
       "required": false
     },
     {
@@ -313,11 +317,7 @@
       "required": false
     },
     {
-      "id": "somakespells:phantom_barrage",
-      "required": false
-    },
-    {
-      "id": "somakespells:thunder_cloud",
+      "id": "twilight_spellbooks:exanimated_trident",
       "required": false
     },
     "winefoxs_spellbooks:foxshade_wisps"

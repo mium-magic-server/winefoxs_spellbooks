@@ -250,6 +250,63 @@ dependencies {
     implementation("curse.maven:somake-spells-irons-spells-addon-1461634:${somake_spells_version}")
     // Peyro's Scythes & Spells
     implementation("curse.maven:peyros-scythe-1327449:${peyros_scythe_version}")
+    // Unstable Magic（不稳定魔法学派）
+    implementation("maven.modrinth:irons-spells-n-spellbooks-unstable-magic:${unstable_magic_version}")
+    // Legendary Mage（元素反应）
+    implementation("maven.modrinth:legendary-mage:${legendary_mage_version}")
+    // Asterism Arcanum（星界学派，前置 Expandability / Ace's Spell Utils / AzureLib 已在上方）
+    implementation("maven.modrinth:asterism-arcanum-addon-for-irons-spells-and-spellbooks:${asterism_arcanum_version}")
+    // Paladin Spells（坦克向法术）
+    implementation("maven.modrinth:paladin-spells-irons-spells-addon:${paladin_spells_version}")
+    // Eldritch Expansions（扩展 Eldritch 学派）
+    implementation("maven.modrinth:eldritch-expansions:${eldritch_expansions_version}")
+    // Farmer's Spell 'n Spellbooks（暴食学派，硬依赖 Farmer's Delight）
+    implementation("maven.modrinth:farmers-spell:${farmers_spell_version}")
+    runtimeOnly("maven.modrinth:farmers-delight:${farmers_delight_version}")
+    // Spellbooks of Twilight（暮色森林法术，与 Twilight Spellbooks 的模组 ID 相同，二者不能共存）
+    implementation("curse.maven:spellbooks-of-twilight-1683668:${spellbooks_of_twilight_version}")
+    // Apex Arcana（每个学派一个终极法术）
+    implementation("curse.maven:apex-arcana-1677981:${apex_arcana_version}")
+    // Chronomancy（时间学派）
+    implementation("curse.maven:chronomancy-1726665:${chronomancy_version}")
+    // Echoing Magic（硬依赖 Archaion，Archaion 又硬依赖 AAA Particles）
+    implementation("curse.maven:echoing-magic-1702056:${echoing_magic_version}")
+    runtimeOnly("curse.maven:archaion-1620396:${archaion_version}")
+    runtimeOnly("maven.modrinth:aaa-particles:${aaa_particles_version}")
+    // Deeper and Darker: Spellbooks（硬依赖 Deeper and Darker）
+    implementation("curse.maven:deeper-and-darker-spellbooks-1432746:${deeper_and_darker_spellbooks_version}")
+    runtimeOnly("maven.modrinth:deeperdarker:${deeperdarker_version}")
+    // Aether Spellbooks（硬依赖 The Aether 与 Accessories；Aether 内置的 Accessories 版本低于本模组要求，Owo Lib 由 Accessories 传递引入）
+    implementation("curse.maven:aether-spellbooks-1719192:${aether_spellbooks_version}")
+    runtimeOnly("curse.maven:aether-255308:${aether_curse_version}")
+    runtimeOnly("io.wispforest:accessories-neoforge:${accessories_version}+${minecraft_version}")
+    // Accessories 传递引入的 owo-lib 0.12.15.1-beta.6 进入世界时握手包编码失败（Sided Packet Codec has not been unpacked），显式指定新版
+    runtimeOnly("io.wispforest:owo-lib-neoforge:${owo_lib_version}")
+    // Wind's Spellbooks（风学派）
+    implementation("curse.maven:winds-spellbooks-1519158:${winds_spellbooks_version}")
+    // Ozymandias' Sundries
+    implementation("curse.maven:ozymandias-sundries-1209674:${ozymandias_sundries_version}")
+    // Frieren Spells: Zoltraak & Singularity
+    implementation("curse.maven:frieren-spells-1691887:${frieren_spells_version}")
+    // ISS: Elden Ring（艾尔登法环风格法术）
+    implementation("curse.maven:iss-elden-ring-1690865:${elden_ring_spells_version}")
+    // Cursed School（诅咒学派）
+    implementation("curse.maven:cursed-school-1687200:${cursed_school_version}")
+    // CS Curse Spells（另一个诅咒学派）
+    implementation("curse.maven:cs-curse-spells-1739816:${cs_curse_spells_version}")
+    // [ES] Esoteric Spells
+    implementation("curse.maven:es-esoteric-spells-1654809:${es_esoteric_spells_version}")
+    // Wizards Help!
+    implementation("curse.maven:wizards-help-1384953:${wizards_help_version}")
+    // Leylines（地脉学派，硬依赖 TerraBlender，已由新生魔艺传递引入）
+    implementation("curse.maven:leylines-1636676:${leylines_version}")
+    // Frozen Dominion Spells（冰霜法术）
+    implementation("curse.maven:frozen-dominion-spells-1734367:${frozen_dominion_spells_version}")
+    // Hyper 'N Hiei's Shenanigans
+    implementation("curse.maven:hyper-n-hieis-shenanigans-1743803:${hyper_n_hieis_shenanigans_version}")
+    // Alshanex's Familiars（硬依赖 FamiliarsLib）
+    implementation("curse.maven:alshanexs-familiars-1171602:${alshanexs_familiars_version}")
+    runtimeOnly("maven.modrinth:familiarslib:${familiarslib_version}")
 
 
     // 新生魔艺

@@ -17,6 +17,10 @@
       "required": false
     },
     {
+      "id": "alshanex_familiars:end_mayhem",
+      "required": false
+    },
+    {
       "id": "apprenticecodex:divine_possession",
       "required": false
     },
@@ -29,10 +33,6 @@
       "required": false
     },
     {
-      "id": "apprenticecodex:mirage_avoidance",
-      "required": false
-    },
-    {
       "id": "apprenticecodex:mystic_shield",
       "required": false
     },
@@ -41,7 +41,31 @@
       "required": false
     },
     {
+      "id": "asterismarcanum:celestial_tether",
+      "required": false
+    },
+    {
       "id": "cataclysm_spellbooks:abyssal_predator",
+      "required": false
+    },
+    {
+      "id": "cursed_school:apostate_crown",
+      "required": false
+    },
+    {
+      "id": "cursed_school:ash_guard",
+      "required": false
+    },
+    {
+      "id": "cursed_school:margin_pact",
+      "required": false
+    },
+    {
+      "id": "cursed_school:night_ledger",
+      "required": false
+    },
+    {
+      "id": "cursed_school:soot_shroud",
       "required": false
     },
     {
@@ -54,6 +78,14 @@
     },
     {
       "id": "dreamless_spells:jadeskin",
+      "required": false
+    },
+    {
+      "id": "eldritch_expansion:feral_distortion",
+      "required": false
+    },
+    {
+      "id": "eldritch_expansion:phantom_stride",
       "required": false
     },
     {
@@ -97,7 +129,143 @@
       "required": false
     },
     {
+      "id": "esoteric_spell:aegis_barrier",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:aspis_soul_barrier",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:cast_barrier",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:ether_barrier",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:flowing_barrier",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:gloria_barrier",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:guard_barrier",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:guardian_barrier",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:prayer_barrier",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:protection_barrier",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:sanctuary_barrier",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:wall_barrier",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:barrier_aura",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:brave_aura",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:cycle_aura",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:fast_reaction_aura",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:immunity_aura",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:quick_motion_aura",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:dual_bringer",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:limit_break",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:mana_resonance",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:resurrection",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:spell_calibration",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:familia_cat_summon",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:familia_research",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:finale_guide",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:finale_stone_barrier",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:auto_device",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:chase_device",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:counter_device",
+      "required": false
+    },
+    {
+      "id": "farmers_spell:seal_coat",
+      "required": false
+    },
+    {
       "id": "firesenderexpansion:dimensional_adaptation",
+      "required": false
+    },
+    {
+      "id": "frierenvoid:defense",
+      "required": false
+    },
+    {
+      "id": "frozen_dominion_spells:frost_shell",
+      "required": false
+    },
+    {
+      "id": "frozen_dominion_spells:rune_litany",
       "required": false
     },
     {
@@ -118,6 +286,14 @@
     },
     {
       "id": "hazennstuff:parry",
+      "required": false
+    },
+    {
+      "id": "hyper_n_hieis_shenanigans:hollow_mask",
+      "required": false
+    },
+    {
+      "id": "hyper_n_hieis_shenanigans:infinity",
       "required": false
     },
     {
@@ -161,6 +337,14 @@
       "required": false
     },
     {
+      "id": "iss_elden_ring:terra_magica",
+      "required": false
+    },
+    {
+      "id": "leylines:ley_veil",
+      "required": false
+    },
+    {
       "id": "iss_magicfromtheeast:bagua_array_circle",
       "required": false
     },
@@ -194,6 +378,14 @@
     },
     {
       "id": "monsterspellbooks:soul_form",
+      "required": false
+    },
+    {
+      "id": "paladin_spells:bedrock_skin",
+      "required": false
+    },
+    {
+      "id": "paladin_spells:bulwark",
       "required": false
     },
     {
@@ -272,7 +464,39 @@
       "id": "somakespells:spirit_empowerment",
       "required": false
     },
+    {
+      "id": "twilight_spellbooks:fortifying_shields",
+      "required": false
+    },
+    {
+      "id": "touhou_little_maid_spell:void_phase",
+      "required": false
+    },
+    {
+      "id": "touhou_little_maid_spell:companion_black_hole",
+      "required": false
+    },
+    {
+      "id": "touhou_little_maid_spell:spellbreaking_echo",
+      "required": false
+    },
+    {
+      "id": "ironsspellsandunstablespellbooks:ponder_horn",
+      "required": false
+    },
+    {
+      "id": "wind_spellbooks:almighty_push",
+      "required": false
+    },
+    {
+      "id": "wind_spellbooks:tailwind",
+      "required": false
+    },
     "winefoxs_spellbooks:foxshade_ambush",
-    "winefoxs_spellbooks:crescent_mantle"
+    "winefoxs_spellbooks:crescent_mantle",
+    {
+      "id": "wizardshelp:summon_priest",
+      "required": false
+    }
   ]
 }

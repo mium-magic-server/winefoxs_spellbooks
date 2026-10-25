@@ -2,7 +2,11 @@
   "values": [
     {
       "range": 2.0,
-      "spell": "apprenticecodex:bound_sword"
+      "spell": "aether_spellbooks:gravitite_surge"
+    },
+    {
+      "range": 2.0,
+      "spell": "apprenticecodex:catch_flame"
     },
     {
       "range": 2.0,
@@ -26,11 +30,51 @@
     },
     {
       "range": 2.0,
+      "spell": "apprenticecodex:shiden"
+    },
+    {
+      "range": 2.0,
       "spell": "apprenticecodex:slash_blade"
     },
     {
       "range": 2.0,
+      "spell": "apprenticecodex:thermal_slice"
+    },
+    {
+      "range": 2.0,
       "spell": "cataclysm_spellbooks:abyssal_slash"
+    },
+    {
+      "range": 2.0,
+      "spell": "cursespells:stagnant_spiral"
+    },
+    {
+      "range": 2.0,
+      "spell": "cursed_school:bone_toll"
+    },
+    {
+      "range": 2.0,
+      "spell": "cursed_school:decay_field"
+    },
+    {
+      "range": 2.0,
+      "spell": "cursed_school:grave_dust"
+    },
+    {
+      "range": 2.0,
+      "spell": "cursed_school:ruin_slash"
+    },
+    {
+      "range": 2.0,
+      "spell": "cursed_school:withering_touch"
+    },
+    {
+      "range": 5.0,
+      "spell": "cursed_school:eclipse_maw"
+    },
+    {
+      "range": 5.0,
+      "spell": "cursed_school:severed_tithe"
     },
     {
       "range": 2.0,
@@ -39,6 +83,10 @@
     {
       "range": 2.0,
       "spell": "discerning_the_eldritch:soul_slice"
+    },
+    {
+      "range": 2.0,
+      "spell": "echoing_magic:echoing_explosion"
     },
     {
       "range": 2.0,
@@ -54,6 +102,22 @@
     },
     {
       "range": 2.0,
+      "spell": "esoteric_spell:impact_magic"
+    },
+    {
+      "range": 2.0,
+      "spell": "esoteric_spell:magic_blade_enchant_slash"
+    },
+    {
+      "range": 2.0,
+      "spell": "farmers_spell:pan"
+    },
+    {
+      "range": 3.0,
+      "spell": "frozen_dominion_spells:winters_sorrow"
+    },
+    {
+      "range": 2.0,
       "spell": "hazennstuff:scorching_slash"
     },
     {
@@ -63,6 +127,10 @@
     {
       "range": 2.0,
       "spell": "hazennstuff:soul_flaming_strike"
+    },
+    {
+      "range": 6.0,
+      "spell": "hyper_n_hieis_shenanigans:field_of_flowers"
     },
     {
       "range": 2.0,
@@ -83,6 +151,14 @@
     {
       "range": 15.0,
       "spell": "irons_spellbooks:none"
+    },
+    {
+      "range": 2.0,
+      "spell": "iss_elden_ring:carian_slicer"
+    },
+    {
+      "range": 2.0,
+      "spell": "iss_elden_ring:gavel_of_haima"
     },
     {
       "range": 2.0,
@@ -118,6 +194,10 @@
     },
     {
       "range": 2.0,
+      "spell": "paladin_spells:ram"
+    },
+    {
+      "range": 2.0,
       "spell": "somakespells:hydro_slash"
     },
     {
@@ -135,6 +215,26 @@
     {
       "range": 2.0,
       "spell": "somakespells:ram_tchum"
+    },
+    {
+      "range": 2.0,
+      "spell": "somakespells:soulfall_judgment"
+    },
+    {
+      "range": 2.0,
+      "spell": "somakespells:spectral_rondo"
+    },
+    {
+      "range": 5.0,
+      "spell": "touhou_little_maid_spell:star_shadow_strike"
+    },
+    {
+      "range": 6.0,
+      "spell": "touhou_little_maid_spell:magic_shotgun"
+    },
+    {
+      "range": 8.0,
+      "spell": "touhou_little_maid_spell:teleport_modified"
     },
     {
       "range": 16.0,

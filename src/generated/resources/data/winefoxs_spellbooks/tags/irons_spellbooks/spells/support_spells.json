@@ -5,6 +5,18 @@
       "required": false
     },
     {
+      "id": "eldritch_expansion:pale_covenant",
+      "required": false
+    },
+    {
+      "id": "esoteric_spell:bless_barrier",
+      "required": false
+    },
+    {
+      "id": "firesenderexpansion:ends_rejuvenation",
+      "required": false
+    },
+    {
       "id": "irons_spellbooks:counterspell",
       "required": false
     },
