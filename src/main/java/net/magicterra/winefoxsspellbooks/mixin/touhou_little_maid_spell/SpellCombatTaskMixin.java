@@ -18,6 +18,7 @@ import java.util.function.Predicate;
 import net.magicterra.winefoxsspellbooks.Config;
 import net.magicterra.winefoxsspellbooks.api.spell.MaidSpellAction;
 import net.magicterra.winefoxsspellbooks.compat.tlmspell.TlmSpellCompat;
+import net.magicterra.winefoxsspellbooks.entity.MaidMagicEntity;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.DrinkPotionsTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.EngageBand;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.GatedBehavior;
@@ -26,7 +27,6 @@ import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellAttackWa
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellCastingTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellChooseTask;
 import net.magicterra.winefoxsspellbooks.entity.ai.behavior.common.SpellStrafingTask;
-import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -42,7 +42,7 @@ import org.spongepowered.asm.mixin.injection.At;
  * <ul>
  *   <li>选术放开全部行为类别，战斗中也会支援主人与队友（法术支援任务仍保留为只支援的模式）</li>
  *   <li>走位换成本模组的接近与走位行为，站位落在任务的距离带内（近战贴身、远程保持距离），见 {@link EngageBand}；
- *       万法皆通的接近行为只在本模组没有选中法术时运行，供只带其他模组法术书的女仆使用</li>
+ *       万法皆通的接近行为只在女仆没有铁魔法法术时运行，供只带其他模组法术书的女仆使用</li>
  *   <li>跟随模式下索敌只锁定站在主人身边活动范围边缘也够得着的目标，口径同 {@link MaidLeash}</li>
  *   <li>坐下或骑乘时须佩戴法术射表才施法，同万法皆通</li>
  *   <li>战斗中饮用背包里品酒排装着的药水，同本模组的法术攻击任务，见 {@link DrinkPotionsTask}</li>
@@ -89,9 +89,11 @@ public abstract class SpellCombatTaskMixin {
         at = @At(value = "INVOKE", target = "Lcom/github/tartaricacid/touhoulittlemaid/entity/ai/brain/task/MaidRangedWalkToTarget;create(F)Lnet/minecraft/world/entity/ai/behavior/BehaviorControl;"),
         require = 0)
     private BehaviorControl<EntityMaid> winefoxsSpellbooks$gateWalkToTarget(BehaviorControl<EntityMaid> original) {
-        // 选中铁魔法后由本模组按法术射程接近，避免两套接近行为争抢行走目标
+        // 带着铁魔法法术的女仆由本模组按法术射程接近、走位，万法皆通的接近行为只留给只带其他模组法术书的女仆。
+        // 不能按「有没有选中法术」来放行：两次施法之间 CURRENT_SPELL 多半是空的，而这个行为不看女仆与目标的距离，
+        // 只要目标离主人（或 Home 中心）4 格以上就径直走向目标，会把女仆拖进近战、顶掉本模组的走位
         return new GatedBehavior<>(original,
-            maid -> !maid.getBrain().hasMemoryValue(MaidCastingMemoryModuleTypes.CURRENT_SPELL.get()));
+            maid -> !((MaidMagicEntity) maid).winefoxsSpellbooks$getSpellDataHolder().hasAnySpells());
     }
 
     @ModifyReturnValue(method = "createBrainTasks", at = @At("RETURN"), require = 0)
