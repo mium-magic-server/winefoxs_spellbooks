@@ -1,5 +1,33 @@
 # Changelog / 变更日志
 
+## Unreleased / 未发布
+
+1. **潜行右键喂女仆饮用 (Sneak-Right-Click to Feed Your Maid)** — 手持品酒排或铁魔法的药剂潜行右键自家女仆，即可喂其饮下（品酒排为最右一支）；指向女仆时显示车万女仆的喂药提示。  
+   Sneak-right-click your own maid while holding a Vixen's Flight or one of Iron's elixirs to have her drink it (the rightmost vial of a Vixen's Flight); pointing at her shows Touhou Little Maid's feeding tip.
+
+2. **品酒排可装入铁魔法药剂 (Vixen's Flight Holds Iron's Elixirs)** — 酒签现在也可装入铁魔法（及附属）的药剂。女仆生命低于 60% 时优先饮用治疗类，不论其位于哪一支。  
+   Its vials now also take Iron's (and its addons') elixirs. Below 60% health a maid drinks healing-type vials first, wherever they sit on the rack.
+
+3. **新增 24 个铁魔法附属的法术支持 (Spell Support for 24 More Iron's Addons)** — 女仆可识别并施放以下附属的法术：Chronomancy、Farmer's Spell、Spellbooks of Twilight、Deeper & Darker Spellbooks、Echoing Magic、Legendary Mage、Apex Arcana、Wind's Spellbooks、Paladin Spells、Aether Spellbooks、Unstable Magic、Asterism Arcanum、Ozymandias' Sundries、Alshanex's Familiars、Eldritch Expansions、[ES] Esoteric Spells、Cursed School、CS Curse Spells、ISS: Elden Ring、Leylines、Frieren Spells、Frozen Dominion Spells、Hyper 'N Hiei's Shenanigans、Wizards Help!；万法皆通自带的法术亦已归类。  
+   Maids now recognise and cast the spells of the addons listed above; Touhou Little Maid: Spell's own spells are classified as well.
+
+4. **已支持附属的法术归类更新 (Existing Addon Spells Reclassified)** — 按各附属的新版本补充新增法术；Monsters & Spellbooks 新版不再注册的风系法术随之移除。仅限玩家施放的法术（如 Apprentice's Codex 的 Bound Bow、Bound Sword，Somake 的 Crimson Reflection）以及对女仆无效或有害的法术，女仆不再选用。  
+   Spells added in the addons' new versions are classified, and the Aero spells Monsters & Spellbooks no longer registers are dropped. Maids no longer pick player-only spells (such as Apprentice's Codex's Bound Bow and Bound Sword, or Somake's Crimson Reflection), nor spells that are useless or harmful in their hands.
+
+5. **同一主人名下互为友军 (Allies Under the Same Owner)** — 主人、女仆、宠物与召唤物之间，凡最终归属同一主人者互为友军，且双向成立：主人的横扫攻击、各模组按友军判定的范围法术，不再伤及己方。万法皆通的「破法回响」不再清除主人一方的召唤物。  
+   An owner, their maids, pets and summons are now allies of one another in both directions, so the owner's sweeping attacks and other mods' ally-aware area spells no longer hit their own side. Touhou Little Maid: Spell's Spellbreaking Echo no longer clears the owner's side's summons.
+
+6. **传奇法师死亡爆炸不再误伤己方 (Legendary Mage Death Explosions Spare Your Side)** — 带「火焰异常」或「烈焰」效果的生物死亡时的爆炸，不再伤及击杀者、标记施法者及其主人、女仆与宠物；敌方照常受伤。  
+   The explosion when a creature with Fire Mark or Pyro Flame dies no longer hurts the killer, the mark's caster, or their owner, maids and pets; enemies are still hit.
+
+7. **起手失败的法术暂缓选用 (Failing Spells Are Set Aside)** — 女仆选中前置条件不满足的法术而起手失败后，暂停选用该法术 3 秒，连续失败时逐次加倍至 60 秒，成功施放后复原，不再反复选中它而挤占其余法术。  
+   When a maid's chosen spell fails its pre-cast check, she sets it aside for 3 seconds, doubling on each further failure up to 60 seconds and resetting once it casts, so it no longer crowds out her other spells.
+
+8. **Advanced Loot Info 2.5 支持 (Advanced Loot Info 2.5 Support)** — 战利品查询插件改为对接 ALI 2.5.0 的新接口。⚠️ 需要 ALI 2.5.0 及以上（及其前置 Advanced Core Info 1.5.0 及以上）。  
+   The loot lookup plugin now targets ALI 2.5.0's new API. ⚠️ It needs ALI 2.5.0 or newer (with Advanced Core Info 1.5.0 or newer).
+
+---
+
 ## 1.0.2-alpha.3
 
 1. **车万女仆：万法皆通联动 (Touhou Little Maid: Spell Integration)** — 可选联动。安装后改用万法皆通的「法术战斗」「远程法术」任务，女仆在其中按本模组的逻辑选择并施放铁魔法法术、为主人和队友治疗增益，并按任务保持站位；法术书识别、冷却与饰品以万法皆通为准，法力照常消耗（`tlmSpellMana` 可关闭）；末影腰包的女仆列表显示法力条。  
