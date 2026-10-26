@@ -20,6 +20,7 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.item.UseAnim;
 
 /**
  * 女仆施法行为
@@ -69,6 +70,11 @@ public class SpellCastingTask extends Behavior<Mob> {
         }
         if (magicEntity.isDrinkingPotion()) {
             // 正在喝药
+            return false;
+        }
+        if (isEatingOrDrinking(mob)) {
+            // 正在吃喝手上的物品（TLM 受伤自愈的进食、残月血酿等）：等吃完再起手。
+            // 起手会 stopUsingItem，进食需 32 tick 而施法间隔约 20 tick，不等的话持续战斗中永远吃不完
             return false;
         }
 
@@ -159,6 +165,14 @@ public class SpellCastingTask extends Behavior<Mob> {
         // 清除施法期间设置的 LOOK_TARGET，让其他行为能够正常控制视线
         mob.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
         // XRot 的重置由 LookControl.resetXRotOnTick() 自动处理
+    }
+
+    private static boolean isEatingOrDrinking(Mob mob) {
+        if (!mob.isUsingItem()) {
+            return false;
+        }
+        UseAnim anim = mob.getUseItem().getUseAnimation();
+        return anim == UseAnim.EAT || anim == UseAnim.DRINK;
     }
 
     protected void doSpellAction(Mob mob) {
