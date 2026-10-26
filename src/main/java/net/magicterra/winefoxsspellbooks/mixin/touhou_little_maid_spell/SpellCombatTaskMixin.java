@@ -42,7 +42,7 @@ import org.spongepowered.asm.mixin.injection.At;
  * <ul>
  *   <li>选术放开全部行为类别，战斗中也会支援主人与队友（法术支援任务仍保留为只支援的模式）</li>
  *   <li>走位换成本模组的接近与走位行为，站位落在任务的距离带内（近战贴身、远程保持距离），见 {@link EngageBand}；
- *       万法皆通的接近行为只在女仆没有铁魔法法术时运行，供只带其他模组法术书的女仆使用</li>
+ *       万法皆通的接近与走位行为只在女仆没有铁魔法法术时运行，供只带其他模组法术书的女仆使用</li>
  *   <li>跟随模式下索敌只锁定站在主人身边活动范围边缘也够得着的目标，口径同 {@link MaidLeash}</li>
  *   <li>坐下或骑乘时须佩戴法术射表才施法，同万法皆通</li>
  *   <li>战斗中饮用背包里品酒排装着的药水，同本模组的法术攻击任务，见 {@link DrinkPotionsTask}</li>
@@ -92,8 +92,12 @@ public abstract class SpellCombatTaskMixin {
         // 带着铁魔法法术的女仆由本模组按法术射程接近、走位，万法皆通的接近行为只留给只带其他模组法术书的女仆。
         // 不能按「有没有选中法术」来放行：两次施法之间 CURRENT_SPELL 多半是空的，而这个行为不看女仆与目标的距离，
         // 只要目标离主人（或 Home 中心）4 格以上就径直走向目标，会把女仆拖进近战、顶掉本模组的走位
-        return new GatedBehavior<>(original,
-            maid -> !((MaidMagicEntity) maid).winefoxsSpellbooks$getSpellDataHolder().hasAnySpells());
+        return new GatedBehavior<>(original, maid -> !winefoxsSpellbooks$hasIronsSpells(maid));
+    }
+
+    @Unique
+    private static boolean winefoxsSpellbooks$hasIronsSpells(EntityMaid maid) {
+        return ((MaidMagicEntity) maid).winefoxsSpellbooks$getSpellDataHolder().hasAnySpells();
     }
 
     @ModifyReturnValue(method = "createBrainTasks", at = @At("RETURN"), require = 0)
@@ -104,12 +108,17 @@ public abstract class SpellCombatTaskMixin {
         float walkSpeed = (float) Config.getBattleWalkSpeed();
 
         List<Pair<Integer, BehaviorControl<? super EntityMaid>>> result = new ArrayList<>(behaviors);
-        result.removeIf(pair -> pair.getSecond().getClass().getName().endsWith(WINEFOXS_SPELLBOOKS$STRAFING_SUFFIX));
+        // 万法皆通的走位只留给没有铁魔法法术的女仆（只带其他模组法术书），否则她们在战斗中完全不走位、不后撤；
+        // 带铁魔法法术的女仆由本模组的走位接管，两边不能同时驱动 MoveControl
+        result.replaceAll(pair -> pair.getSecond().getClass().getName().endsWith(WINEFOXS_SPELLBOOKS$STRAFING_SUFFIX)
+            ? Pair.of(pair.getFirst(), new GatedBehavior<EntityMaid>(pair.getSecond(), m -> !winefoxsSpellbooks$hasIronsSpells(m)))
+            : pair);
         // 远程任务不选够不着距离带下限的攻击法术：她不会为了它离开站位
         result.add(Pair.of(WINEFOXS_SPELLBOOKS$PRIORITY, new SpellChooseTask(Config.getStartSpellRange(),
             Config.getMaxComboDelayTick(), maid, WINEFOXS_SPELLBOOKS$ALL_ACTIONS).withMinAttackRange(far ? band.min() : 0)));
         result.add(Pair.of(WINEFOXS_SPELLBOOKS$PRIORITY, SpellAttackWalkToTarget.create(walkSpeed)));
-        result.add(Pair.of(WINEFOXS_SPELLBOOKS$PRIORITY, new SpellStrafingTask((float) band.max(), walkSpeed, band)));
+        result.add(Pair.of(WINEFOXS_SPELLBOOKS$PRIORITY, new GatedBehavior<EntityMaid>(new SpellStrafingTask((float) band.max(), walkSpeed, band),
+            SpellCombatTaskMixin::winefoxsSpellbooks$hasIronsSpells)));
         result.add(Pair.of(WINEFOXS_SPELLBOOKS$PRIORITY, new SpellCastingTask((IMagicEntity) maid)));
         result.add(Pair.of(WINEFOXS_SPELLBOOKS$PRIORITY, new DrinkPotionsTask(walkSpeed, WINEFOXS_SPELLBOOKS$DRINK_COOLDOWN)));
         return result;
