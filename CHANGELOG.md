@@ -1,5 +1,21 @@
 # Changelog / 变更日志
 
+## 1.0.3
+
+1. **瞬间法力对女仆生效 (Instant Mana Works on Maids)** — 瞬间法力此前对女仆不起作用，现在会补进其自身的法力池（魔力紊乱期间不回魔）。品酒排里的瞬间法力酒签仅在女仆法力低于上限的 30% 时才饮用，不再一拿到就喝、满法力也喝。  
+   Instant Mana previously did nothing for maids; it now refills their own mana pool (and not while Mana Disruption is active). A maid drinks an Instant Mana vial from a Vixen's Flight only when her mana is below 30% of the maximum, instead of drinking it as soon as she has one, even at full mana.
+
+2. **后撤与进食 (Retreating and Eating)** — 女仆后撤时的速度提升至接战行走速度的约四分之三，不再被近战怪一冲就贴身；后撤落脚点不可走时改为横移或寻路绕开，不再反向冲向敌人。正在进食或饮用手上物品（受伤自愈的进食、残月血酿等）时，女仆会等吃完再起手施法，持续战斗中不再永远吃不完。  
+   Maids now back away at about three quarters of their engaged walking speed, so melee mobs no longer close in at once; if the spot behind is unwalkable they sidestep or path around it instead of stepping toward the enemy. A maid who is eating or drinking a held item (self-healing food, Crescent Blood Vintage, etc.) finishes before starting a cast, so continuous combat no longer keeps interrupting her meal.
+
+3. **万法皆通联动的走位 (Touhou Little Maid: Spell Strafing)** — 万法皆通的走位行为只留给没有铁魔法法术的女仆，带铁魔法法术的女仆由本模组的走位接管，两边不再同时驱动同一个移动控制。  
+   Touhou Little Maid: Spell's strafing behaviour now runs only for maids without Iron's spells; maids with Iron's spells use this mod's strafing, so the two no longer drive the same move control at once.
+
+4. **满法力时的冷启动试探 (Cold-Start Probing at Full Mana)** — 尚无实战记录的昂贵攻击法术，在法力已满时不再被探索预算一律筛掉而永远无法实测，女仆不再满法力干等冷却。  
+   An expensive attack spell with no recorded casts is no longer filtered out for good by the exploration budget when mana is full, so maids stop idling through cooldowns at full mana without ever testing it.
+
+---
+
 ## 1.0.2
 
 1. **车万女仆：万法皆通联动 (Touhou Little Maid: Spell Integration)** — 可选联动。安装后女仆在万法皆通的「法术战斗」「远程法术」任务中按本模组的逻辑施放铁魔法法术、治疗增益队友，并按任务保持站位；法术书识别、冷却与饰品以万法皆通为准，法力照常消耗（`tlmSpellMana` 可关闭）。万法皆通自带的法术亦已归类。  
