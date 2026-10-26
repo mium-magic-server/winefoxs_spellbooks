@@ -1,11 +1,14 @@
 package net.magicterra.winefoxsspellbooks.entity.ai.behavior.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import io.redspace.ironsspellbooks.registries.MobEffectRegistry;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import net.magicterra.winefoxsspellbooks.item.VialsContents;
 import net.magicterra.winefoxsspellbooks.item.VixensFlightItem;
+import net.magicterra.winefoxsspellbooks.magic.MaidMagicManager;
+import net.magicterra.winefoxsspellbooks.registry.WsbEffects;
 import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -19,7 +22,8 @@ import net.neoforged.neoforge.items.IItemHandler;
  * 女仆战斗中从背包里的品酒排挑一支此刻该喝的酒签
  * <p>
  * 生命低于 {@link #HEAL_HEALTH_RATIO} 时，先在所有品酒排的所有酒签中找此刻该喝的治疗类（治疗、再生、伤害吸收），不论其位置；没有则回到常规顺序：
- * 逐排从右到左找，跳过此刻不该喝的。只喝不含有害效果、且至少有一种效果此刻用得上的酒签。药水与铁魔法的药剂同样按效果判断。
+ * 逐排从右到左找，跳过此刻不该喝的。只喝不含有害效果、且至少有一种效果此刻用得上的酒签。药水与铁魔法的药剂同样按效果判断；
+ * 瞬间法力只在魔力低于 {@link #INSTANT_MANA_RATIO} 时喝。
  *
  * @author Gardel &lt;gardel741@outlook.com&gt;
  * @since 2026-10-25
@@ -29,6 +33,11 @@ public final class MaidVialPicker {
      * 生命低于这个比例才喝治疗类
      */
     public static final float HEAL_HEALTH_RATIO = 0.6f;
+
+    /**
+     * 魔力低于上限的这个比例才喝瞬间法力
+     */
+    public static final float INSTANT_MANA_RATIO = 0.3f;
 
     /**
      * 身上同种效果剩余不足这么多 tick 时视为需要补喝
@@ -112,6 +121,11 @@ public final class MaidVialPicker {
     private static boolean needs(LivingEntity entity, Holder<MobEffect> effect) {
         if (HEALING.contains(effect)) {
             return entity.getHealth() < entity.getMaxHealth() * HEAL_HEALTH_RATIO;
+        }
+        if (effect.value() == MobEffectRegistry.INSTANT_MANA.get()) {
+            // 瞬间效果永不在身，不能按「到期即补」判断，否则一拿到就喝、满蓝也喝；魔力紊乱时喝了也不回蓝
+            return !entity.hasEffect(WsbEffects.MANA_DISRUPTION)
+                && MaidMagicManager.getMana(entity) < MaidMagicManager.getMaxMana(entity) * INSTANT_MANA_RATIO;
         }
         if (effect.equals(MobEffects.FIRE_RESISTANCE)) {
             return (entity.isOnFire() || entity.isInLava()) && expiring(entity, effect);
