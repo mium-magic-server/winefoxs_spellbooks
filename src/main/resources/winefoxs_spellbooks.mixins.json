@@ -10,6 +10,7 @@
     "DamageSourcesMixin",
     "EntityAllyMixin",
     "IMagicSummonMixin",
+    "InstantManaEffectMixin",
     "MagicDataAccessor",
     "MaidBegTaskMixin",
     "MaidEntityMixin",
