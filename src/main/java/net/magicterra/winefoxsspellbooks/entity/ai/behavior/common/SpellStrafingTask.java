@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidCastingMemoryModuleTypes;
 import net.magicterra.winefoxsspellbooks.entity.ai.memory.MaidSpellTargets;
 import net.magicterra.winefoxsspellbooks.magic.catalog.MaidSpellCatalog;
+import net.magicterra.winefoxsspellbooks.mixin.MoveControlAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -22,6 +23,8 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.NodeEvaluator;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -43,6 +46,18 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
      * 倒退连续被挡住多少刻后才改为寻路远离（会转身背对敌人）。
      */
     private static final int BLOCKED_RETREAT_TICKS = 20;
+
+    /**
+     * 后撤速度相对接战行走速度（{@code strafeSpeed}）的比例
+     */
+    private static final float RETREAT_SPEED_RATIO = 0.75f;
+
+    /**
+     * 后撤方向：倒退为主，带少量横移（单位向量的两个分量，倒退 : 横移 = 2 : 1）
+     */
+    private static final float RETREAT_FORWARD = 0.894f;
+
+    private static final float RETREAT_STRAFE = 0.447f;
 
     private int fleeCooldown;
 
@@ -139,7 +154,26 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
             } else {
                 blockedRetreatTicks = 0;
             }
-            if (blockedRetreatTicks > BLOCKED_RETREAT_TICKS && fleeCooldown <= 0) {
+            // 先转向目标：下面按当前朝向判断后撤落脚点
+            faceTarget(owner, target);
+            double retreatModifier = strafeSpeed * RETREAT_SPEED_RATIO;
+            float forward = -RETREAT_FORWARD;
+            float strafe = RETREAT_STRAFE * strafeDir;
+            // 原版 strafe 遇到落脚点不可走（上台阶、下坑）会把这一步改成向前走，也就是冲向敌人。
+            // 倒退走不通就只横移；横移也走不通就当作背后被堵死，立即寻路后撤
+            boolean walkable = strafeWalkable(owner, forward, strafe, retreatModifier);
+            if (!walkable) {
+                forward = 0;
+                walkable = strafeWalkable(owner, 0, strafeDir, retreatModifier);
+                if (walkable) {
+                    strafe = strafeDir;
+                } else if (strafeWalkable(owner, 0, -strafeDir, retreatModifier)) {
+                    strafingClockwise = !strafingClockwise;
+                    strafe = -strafeDir;
+                    walkable = true;
+                }
+            }
+            if ((blockedRetreatTicks > BLOCKED_RETREAT_TICKS || !walkable) && fleeCooldown <= 0) {
                 // 背后被堵死：只能寻路绕出去，此时才允许转身
                 Vec3 flee = DefaultRandomPos.getPosAway(owner, Mth.clamp(Mth.floor(spellRange), 1, 10), 4, target.position());
                 if (flee != null && (leashOwner == null || MaidLeash.contains(leashOwner, leashRadius, flee))) {
@@ -160,10 +194,15 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
                     }
                     tryJump(owner);
                 }
-                faceTarget(owner, target);
-                float forward = -speed * ss;
-                float strafe = speed * strafeDir * ss * .5f;
-                strafeWithinLeash(owner, leashOwner, leashRadius, forward, strafe);
+                if (walkable) {
+                    // 原版 strafe 把速度倍率固定为 0.25，女仆倒退只有接战行走速度的约四分之一，近战怪一冲就贴身。
+                    // 这里输入取单位方向，速度另按接战行走速度的一定比例给
+                    strafeWithinLeash(owner, leashOwner, leashRadius, forward, strafe);
+                    ((MoveControlAccessor) owner.getMoveControl()).winefoxsSpellbooks$setSpeedModifier(retreatModifier);
+                } else {
+                    // 寻路后撤还在冷却：原地站定，不往敌人那边送
+                    owner.getMoveControl().strafe(0, 0);
+                }
             }
         } else if (distanceSquared < spellRangeSqr && canSee) {
             blockedRetreatTicks = 0;
@@ -265,6 +304,21 @@ public class SpellStrafingTask extends Behavior<PathfinderMob> {
         float sin = Mth.sin(mob.getYRot() * Mth.DEG_TO_RAD);
         float cos = Mth.cos(mob.getYRot() * Mth.DEG_TO_RAD);
         return mob.position().add((strafe * cos - forward * sin) / length, 0, (forward * cos + strafe * sin) / length);
+    }
+
+    /**
+     * 按这组走位输入和速度倍率走一刻，落脚点是否可走，算法与 {@code MoveControl#isWalkable} 一致
+     */
+    private static boolean strafeWalkable(PathfinderMob mob, float forward, float strafe, double speedModifier) {
+        NodeEvaluator evaluator = mob.getNavigation().getNodeEvaluator();
+        float length = Math.max(1.0F, Mth.sqrt(forward * forward + strafe * strafe));
+        float scale = (float) (speedModifier * mob.getAttributeValue(Attributes.MOVEMENT_SPEED)) / length;
+        float f = forward * scale;
+        float s = strafe * scale;
+        float sin = Mth.sin(mob.getYRot() * Mth.DEG_TO_RAD);
+        float cos = Mth.cos(mob.getYRot() * Mth.DEG_TO_RAD);
+        BlockPos pos = BlockPos.containing(mob.getX() + f * cos - s * sin, mob.getBlockY(), mob.getZ() + s * cos + f * sin);
+        return evaluator.getPathType(mob, pos) == PathType.WALKABLE;
     }
 
     private boolean checkNeedJump(PathfinderMob maid, float forward, float strafe) {
