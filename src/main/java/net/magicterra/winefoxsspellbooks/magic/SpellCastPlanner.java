@@ -200,9 +200,19 @@ public class SpellCastPlanner {
                 float budget = Math.max(cheapest * (recovering ? 1f : 2f), Math.max(
                     MaidMagicManager.getMana(mob) * COLD_EXPLORATION_MANA_FRACTION,
                     MaidMagicManager.getManaRegenPerInterval(mob) * 2f));
+                List<SpellData> readyBeforeBudget = castableNow;
                 castableNow = withinExplorationBudget(mob, memory, castableNow, maxMana, budget);
                 pending = withinExplorationBudget(mob, memory, pending, maxMana, budget);
                 cooling = withinExplorationBudget(mob, memory, cooling, maxMana, budget);
+                if (castableNow.isEmpty() && !readyBeforeBudget.isEmpty()
+                    && MaidMagicManager.getMana(mob) + MaidMagicManager.getManaRegenPerInterval(mob) >= maxMana) {
+                    // 预算把此刻可放的全部筛掉、且魔力已满（再等回魔就溢出）时，
+                    // 若一律筛掉，这个昂贵法术永远拿不到实测，女仆满蓝也只会干等冷却。
+                    // 放回其中最便宜且付得起的一个，由下面的估值与冷却中的法术比较后再决定放还是等。
+                    // 魔力未满时不放回：便宜法术冷却很短，等它比试昂贵法术划算（NoAI 冷启动实测）。
+                    SpellData probe = cheapestAffordable(mob, memory, readyBeforeBudget, maxMana);
+                    if (probe != null) castableNow = List.of(probe);
+                }
             }
         }
         SpellData selected = planNow(mob, castableNow, pending, target, gameTime);
@@ -426,6 +436,25 @@ public class SpellCastPlanner {
             if (evidence || listPrice(mob, data, castTicks(mob, data), maxMana) <= budget) result.add(data);
         }
         return result;
+    }
+
+    /**
+     * 当前付得起、且未确认只会打空的法术中最便宜的一个；没有则返回 null
+     */
+    @Nullable
+    private static SpellData cheapestAffordable(Mob mob, MaidSpellMemory memory, List<SpellData> spells, float maxMana) {
+        float mana = MaidMagicManager.getMana(mob);
+        SpellData best = null;
+        float bestPrice = Float.POSITIVE_INFINITY;
+        for (SpellData data : spells) {
+            if (confirmedZero(memory, data.getSpell())) continue;
+            float price = planPrice(mob, data, maxMana);
+            if (price <= mana && price < bestPrice) {
+                best = data;
+                bestPrice = price;
+            }
+        }
+        return best;
     }
 
     private static SpellData conserveReadySequence(Mob mob, @Nullable SpellData selected,
